@@ -17,41 +17,21 @@ Crafty.c("DOM", {
 		this._element.style.position = "absolute";
 		this._element.id = "ent" + this[0];
 		
-		this.bind("Change", function() {
-			if(!this._changed) {
-				this._changed = true;
-				Crafty.DrawManager.add(this);
-			}
-		});
+		Crafty.register.push(this);
 		
-		function updateClass() {
-			var i = 0, c = this.__c, str = "";
-			for(i in c) {
-				str += ' ' + i;
-			}
-			str = str.substr(1);
-			this._element.className = str;
-		}
-		
-		this.bind("NewComponent", updateClass).bind("RemoveComponent", updateClass);
-		
-		if(Crafty.support.prefix === "ms" && Crafty.support.version < 9) {
-			this._filters = {};
-			
-			this.bind("Rotate", function(e) {
-				var m = e.matrix,
-					elem = this._element.style,
-					M11 = m.M11.toFixed(8),
-					M12 = m.M12.toFixed(8),
-					M21 = m.M21.toFixed(8),
-					M22 = m.M22.toFixed(8);
-				
-				this._filters.rotation = "progid:DXImageTransform.Microsoft.Matrix(M11="+M11+", M12="+M12+", M21="+M21+", M22="+M22+",sizingMethod='auto expand')";
-			});
-		}
-		
-		this.bind("Remove", this.undraw);
+		this.bind("NewComponent", this.updateClass)
+			.bind("RemoveComponent", this.updateClass)
+			.bind("Remove", this.undraw);
 	},
+	
+	updateClass: function() {
+		var i = 0, c = this.__c, str = "";
+		for(i in c) {
+			str += ' ' + i;
+		}
+		str = str.substr(1);
+		this._element.className = str;
+	}
 	
 	/**@
 	* #.DOM
@@ -78,94 +58,113 @@ Crafty.c("DOM", {
 	*/
 	draw: function() {
 		var style = this._element.style,
-			coord = this.__coord || [0,0,0,0],
-			co = {x: coord[0], y: coord[1] },
+			old = this._changed,
 			prefix = Crafty.support.prefix,
-			trans = [];
+			dino = (prefix === "ms" && Crafty.support.version < 9),
+			trans = "",
+			filter = "",
+			origin;
 		
-		if(!this._visible) style.visibility = "hidden";
-		else style.visibility = "visible";
-		
-<<<<<<< HEAD
 		//utilize CSS3 if supported
-		if(Crafty.support.css3dtransform) {
-			trans.push("translate3d("+(~~this._x)+"px,"+(~~this._y)+"px,0)");
+		if(Crafty.support.css3dtransform && (old.x !== this.x || old.y !== this.y)) {
+			trans += "translate3d("+(~~this.x)+"px,"+(~~this.y)+"px,0)";
 		} else {
-			style.left = ~~(this._x) + "px";
-			style.top = ~~(this._y) + "px";
-		}
-		
-=======
-		if(Crafty.support.css3dtransform) trans.push("translate3d("+(~~this._x)+"px,"+(~~this._y)+"px,0)");
-		else {
-			style.top = Number(this._y)+"px";
-			style.left = Number(this._x)+"px";
-			//trans.push("translate("+(~~this._x)+"px,"+(~~this._y)+"px,0)");
-		}
->>>>>>> 48ba1ac29df667845aac2e829f6024c0603a4ea6
-		style.width = ~~(this._w) + "px";
-		style.height = ~~(this._h) + "px";
-		style.zIndex = this._z;
-		
-		style.opacity = this._alpha;
-		style[prefix+"Opacity"] = this._alpha;
-		
-		//if not version 9 of IE
-		if(prefix === "ms" && Crafty.support.version < 9) {
-			//for IE version 8, use ImageTransform filter
-			if(Crafty.support.version === 8) {
-				this._filters.alpha = "progid:DXImageTransform.Microsoft.Alpha(Opacity="+(this._alpha * 100)+")"; // first!
-			//all other versions use filter
-			} else {
-				this._filters.alpha = "alpha(opacity="+(this._alpha*100)+")";
+			if(old.x !== this.x) {
+				style.left = ~~(this.x) + "px";
+			}
+			
+			if(old.y !== this.y) {
+				style.top = ~~(this.y) + "px";
 			}
 		}
 		
-		if(this._mbr) {
-			var origin = this._origin.x + "px " + this._origin.y + "px";
+		if(old.w !== this.w) {
+			style.width = ~~(this.w) + "px";
+		}
+		
+		if(old.h !== this.h) {
+			style.height = ~~(this.h) + "px";
+		}
+		
+		if(old.z !== this.z) {
+			style.zIndex = this.z;
+		}
+		
+		if(old.alpha !== this.alpha) {
+			style.opacity = this._alpha;
+			style[prefix+"Opacity"] = this._alpha;
+			
+			//if not version 9 of IE
+			if(dino) {
+				//for IE version 8, use ImageTransform filter
+				if(Crafty.support.version === 8) {
+					filter += " progid:DXImageTransform.Microsoft.Alpha(Opacity="+(this._alpha * 100)+")";
+				//all other versions use filter
+				} else {
+					filter += " alpha(opacity="+(this._alpha*100)+")";
+				}
+			}
+		}
+		
+		if(old.rotation !== this.rotation) {
+			origin = this._origin.x + "px " + this._origin.y + "px";
 			style.transformOrigin = origin;
 			style[prefix+"TransformOrigin"] = origin;
-			if(Crafty.support.css3dtransform) trans.push("rotateZ("+this._rotation+"deg)");
-			else trans.push("rotate("+this._rotation+"deg)");
-		}
-		
-		if(this._flipX) {
-			trans.push("scaleX(-1)");
-			if(prefix === "ms" && Crafty.support.version < 9) {
-				this._filters.flipX = "fliph";
+			
+			if(Crafty.support.css3dtransform) {
+				trans += " rotateZ("+this._rotation+"deg)";
+			} else {
+				trans += " rotate("+this._rotation+"deg)";
+			}
+			
+			if(dino) {
+				var m = this._matrix,
+					M11 = m.M11.toFixed(8),
+					M12 = m.M12.toFixed(8),
+					M21 = m.M21.toFixed(8),
+					M22 = m.M22.toFixed(8);
+
+				filter += " progid:DXImageTransform.Microsoft.Matrix(M11="+M11+", M12="+M12+", M21="+M21+", M22="+M22+",sizingMethod='auto expand')";
 			}
 		}
 		
-		if(this._flipY) {
-			trans.push("scaleY(-1)");
-			if(prefix === "ms" && Crafty.support.version < 9) {
-				this._filters.flipY = "flipv";
+		if(old.flipX !== this.flipX) {
+			trans += " scaleX(-1)";
+			if(dino) {
+				filter += " fliph";
+			}
+		}
+		
+		if(old.flipY !== this.flipY) {
+			trans += " scaleY(-1)";
+			if(dino) {
+				filter += " flipv";
 			}
 		}
 		
 		//apply the filters if IE
-		if(prefix === "ms" && Crafty.support.version < 9) {
-			this.applyFilters();
+		if(dino) {
+			style.filter = filter.substr(1);
 		}
 		
-		style.transform = trans.join(" ");
-		style[prefix+"Transform"] = trans.join(" ");
+		trans = trans.substr(1);
+		style.transform = trans;
+		style[prefix+"Transform"] = trans;
 		
-		this.trigger("Draw", {style: style, type: "DOM", co: co});
+		//update old properties
+		old.x = this.x;
+		old.y = this.y;
+		old.w = this.w;
+		old.h = this.h;
+		old.z = this.z;
+		old.rotation = this.rotation;
+		old.alpha = this.alpha;
+		old.flipX = this.flipX;
+		old.flipY = this.flipY;
+		
+		this.trigger("Draw", {type: "DOM"});
 		
 		return this;
-	},
-	
-	applyFilters: function() {
-		this._element.style.filter = "";
-		var str = "";
-		
-		for(var filter in this._filters) {
-			if(!this._filters.hasOwnProperty(filter)) continue;
-			str += this._filters[filter] + " ";
-		}
-		
-		this._element.style.filter = str;
 	},
 	
 	/**@
@@ -226,8 +225,6 @@ Crafty.c("DOM", {
 				return Crafty.DOM.getStyle(elem, obj);
 			}
 		}
-		
-		this.trigger("Change");
 		
 		return this;
 	}
@@ -346,3 +343,5 @@ Crafty.extend({
 		}
 	}
 });
+
+Crafty.e("2D, Image, DOM").addChild(Crafty.e("2D, Image, DOM"));

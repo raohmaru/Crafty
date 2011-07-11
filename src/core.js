@@ -714,13 +714,16 @@ Crafty.extend({
 		
 		step: function() {
 			loops = 0;
+			
 			while((new Date).getTime() > nextGameTick) {
 				Crafty.trigger("EnterFrame", {frame: frame++});
 				nextGameTick += skipTicks;
 				loops++;
 			}
+			
+			//draw Crafty objects
 			if(loops) {
-				Crafty.DrawManager.draw();
+				Crafty.draw();
 			}
 		},
 

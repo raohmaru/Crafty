@@ -11,85 +11,47 @@ Crafty.c("Canvas", {
 			Crafty.canvas.init();
 		}
 		
-		//increment the amount of canvas objs
-		Crafty.DrawManager.total2D++;
-		
-		this.bind("Change", function(e) {
-			//if within screen, add to list	
-			if(this._changed === false) {
-				this._changed = Crafty.DrawManager.add(e || this, this);
-			} else {
-				if(e) this._changed = Crafty.DrawManager.add(e, this);
-			}
-		});
-		
-		this.bind("Remove", function() {
-			Crafty.DrawManager.total2D--;
-			Crafty.DrawManager.add(this,this);
-		});
+		Crafty.register.push(this);
 	},
 	
 	/**@
 	* #.draw
 	* @comp Canvas
-	* @sign public this .draw([[Context ctx, ]Number x, Number y, Number w, Number h])
-	* @param ctx - Canvas 2D context if drawing on another canvas is required
-	* @param x - X offset for drawing a segment
-	* @param y - Y offset for drawing a segment
-	* @param w - Width of the segement to draw
-	* @param h - Height of the segment to draw
+	* @sign public this .draw()
 	* @triggers Draw
 	* Method to draw the entity on the canvas element. Can pass rect values for redrawing a segment of the entity.
 	*/
-	draw: function(ctx,x,y,w,h) {
-		if(!this.ready) return; 
-		if(arguments.length === 4) {
-			h = w;
-			w = y;
-			y = x;
-			x = ctx;
-			ctx = Crafty.canvas.context;
-		}
+	draw: function() {
+		if(!this.ready) return;
 		
-		var pos = { //inlined pos() function, for speed
-				_x: (this._x + (x || 0)),
-				_y: (this._y + (y || 0)),
-				_w: (w || this._w),
-				_h: (h || this._h)
-			},
-			context = ctx || Crafty.canvas.context,
-			coord = this.__coord || [0,0,0,0],
-			co = {
-				x: coord[0] + (x || 0),
-				y: coord[1] + (y || 0),
-				w: w || coord[2],
-				h: h || coord[3]
-			};
+		var ctx = Crafty.canvas.context,
+			old = this._changed,
+			globalAlpha;
 			
-		if(this._mbr) {
-			context.save();
-			
-			context.translate(this._origin.x + this._x, this._origin.y + this._y);
-			pos._x = -this._origin.x;
-			pos._y = -this._origin.y;
-			
-			context.rotate((this._rotation % 360) * (Math.PI / 180));
+		if(old.rotation !== this.rotation) {
+			ctx.save();
+			ctx.translate(this._origin.x + this.x, this._origin.y + this.y);
+			ctx.rotate((this._rotation % 360) * (Math.PI / 180));
 		}
 		
 		//draw with alpha
-		if(this._alpha < 1.0) {
-			var globalpha = context.globalAlpha;
-			context.globalAlpha = this._alpha;
+		if(old.alpha !== this.alpha) {
+			globalAlpha = ctx.globalAlpha;
+			ctx.globalAlpha = this.alpha;
 		}
 		
-		this.trigger("Draw", {type: "canvas", pos: pos, co: co, ctx: context});
+		this.trigger("Draw", {type: "canvas"});
 		
-		if(this._mbr) {
-			context.restore();
+		if(old.rotation !== this.rotation) {
+			ctx.restore();
 		}
-		if(globalpha) {
-			context.globalAlpha = globalpha;
+		
+		if(globalAlpha) {
+			ctx.globalAlpha = globalAlpha;
 		}
+		
+		this.reset();
+		
 		return this;
 	}
 });
@@ -145,7 +107,7 @@ Crafty.extend({
 			
 			Crafty.stage.elem.appendChild(c);
 			Crafty.canvas.context = c.getContext('2d');
-			Crafty.canvas._canvas = c;
+			Crafty.canvas.elem = c;
 		}
 	}
 });

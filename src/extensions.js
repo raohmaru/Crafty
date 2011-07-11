@@ -1,7 +1,7 @@
 Crafty.extend({
 	/**@
 	* #Crafty.randRange
-	* @category Misc
+	* @category Math
 	* @sign public Number Crafty.randRange(Number from, Number to)
 	* @param from - Lower bound of the range
 	* @param to - Upper bound of the range
@@ -11,12 +11,31 @@ Crafty.extend({
 		return Math.round(Math.random() * (to - from) + from);
 	},
 	
+	/**@
+	* #Crafty.randRange
+	* @category Math
+	* @sign public Number Crafty.randRange(Number from, Number to)
+	* @param from - Lower bound of the range
+	* @param to - Upper bound of the range
+	* Returns a random number between (and including) the two numbers.
+	*/
 	zeroFill: function(number, width) {
 		width -= number.toString().length;
 		if (width > 0)
 			return new Array(width + (/\./.test( number ) ? 2 : 1)).join( '0' ) + number;
 		return number.toString();
 	},
+	
+	/**@
+	* #Crafty.n
+	* @category Math
+	* @sign public Number Crafty.n(* n)
+	* @param n - Any value that will be converted to an int
+	* Cast anything to a number. If it can't it will return 0 (none of this NaN rubbish).
+	*/
+	n: function(n) {
+		return IsNaN(+n) ? 0 : +n;
+	}
 	
 	/**@
 	* #Crafty.sprite
@@ -45,15 +64,19 @@ Crafty.extend({
 	sprite: function(tile, tileh, url, map, paddingX, paddingY) {
 		var pos, temp, x, y, w, h, img;
 		
-		//if no tile value, default to 16
+		//if no tile value, default to 1
 		if(typeof tile === "string") {
-			map = url;
-			url = tileh;
+			paddingY = paddingX;
+			paddingX = map;
+			map = tileh;
+			url = tile;
 			tile = 1;
 			tileh = 1;
 		}
 		
 		if(typeof tileh == "string") {
+			paddingY = paddingX;
+			paddingX = map;
 			map = url;
 			url = tileh;
 			tileh = tile;
@@ -61,8 +84,8 @@ Crafty.extend({
 		
 		//if no paddingY, use paddingX
 		if(!paddingY && paddingX) paddingY = paddingX;
-		paddingX = parseInt(paddingX || 0, 10); //just incase
-		paddingY = parseInt(paddingY || 0, 10);
+		paddingX = Crafty.n(paddingX); //just incase
+		paddingY = Crafty.n(paddingY);
 		
 		img = Crafty.assets[url];
 		if(!img) {
@@ -89,11 +112,6 @@ Crafty.extend({
 			w = temp[2] * tile || tile;
 			h = temp[3] * tileh || tileh;
 			
-			/**@
-			* #Sprite
-			* @category Graphics
-			* Component for using tiles in a sprite map.
-			*/
 			Crafty.c(pos, {
 				__image: url,
 				__coord: [x,y,w,h],
@@ -112,7 +130,6 @@ Crafty.extend({
 					//draw now
 					if(this.img.complete && this.img.width > 0) {
 						this.ready = true;
-						this.trigger("Change");
 					}
 
 					//set the width and height to the sprite size
@@ -120,83 +137,36 @@ Crafty.extend({
 					this.h = this.__coord[3];
 					
                     var draw = function(e) {
-    					var co = e.co,
-							pos = e.pos,
+    					var co = this.__coord,
+							old = this._changed,
 							context = e.ctx;
 							
 						if(e.type === "canvas") {
 							//draw the image on the canvas element
-							context.drawImage(this.img, //image element
-											 co.x, //x position on sprite
-											 co.y, //y position on sprite
-											 co.w, //width on sprite
-											 co.h, //height on sprite
-											 pos._x, //x position on canvas
-											 pos._y, //y position on canvas
-											 pos._w, //width on canvas
-											 pos._h //height on canvas
+							context.drawImage(
+								this.img, //image element
+								co[0], //x position on sprite
+								co[1], //y position on sprite
+								co[2], //width on sprite
+								co[3], //height on sprite
+								this.x, //x position on canvas
+								this.y, //y position on canvas
+								this.w, //width on canvas
+								this.h //height on canvas
 							);
 						} else if(e.type === "DOM") {
-							this._element.style.background = "url('" + this.__image + "') no-repeat -" + co.x + "px -" + co.y + "px";
+							//check if the sprite changed
+							if(old.cox !== co[0] || old.coy !== co[1]) {
+								this._element.style.background = "url('" + this.__image + "') no-repeat -" + co[0] + "px -" + co[1] + "px";
+								old.cox = co[0];
+								old.coy = co[1];
+							}
 						}
 					};
                     
 					this.bind("Draw", draw).bind("RemoveComponent", function(id) {
                         if(id === pos) this.unbind("Draw", draw);  
                     });
-				},
-				
-				/**@
-				* #.sprite
-				* @comp Sprite
-				* @sign public this .sprite(Number x, Number y, Number w, Number h)
-				* @param x - X cell position 
-				* @param y - Y cell position
-				* @param w - Width in cells
-				* @param h - Height in cells
-				* Uses a new location on the sprite map as its sprite.
-				*
-				* Values should be in tiles or cells (not pixels).
-				*/
-				sprite: function(x,y,w,h) {
-					this.__coord = [x * this.__tile + this.__padding[0] + this.__trim[0],
-									y * this.__tileh + this.__padding[1] + this.__trim[1],
-									this.__trim[2] || w * this.__tile || this.__tile,
-									this.__trim[3] || h * this.__tileh || this.__tileh];
-					
-					this.trigger("Change");
-					return this;
-				},
-				
-				/**@
-				* #.crop
-				* @comp Sprite
-				* @sign public this .crop(Number x, Number y, Number w, Number h)
-				* @param x - Offset x position
-				* @param y - Offset y position
-				* @param w - New width
-				* @param h - New height
-				* If the entity needs to be smaller than the tile size, use this method to crop it.
-				*
-				* The values should be in pixels rather than tiles.
-				*/
-				crop: function(x,y,w,h) {
-					var old = this._mbr || this.pos();
-					this.__trim = [];
-					this.__trim[0] = x;
-					this.__trim[1] = y;
-					this.__trim[2] = w;
-					this.__trim[3] = h;
-					
-					this.__coord[0] += x;
-					this.__coord[1] += y;
-					this.__coord[2] = w;
-					this.__coord[3] = h;
-					this._w = w;
-					this._h = h;
-					
-					this.trigger("Change", old);
-					return this;
 				}
 			});
 		}

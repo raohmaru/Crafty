@@ -18,14 +18,14 @@ Crafty.c("2D", {
 	* Is actually a getter/setter so when using this value for calculations and not modifying it,
 	* use the `._x` property.
 	*/
-	_x: 0,
+	x: 0,
 	/**@
 	* #.y
 	* The `y` position on the stage. When modified, will automatically be redrawn.
 	* Is actually a getter/setter so when using this value for calculations and not modifying it,
 	* use the `._y` property.
 	*/
-	_y: 0,
+	y: 0,
 	/**@
 	* #.w
 	* The width of the entity. When modified, will automatically be redrawn.
@@ -34,7 +34,7 @@ Crafty.c("2D", {
 	*
 	* Changing this value is not recommended as canvas has terrible resize quality and DOM will just clip the image.
 	*/
-	_w: 0,
+	w: 0,
 	/**@
 	* #.x
 	* The height of the entity. When modified, will automatically be redrawn.
@@ -43,7 +43,7 @@ Crafty.c("2D", {
 	*
 	* Changing this value is not recommended as canvas has terrible resize quality and DOM will just clip the image.
 	*/
-	_h: 0,
+	h: 0,
 	/**@
 	* #.z
 	* The `z` index on the stage. When modified, will automatically be redrawn.
@@ -54,19 +54,19 @@ Crafty.c("2D", {
 	* A global Z index is produced based on its `z` value as well as the GID (which entity was created first).
 	* Therefore entities will naturally maintain order depending on when it was created if same z value.
 	*/
-	_z: 0,
+	z: 0,
 	/**@
 	* #.rotation
 	* Set the rotation of your entity. Rotation takes degrees in a clockwise direction.
 	* It is important to note there is no limit on the rotation value. Setting a rotation 
 	* mod 360 will give the same rotation without reaching huge numbers.
 	*/
-	_rotation: 0,
+	rotation: 0,
 	/**@
 	* #.alpha
 	* Transparency of an entity. Must be a decimal value between 0.0 being fully transparent to 1.0 being fully opaque.
 	*/
-	_alpha: 1.0,
+	alpha: 1.0,
 	/**@
 	* #.visible
 	* If the entity is visible or not. Accepts a true or false value.
@@ -74,137 +74,38 @@ Crafty.c("2D", {
 	*
 	* The entity will still exist and can be collided with but just won't be drawn.
 	*/
-	_visible: true,
+	visible: true,
+	//TODO: COMMENT!
+	flipX: false,
+	
+	flipY: false,
+	
 	_global: null,
 	
 	_origin: null,
 	_mbr: null,
 	_entry: null,
 	_children: null,
-	_changed: false,
+	_changed: null,
 	
 	init: function() {
 		this._global = this[0];
 		this._origin = {x: 0, y: 0};
 		this._children = [];
 		
-		if(Crafty.support.setter) {
-			//create getters and setters on x,y,w,h,z
-			this.__defineSetter__('x', function(v) { this._attr('_x',v); });
-			this.__defineSetter__('y', function(v) { this._attr('_y',v); });
-			this.__defineSetter__('w', function(v) { this._attr('_w',v); });
-			this.__defineSetter__('h', function(v) { this._attr('_h',v); });
-			this.__defineSetter__('z', function(v) { this._attr('_z',v); });
-			this.__defineSetter__('rotation', function(v) { this._attr('_rotation', v); });
-			this.__defineSetter__('alpha', function(v) { this._attr('_alpha',v); });
-			this.__defineSetter__('visible', function(v) { this._attr('_visible',v); });
-			
-			this.__defineGetter__('x', function() { return this._x; });
-			this.__defineGetter__('y', function() { return this._y; });
-			this.__defineGetter__('w', function() { return this._w; });
-			this.__defineGetter__('h', function() { return this._h; });
-			this.__defineGetter__('z', function() { return this._z; });
-			this.__defineGetter__('rotation', function() { return this._rotation; });
-			this.__defineGetter__('alpha', function() { return this._alpha; });
-			this.__defineGetter__('visible', function() { return this._visible; });
-			
-		//IE9 supports Object.defineProperty
-		} else if(Crafty.support.defineProperty) {
-			
-			Object.defineProperty(this, 'x', { set: function(v) { this._attr('_x',v); }, get: function() { return this._x; } });
-			Object.defineProperty(this, 'y', { set: function(v) { this._attr('_y',v); }, get: function() { return this._y; } });
-			Object.defineProperty(this, 'w', { set: function(v) { this._attr('_w',v); }, get: function() { return this._w; } });
-			Object.defineProperty(this, 'h', { set: function(v) { this._attr('_h',v); }, get: function() { return this._h; } });
-			Object.defineProperty(this, 'z', { set: function(v) { this._attr('_z',v); }, get: function() { return this._z; } });
-			
-			Object.defineProperty(this, 'rotation', { 
-				set: function(v) { this._attr('_rotation',v); }, get: function() { return this._rotation; } 
-			});
-			
-			Object.defineProperty(this, 'alpha', { 
-				set: function(v) { this._attr('_alpha',v); }, get: function() { return this._alpha; } 
-			});
-			
-			Object.defineProperty(this, 'visible', { 
-				set: function(v) { this._attr('_visible',v); }, get: function() { return this._visible; } 
-			});
-			
-		} else {
-			/*
-			if no setters, check on every frame for a difference 
-			between this._(x|y|w|h|z...) and this.(x|y|w|h|z)
-			*/
-			
-			//set the public properties to the current private properties
-			this.x = this._x;
-			this.y = this._y;
-			this.w = this._w;
-			this.h = this._h;
-			this.z = this._z;
-			this.rotation = this._rotation;
-			this.alpha = this._alpha;
-			this.visible = this._visible;
-			
-			//on every frame check for a difference in any property
-			this.bind("EnterFrame", function() {
-				//if there are differences between the public and private properties
-				if(this.x !== this._x || this.y !== this._y ||
-				   this.w !== this._w || this.h !== this._h ||
-				   this.z !== this._z || this.rotation !== this._rotation ||
-				   this.alpha !== this._alpha || this.visible !== this._visible) {
-					
-					//save the old positions
-					var old = this.mbr() || this.pos();
-					
-					//if rotation has changed, use the private rotate method
-					if(this.rotation !== this._rotation) {
-						this._rotate(this.rotation);
-					} else {
-						//update the MBR
-						var mbr = this._mbr, moved = false;
-						if(mbr) { //check each value to see which has changed
-							if(this.x !== this._x) { mbr._x -= this.x - this._x; moved = true; }
-							else if(this.y !== this._y) { mbr._y -= this.y - this._y; moved = true; }
-							else if(this.w !== this._w) { mbr._w -= this.w - this._w; moved = true; }
-							else if(this.h !== this._h) { mbr._h -= this.h - this._h; moved = true; }
-							else if(this.z !== this._z) { mbr._z -= this.z - this._z; moved = true; }
-						}
-						
-						//if the moved flag is true, trigger a move
-						if(moved) this.trigger("Move", old);
-					}
-					
-					//set the public properties to the private properties
-					this._x = this.x;
-					this._y = this.y;
-					this._w = this.w;
-					this._h = this.h;
-					this._z = this.z;
-					this._rotation = this.rotation;
-					this._alpha = this.alpha;
-					this._visible = this.visible;
-					
-					//trigger the changes
-					this.trigger("Change", old);
-				}
-			});
-		}
+		//store the old position
+		this.changed = {
+			x: 0,
+			y: 0,
+			z: 0,
+			rotation: 0,
+			alpha: 1.0,
+			flipX: false,
+			flipY: false
+		};
 		
 		//insert self into the HashMap
 		this._entry = Crafty.map.insert(this);
-		
-		//when object changes, update HashMap
-		this.bind("Move", function(e) {
-			var area = this._mbr || this;
-			this._entry.update(area);
-			this._cascade(e);
-		});
-		
-		this.bind("Rotate", function(e) {
-			var old = this._mbr || this;
-			this._entry.update(old);
-			this._cascade(e);
-		});
 		
 		//when object is removed, remove from HashMap
 		this.bind("Remove", function() {
@@ -214,11 +115,31 @@ Crafty.c("2D", {
 		});
 	},
 	
+	reset: function() {
+		var old = this._changed;
+		
+		old.x = this.x;
+		old.y = this.y;
+		old.w = this.w;
+		old.h = this.h;
+		old.z = this.z;
+		old.rotation = this.rotation;
+		old.alpha = this.alpha;
+		old.flipX = this.flipX;
+		old.flipY = this.flipY;
+	}
+	
+	moved: function() {
+		var pos = this._mbr || this;
+		this._entry.update(pos);
+		this._cascade(e);
+	},
+	
 	/**
 	* Calculates the MBR when rotated with an origin point
 	*/
-	_rotate: function(v) {
-		var theta = -1 * (v % 360), //angle always between 0 and 359
+	rotated: function() {
+		var theta = -1 * (this.rotation % 360), //angle always between 0 and 359
 			rad = theta * DEG_TO_RAD,
 			ct = Math.cos(rad), //cache the sin and cosine of theta
 			st = Math.sin(rad),
@@ -231,33 +152,23 @@ Crafty.c("2D", {
 			if(!this._rotation % 360) return;
 		}
 		
-		var x0 = o.x + (this._x - o.x) * ct + (this._y - o.y) * st,
-			y0 = o.y - (this._x - o.x) * st + (this._y - o.y) * ct,
-			x1 = o.x + (this._x + this._w - o.x) * ct + (this._y - o.y) * st,
-			y1 = o.y - (this._x + this._w - o.x) * st + (this._y - o.y) * ct,
-			x2 = o.x + (this._x + this._w - o.x) * ct + (this._y + this._h - o.y) * st,
-			y2 = o.y - (this._x + this._w - o.x) * st + (this._y + this._h - o.y) * ct,
-			x3 = o.x + (this._x - o.x) * ct + (this._y + this._h - o.y) * st,
-			y3 = o.y - (this._x - o.x) * st + (this._y + this._h - o.y) * ct,
-			minx = Math.floor(Math.min(x0,x1,x2,x3)),
-			miny = Math.floor(Math.min(y0,y1,y2,y3)),
-			maxx = Math.ceil(Math.max(x0,x1,x2,x3)),
-			maxy = Math.ceil(Math.max(y0,y1,y2,y3));
+		//rotate each corner to find the min and max
+		var x0 = o.x + (this.x - o.x) * ct + (this.y - o.y) * st,
+			y0 = o.y - (this.x - o.x) * st + (this.y - o.y) * ct,
+			x1 = o.x + (this.x + this.w - o.x) * ct + (this.y - o.y) * st,
+			y1 = o.y - (this.x + this.w - o.x) * st + (this.y - o.y) * ct,
+			x2 = o.x + (this.x + this.w - o.x) * ct + (this.y + this.h - o.y) * st,
+			y2 = o.y - (this.x + this.w - o.x) * st + (this.y + this.h - o.y) * ct,
+			x3 = o.x + (this.x - o.x) * ct + (this.y + this.h - o.y) * st,
+			y3 = o.y - (this.x - o.x) * st + (this.y + this.h - o.y) * ct,
 			
-		this._mbr = {_x: minx, _y: miny, _w: maxx - minx, _h: maxy - miny};
-		
-		//trigger rotation event
-		var difference = this._rotation - v,
-			drad = difference * DEG_TO_RAD;
+			minX = Math.floor(Math.min(x0, x1, x2, x3)),
+			minY = Math.floor(Math.min(y0, y1, y2, y3)),
+			maxX = Math.ceil(Math.max(x0, x1, x2, x3)),
+			maxY = Math.ceil(Math.max(y0, y1, y2, y3));
 			
-		this.trigger("Rotate", {
-			cos: Math.cos(drad), 
-			sin: Math.sin(drad), 
-			deg: difference, 
-			rad: drad, 
-			o: {x: o.x, y: o.y},
-			matrix: {M11: ct, M12: st, M21: -st, M22: ct}
-		});
+		this._mbr = {x: minX, y: minY, w: maxX - minX, h: maxY - minY};
+		this._matrix = {M11: ct, M12: st, M21: -st, M22: ct};
 	},
 	
 	/**@
@@ -487,8 +398,9 @@ Crafty.c("2D", {
 			this._children = [];
 			return this;
 		}
+		
 		//if obj passed, find the handler and unbind
-    for (var i = 0; i < this._children.length; i++) {
+		for (var i = 0; i < this._children.length; i++) {
 			if (this._children[i] == obj) {
 				this._children.splice(i, 1);
 			}
@@ -537,57 +449,6 @@ Crafty.c("2D", {
 		this._origin.y = y;
 		
 		return this;
-	},
-	
-	flip: function(dir) {
-		dir = dir || "X";
-		this["_flip"+dir] = true;
-		this.trigger("Change");
-	},
-	
-	/**
-	* Method for rotation rather than through a setter
-	*/
-	rotate: function(e) {
-		//assume event data origin
-		this._origin.x = e.o.x - this._x;
-		this._origin.y = e.o.y - this._y;
-		
-		//modify through the setter method
-		this._attr('_rotation', e.theta);
-	},
-	
-	/**
-	* Setter method for all 2D properties including 
-	* x, y, w, h, alpha, rotation and visible.
-	*/
-	_attr: function(name,value) {	
-		//keep a reference of the old positions
-		var pos = this.pos(),
-			old = this.mbr() || pos;
-		
-		//if rotation, use the rotate method
-		if(name === '_rotation') {
-			this._rotate(value);
-		//set the global Z and trigger reorder just incase
-		} else if(name === '_z') {
-			this._global = parseInt(value + Crafty.zeroFill(this[0], 5), 10); //magic number 10e5 is the max num of entities
-			this.trigger("reorder");
-		//if the rect bounds change, update the MBR and trigger move
-		} else if(name == '_x' || name === '_y' || name === '_w' || name === '_h') {
-			var mbr = this._mbr;
-			if(mbr) {
-				mbr[name] -= this[name] - value;
-			}
-			this[name] = value;
-			this.trigger("Move", old);
-		}
-		
-		//everything will assume the value
-		this[name] = value;
-		
-		//trigger a change
-		this.trigger("Change", old);
 	}
 });
 
