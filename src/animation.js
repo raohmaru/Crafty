@@ -199,13 +199,14 @@ Crafty.c("Tween", {
             
             //store the old properties
             for(prop in props) {
-                old[prop] = this['_'+prop];
+                old[prop] = this[prop];
                 step[prop] = (props[prop] - old[prop]) / duration;
             }
             
             this.bind("EnterFrame", function d(e) {
                 if(e.frame >= endFrame) {
                     this.unbind("EnterFrame", d);
+					this.trigger("TweenEnd");
                     return;
                 }
                 for(var prop in props) {

@@ -66,7 +66,7 @@ Crafty.c("Animation", {
 			}
 			i++;
 			
-			if(i > l) {
+			if(i >= l) {
 				this.trigger("AnimationEnd");
 				this.unbind("EnterFrame", e);
 			}

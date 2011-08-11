@@ -114,8 +114,8 @@ HashMap.key = function(obj) {
 	
 	var x1 = ~~(obj.x / cellsize),
 		y1 = ~~(obj.y / cellsize),
-		x2 = ~~((obj.w + obj.x) / cellsize),
-		y2 = ~~((obj.h + obj.y) / cellsize);
+		x2 = Math.ceil((obj.w + obj.x) / cellsize),
+		y2 = Math.ceil((obj.h + obj.y) / cellsize);
 		
 	return {x1: x1, y1: y1, x2: x2, y2: y2};
 };

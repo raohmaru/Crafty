@@ -453,7 +453,7 @@ Crafty.fn = Crafty.prototype = {
 			if(handlers[event] && handlers[event][this[0]]) {
 				var fns = handlers[event][this[0]], i = 0, l = fns.length;
 				for(;i<l;i++) {
-					fns[i].call(this, data);
+					if(fns[i]) fns[i].call(this, data);
 				}
 			}
 			return this;
@@ -464,7 +464,7 @@ Crafty.fn = Crafty.prototype = {
 			if(handlers[event] && handlers[event][this[0]]) {
 				var fns = handlers[event][this[0]], i = 0, l = fns.length;
 				for(;i<l;i++) {
-					fns[i].call(this, data);
+					if(fns[i]) fns[i].call(this, data);
 				}
 			}
 		});
@@ -580,8 +580,9 @@ Crafty.fn.init.prototype = Crafty.fn;
 * Extension method to extend the namespace and
 * selector instances
 */
-Crafty.extend = Crafty.fn.extend = function(obj) {
-	var target = this, key;
+Crafty.extend = Crafty.fn.extend = function(obj, target) {
+	var key;
+	target = target || this;
 	
 	//don't bother with nulls
 	if(!obj) return target;
@@ -677,23 +678,22 @@ Crafty.extend({
 		fps: 0,
 		
 		init: function() {
-			var onFrame = window.requestAnimationFrame ||
-					window.webkitRequestAnimationFrame ||
-					window.mozRequestAnimationFrame ||
-					window.oRequestAnimationFrame ||
-					window.msRequestAnimationFrame ||
-					null;
+			// shim layer with setTimeout fallback
+			window.requestAnimFrame = (function() {
+			  return  window.requestAnimationFrame       || 
+					  window.webkitRequestAnimationFrame || 
+					  window.mozRequestAnimationFrame    || 
+					  window.oRequestAnimationFrame      || 
+					  window.msRequestAnimationFrame     || 
+					  function(callback){
+						window.setTimeout(callback, 1000 / 60);
+					  };
+			})();
 			
-			if(onFrame) {
-				tick = function() { 
-					Crafty.timer.step();
-					tickID = onFrame(tick); 
-				}
-				
-				tick();
-			} else {
-				tick = setInterval(Crafty.timer.step, 1000 / FPS);
-			}
+			(function animloop(){
+			  Crafty.timer.step();
+			  requestAnimFrame(animloop);
+			})();
 		},
 		
 		stop: function() {
@@ -846,6 +846,12 @@ Crafty.extend({
 		//loop over every object bound
 		for(h in hdl) {
 			if(!hdl.hasOwnProperty(h)) continue;
+			
+			//if no callback passed
+			if(!callback) {
+				handlers[event] = null;
+				handlers[event] = {};
+			}
 			
 			//if passed the ID
 			if(typeof callback === "number") {

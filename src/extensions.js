@@ -34,8 +34,8 @@ Crafty.extend({
 	* Cast anything to a number. If it can't it will return 0 (none of this NaN rubbish).
 	*/
 	n: function(n) {
-		return IsNaN(+n) ? 0 : +n;
-	}
+		return isNaN(+n) ? 0 : +n;
+	},
 	
 	/**@
 	* #Crafty.sprite
@@ -139,21 +139,26 @@ Crafty.extend({
                     var draw = function(e) {
     					var co = this.__coord,
 							old = this._changed,
-							context = e.ctx;
+							pos = e.pos || this,
+							context = Crafty.canvas.context;
 							
 						if(e.type === "canvas") {
 							//draw the image on the canvas element
-							context.drawImage(
-								this.img, //image element
+							try {
+							context.drawImage(this.img, //image element
 								co[0], //x position on sprite
 								co[1], //y position on sprite
 								co[2], //width on sprite
 								co[3], //height on sprite
-								this.x, //x position on canvas
-								this.y, //y position on canvas
+								pos.x, //x position on canvas
+								pos.y, //y position on canvas
 								this.w, //width on canvas
 								this.h //height on canvas
 							);
+							
+							} catch(err) {
+								console.log(err, co, pos, this);
+							}
 						} else if(e.type === "DOM") {
 							//check if the sprite changed
 							if(old.cox !== co[0] || old.coy !== co[1]) {
@@ -278,7 +283,7 @@ Crafty.extend({
 		* positions are not exactly where they are on screen. To get the exact position, 
 		* simply add `Crafty.viewport.x` onto the entities `x` position.
 		*/
-		_x: 0,
+		x: 0,
 		/**@
 		* #Crafty.viewport.y
 		* @comp Crafty.viewport
@@ -289,31 +294,30 @@ Crafty.extend({
 		* positions are not exactly where they are on screen. To get the exact position, 
 		* simply add `Crafty.viewport.y` onto the entities `y` position.
 		*/
-		_y: 0,
+		y: 0,
 		
 		scroll: function(axis, v) {
 			v = Math.floor(v);
 			var change = (v - this[axis]), //change in direction
 				context = Crafty.canvas.context,
-				style = Crafty.stage.inner.style,
-				canvas;
+				style = Crafty.stage.inner.style;
 			
 			//update viewport and DOM scroll
 			this[axis] = v;
-			if(axis == '_x') {
+			if(axis == 'x') {
 				if(context) context.translate(change, 0);
 			} else {
 				if(context) context.translate(0, change);
 			}
-			if(context) Crafty.DrawManager.drawAll();
-			style[axis == '_x' ? "left" : "top"] = ~~v + "px";
+			
+			style[axis === 'x' ? "left" : "top"] = ~~v + "px";
 		},
 		
 		rect: function() {
-			return {_x: -this._x, _y: -this._y, _w: this.width, _h: this.height};
+			return {x: -this.x, y: -this.y, w: this.width, h: this.height};
 		},
 		
-		init: function(w,h) {
+		init: function(w, h) {
 			Crafty.DOM.window.init();
 			
 			//fullscreen if mobile or not specified
@@ -354,24 +358,12 @@ Crafty.extend({
 					if(Crafty._canvas) {
 						Crafty._canvas.width = w + "px";
 						Crafty._canvas.height = h + "px";
-						Crafty.DrawManager.drawAll();
 					}
 				}
 				
 				offset = Crafty.DOM.inner(Crafty.stage.elem);
 				Crafty.stage.x = offset.x;
 				Crafty.stage.y = offset.y;
-			});
-			
-			Crafty.addEvent(this, window, "blur", function() {
-				if(Crafty.settings.get("autoPause")) {
-					Crafty.pause();
-				}
-			});
-			Crafty.addEvent(this, window, "focus", function() {
-				if(Crafty._paused) {
-					Crafty.pause();
-				}
 			});
 			
 			//make the stage unselectable
@@ -386,9 +378,6 @@ Crafty.extend({
 			});
 			Crafty.settings.modify("stageContextMenu", false);
 			
-			Crafty.settings.register("autoPause", function(){});
-			Crafty.settings.modify("autoPause", false);
-
 			//add to the body and give it an ID if not exists
 			if(!crstage) {
 				document.body.appendChild(Crafty.stage.elem);
@@ -417,7 +406,7 @@ Crafty.extend({
 				
 				//stop mobile zooming and scrolling
 				meta.setAttribute("name", "viewport");
-				meta.setAttribute("content", "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no");
+				meta.setAttribute("content", "width=device-width, initial-scale=0.5, maximum-scale=0.5, user-scalable=no");
 				head.appendChild(meta);
 				
 				//hide the address bar
@@ -434,29 +423,15 @@ Crafty.extend({
 				Crafty.stage.x = 0;
 				Crafty.stage.y = 0;
 				
+				//scale up
+				elem[Crafty.support.prefix + "Transform"] = "scale3d(2, 2, 0) translate3d(200px, 110px, 0)";
 			} else {
 				elem.position = "relative";
 				//find out the offset position of the stage
+				
 				offset = Crafty.DOM.inner(Crafty.stage.elem);
 				Crafty.stage.x = offset.x;
 				Crafty.stage.y = offset.y;
-			}
-			
-			if(Crafty.support.setter) {
-				//define getters and setters to scroll the viewport
-				this.__defineSetter__('x', function(v) { this.scroll('_x', v); });
-				this.__defineSetter__('y', function(v) { this.scroll('_y', v); });
-				this.__defineGetter__('x', function() { return this._x; });
-				this.__defineGetter__('y', function() { return this._y; });
-			//IE9
-			} else if(Crafty.support.defineProperty) {
-				Object.defineProperty(this, 'x', {set: function(v) { this.scroll('_x', v); }, get: function() { return this._x; }});
-				Object.defineProperty(this, 'y', {set: function(v) { this.scroll('_y', v); }, get: function() { return this._y; }});
-			} else {
-				//create empty entity waiting for enterframe
-				this.x = this._x;
-				this.y = this._y;
-				Crafty.e("viewport"); 
 			}
 		}
 	},
@@ -660,7 +635,9 @@ Crafty.extend({
 				/(o)pera(?:.*version)?[ \/]([\w.]+)/.exec(ua) || 
 				/(ms)ie ([\w.]+)/.exec(ua) || 
 				/(moz)illa(?:.*? rv:([\w.]+))?/.exec(ua) || [],
-		mobile = /iPad|iPod|iPhone|Android|webOS/i.exec(ua);
+		mobile = /iPad|iPod|iPhone|Android|webOS/i.exec(ua),
+		testDiv,
+		testCanvas;
 	
 	if(mobile) Crafty.mobile = mobile[0];
 	
@@ -677,10 +654,7 @@ Crafty.extend({
 	* Is `Object.defineProperty` supported?
 	*/
 	support.defineProperty = (function() {
-		if(!'defineProperty' in Object) return false;
-		try { Object.defineProperty({},'x',{}); }
-		catch(e) { return false };
-		return true;
+		return ('defineProperty' in Object);
 	})();
 	
 	/**@
@@ -722,24 +696,12 @@ Crafty.extend({
 	* @comp Crafty.support
 	* Is the `canvas` element supported?
 	*/
-	support.canvas = ('getContext' in document.createElement("canvas"));
+	testCanvas = document.createElement("canvas")
+	support.canvas = ('getContext' in testCanvas);
 	
-	support.css3dtransform = (typeof document.createElement("div").style[support.prefix + "Perspective"] !== "undefined");
+	testDiv = document.createElement("div");
+	support.css3dtransform = (typeof testDiv.style[support.prefix + "Perspective"] !== "undefined");
+	
+	//clear the test elements
+	testCanvas = testDiv = null;
 })();
-
-/**
-* Entity fixes the lack of setter support
-*/
-Crafty.c("viewport", {
-	init: function() {
-		this.bind("EnterFrame", function() {
-			if(Crafty.viewport._x !== Crafty.viewport.x) {
-				Crafty.viewport.scroll('_x', Crafty.viewport.x);
-			}
-			
-			if(Crafty.viewport._y !== Crafty.viewport.y) {
-				Crafty.viewport.scroll('_y', Crafty.viewport.y);
-			}
-		});
-	}
-});

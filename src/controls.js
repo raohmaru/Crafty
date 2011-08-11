@@ -5,7 +5,7 @@ Crafty.extend({
 	keydown: {},
 		
 	mouseDispatch: function(e) {
-		if(!Crafty.mouseObjs) return;
+		if(!Crafty.mouseObjs) return true;
 		
 		if(e.type === "touchstart") e.type = "mousedown";
 		else if(e.type === "touchmove") e.type = "mousemove";
@@ -22,8 +22,12 @@ Crafty.extend({
 		e.realX = x = pos.x;
 		e.realY = y = pos.y;
 		
+		if (!e.which && event.button !== undefined) {
+			e.which = (event.button & 1 ? 1 : (event.button & 2 ? 3 : (event.button & 4 ? 2 : 0)));
+		}
+		
 		//search for all mouse entities
-		q = Crafty.map.search({_x: x, _y:y, _w:1, _h:1}, false);
+		q = Crafty.map.search({x: x, y:y, w:1, h:1}, false);
 		
 		for(l=q.length;i<l;++i) {
 			//check if has mouse component
@@ -42,12 +46,12 @@ Crafty.extend({
 				}
 			} else if(current.isAt(x, y)) flag = true;
 			
-			if(flag && (current._z >= maxz || maxz === -1)) {
+			if(flag && (current.z >= maxz || maxz === -1)) {
 				//if the Z is the same, select the closest GUID
-				if(current._z === maxz && current[0] < closest[0]) {
+				if(current.z === maxz && current[0] < closest[0]) {
 					continue;
 				}
-				maxz = current._z;
+				maxz = current.z;
 				closest = current;
 			}
 		}
@@ -156,7 +160,7 @@ Crafty.c("Mouse", {
 			poly = new Crafty.polygon(args);
 		}
 		
-		poly.shift(this._x, this._y);
+		poly.shift(this.x, this.y);
 		this.map = poly;
 		
 		this.attach(this.map);
@@ -180,6 +184,15 @@ Crafty.c("Draggable", {
 	
 	init: function() {
 		this.requires("Mouse");
+		
+		//stop the firefox image drag
+		if(this.has("DOM")) {
+			Crafty.addEvent(this, this._element, "dragstart", function(e) {
+				e.preventDefault();
+				return false;
+			});
+		}
+		
 		this._ondrag = function(e) {
 			var pos = Crafty.DOM.translate(e.clientX, e.clientY);
 			this.x = pos.x - this._startX;
@@ -192,13 +205,16 @@ Crafty.c("Draggable", {
 			if(e.button !== 0) return;
 			
 			//start drag
-			this._startX = e.realX - this._x;
-			this._startY = e.realY - this._y;
+			this._startX = e.realX - this.x;
+			this._startY = e.realY - this.y;
 			this._dragging = true;
 			
 			Crafty.addEvent(this, Crafty.stage.elem, "mousemove", this._ondrag);
 			Crafty.addEvent(this, Crafty.stage.elem, "mouseup", this._onup);
+			
+			e.preventDefault();
 			this.trigger("StartDrag", e);
+			return false;
 		};
 		
 		this._onup = function upper(e) {
@@ -464,7 +480,7 @@ Crafty.c("Twoway", {
 				this.y -= jump;
 				this._falling = true;
 			}
-		}).bind("keydown", function() {
+		}).bind("KeyDown", function() {
 			if(this.isDown("UP_ARROW") || this.isDown("W")) this._up = true;
 		});
 		

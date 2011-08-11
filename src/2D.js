@@ -94,9 +94,11 @@ Crafty.c("2D", {
 		this._children = [];
 		
 		//store the old position
-		this.changed = {
+		this._changed = {
 			x: 0,
 			y: 0,
+			w: 0,
+			h: 0,
 			z: 0,
 			rotation: 0,
 			alpha: 1.0,
@@ -113,6 +115,7 @@ Crafty.c("2D", {
 			
 			this.detach();
 		});
+		
 	},
 	
 	reset: function() {
@@ -127,12 +130,77 @@ Crafty.c("2D", {
 		old.alpha = this.alpha;
 		old.flipX = this.flipX;
 		old.flipY = this.flipY;
-	}
+	},
 	
 	moved: function() {
 		var pos = this._mbr || this;
 		this._entry.update(pos);
-		this._cascade(e);
+		this._cascade();
+		this.trigger("Change");
+	},
+	
+	/**
+	* Move or rotate all the children for this entity
+	*/
+	_cascade: function(rotated) {
+		var i = 0, 
+			children = this._children, 
+			l = children.length, obj,
+			old = this._changed;
+			
+		//use MBR or current
+		var dx = this.x - old.x,
+			dy = this.y - old.y;
+
+		for(;i<l;++i) {
+			obj = children[i];
+			obj.shift(dx,dy);
+		}
+	},
+	
+	/**
+	* #.attach
+	* @comp 2D
+	* @sign public this .attach(Entity obj[, .., Entity objN])
+	* @param obj - Entity(s) to attach
+	* Attaches an entities position and rotation to current entity. When the current entity moves, 
+	* the attached entity will move by the same amount.
+	*
+	* As many objects as wanted can be attached and a hierarchy of objects is possible by attaching.
+	*/
+	attach: function() {
+		var i = 0, arg = arguments, l = arguments.length, obj;
+		for(;i<l;++i) {
+			obj = arg[i];
+			this._children.push(obj);
+		}
+
+		return this;
+	},
+
+	/**@
+	* #.detach
+	* @comp 2D
+	* @sign public this .detach([Entity obj])
+	* @param obj - The entity to detach. Left blank will remove all attached entities
+	* Stop an entity from following the current entity. Passing no arguments will stop
+	* every entity attached.
+	*/
+	detach: function(obj) {
+		//if nothing passed, remove all attached objects
+		if(!obj) {
+			this._children = [];
+			return this;
+		}
+		
+		//if obj passed, find the handler and unbind
+		for (var i = 0; i < this._children.length; i++) {
+			if (this._children[i] == obj) {
+				this._children.splice(i, 1);
+			}
+		}
+
+		return this;
 	},
 	
 	/**
@@ -143,13 +211,13 @@ Crafty.c("2D", {
 			rad = theta * DEG_TO_RAD,
 			ct = Math.cos(rad), //cache the sin and cosine of theta
 			st = Math.sin(rad),
-			o = {x: this._origin.x + this._x, 
-				 y: this._origin.y + this._y}; 
+			o = {x: this._origin.x + this.x, 
+				 y: this._origin.y + this.y}; 
 		
 		//if the angle is 0 and is currently 0, skip
 		if(!theta) {
 			this._mbr = null;
-			if(!this._rotation % 360) return;
+			if(!this.rotation % 360) return;
 		}
 		
 		//rotate each corner to find the min and max
@@ -168,7 +236,11 @@ Crafty.c("2D", {
 			maxY = Math.ceil(Math.max(y0, y1, y2, y3));
 			
 		this._mbr = {x: minX, y: minY, w: maxX - minX, h: maxY - minY};
+		
 		this._matrix = {M11: ct, M12: st, M21: -st, M22: ct};
+		this._entry.update(this._mbr);
+		
+		this.trigger("Change");
 	},
 	
 	/**@
@@ -178,7 +250,7 @@ Crafty.c("2D", {
 	* Calculates the area of the entity
 	*/
 	area: function() {
-		return this._w * this._h;
+		return this.w * this.h;
 	},
 	
 	/**@
@@ -201,8 +273,8 @@ Crafty.c("2D", {
 			rect = {x: x, y: y, w: w, h: h};
 		}
 		
-		return obj._x < rect.x + rect.w && obj._x + obj._w > rect.x &&
-			   obj._y < rect.y + rect.h && obj._h + obj._y > rect.y;
+		return obj.x < rect.x + rect.w && obj.x + obj.w > rect.x &&
+			   obj.y < rect.y + rect.h && obj.h + obj.y > rect.y;
 	},
 	
 	/**@
@@ -265,10 +337,10 @@ Crafty.c("2D", {
 	*/
 	pos: function() {
 		return {
-			_x: (this._x),
-			_y: (this._y),
-			_w: (this._w),
-			_h: (this._h)
+			x: (this.x),
+			y: (this.y),
+			w: (this.w),
+			h: (this.h)
 		};
 	},
 	
@@ -279,10 +351,10 @@ Crafty.c("2D", {
 	mbr: function() {
 		if(!this._mbr) return this.pos();
 		return {
-			_x: (this._mbr._x),
-			_y: (this._mbr._y),
-			_w: (this._mbr._w),
-			_h: (this._mbr._h)
+			x: (this._mbr.x),
+			y: (this._mbr.y),
+			w: (this._mbr.w),
+			h: (this._mbr.h)
 		};
 	},
 	
@@ -337,78 +409,6 @@ Crafty.c("2D", {
 		return this;
 	},
 	
-	/**
-	* Move or rotate all the children for this entity
-	*/
-	_cascade: function(e) {
-		if(!e) return; //no change in position
-		var i = 0, children = this._children, l = children.length, obj;
-		//rotation
-		if(e.cos) {
-			for(;i<l;++i) {
-				obj = children[i];
-				if('rotate' in obj) obj.rotate(e);
-			}
-		} else {
-			//use MBR or current
-			var rect = this._mbr || this,
-				dx = rect._x - e._x,
-				dy = rect._y - e._y,
-				dw = rect._w - e._w,
-				dh = rect._h - e._h;
-			
-			for(;i<l;++i) {
-				obj = children[i];
-				obj.shift(dx,dy,dw,dh);
-			}
-		}
-	},
-	
-	/**
-	* #.attach
-	* @comp 2D
-	* @sign public this .attach(Entity obj[, .., Entity objN])
-	* @param obj - Entity(s) to attach
-	* Attaches an entities position and rotation to current entity. When the current entity moves, 
-	* the attached entity will move by the same amount.
-	*
-	* As many objects as wanted can be attached and a hierarchy of objects is possible by attaching.
-	*/
-	attach: function() {
-		var i = 0, arg = arguments, l = arguments.length, obj;
-		for(;i<l;++i) {
-			obj = arg[i];
-			this._children.push(obj);
-		}
-		
-		return this;
-	},
-	
-	/**@
-	* #.detach
-	* @comp 2D
-	* @sign public this .detach([Entity obj])
-	* @param obj - The entity to detach. Left blank will remove all attached entities
-	* Stop an entity from following the current entity. Passing no arguments will stop
-	* every entity attached.
-	*/
-	detach: function(obj) {
-		//if nothing passed, remove all attached objects
-		if(!obj) {
-			this._children = [];
-			return this;
-		}
-		
-		//if obj passed, find the handler and unbind
-		for (var i = 0; i < this._children.length; i++) {
-			if (this._children[i] == obj) {
-				this._children.splice(i, 1);
-			}
-		}
-		
-		return this;
-	},
-	
 	/**@
 	* #.origin
 	* @comp 2D
@@ -431,17 +431,17 @@ Crafty.c("2D", {
 		//text based origin
 		if(typeof x === "string") {
 			if(x === "centre" || x === "center" || x.indexOf(' ') === -1) {
-				x = this._w / 2;
-				y = this._h / 2;
+				x = this.w / 2;
+				y = this.h / 2;
 			} else {
 				var cmd = x.split(' ');
 				if(cmd[0] === "top") y = 0;
-				else if(cmd[0] === "bottom") y = this._h;
-				else if(cmd[0] === "middle" || cmd[1] === "center" || cmd[1] === "centre") y = this._h / 2;
+				else if(cmd[0] === "bottom") y = this.h;
+				else if(cmd[0] === "middle" || cmd[1] === "center" || cmd[1] === "centre") y = this.h / 2;
 				
-				if(cmd[1] === "center" || cmd[1] === "centre" || cmd[1] === "middle") x = this._w / 2;
+				if(cmd[1] === "center" || cmd[1] === "centre" || cmd[1] === "middle") x = this.w / 2;
 				else if(cmd[1] === "left") x = 0;
-				else if(cmd[1] === "right") x = this._w;
+				else if(cmd[1] === "right") x = this.w;
 			}
 		}
 		
@@ -493,13 +493,13 @@ Crafty.c("Gravity", {
 			q, i = 0, l;
 
 		//Increase by 1 to make sure map.search() finds the floor
-		pos._y++;
+		pos.y++;
 
 		//map.search wants _x and intersect wants x...
-		pos.x = pos._x;
-		pos.y = pos._y;
-		pos.w = pos._w;
-		pos.h = pos._h;
+		pos.x = pos.x;
+		pos.y = pos.y;
+		pos.w = pos.w;
+		pos.h = pos.h;
 
 		q = Crafty.map.search(pos);
 		l = q.length;
@@ -521,7 +521,7 @@ Crafty.c("Gravity", {
 	},
 
 	stopFalling: function(e) {
-		if(e) this.y = e._y - this._h ; //move object
+		if(e) this.y = e.y - this._h ; //move object
 
 		//this._gy = -1 * this._bounce;
 		this._falling = false;

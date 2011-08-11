@@ -39,7 +39,7 @@ Crafty.extend({
 				n = y * this._tile / 4,
 				n = n - z * (this._tile / 2);
 				
-			obj.attr({x: m  + Crafty.viewport._x, y: n  + Crafty.viewport._y}).z += z;
+			obj.attr({x: m  + Crafty.viewport.x, y: n  + Crafty.viewport.y}).z += z;
 			return this;
 		}
 	}

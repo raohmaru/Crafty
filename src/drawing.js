@@ -50,8 +50,8 @@ Crafty.c("Sprite", {
 		this.__coord[1] += y;
 		this.__coord[2] = w;
 		this.__coord[3] = h;
-		this._w = w;
-		this._h = h;
+		this.w = w;
+		this.h = h;
 		
 		return this;
 	}
@@ -69,11 +69,11 @@ Crafty.c("Color", {
 	init: function() {
 		this.bind("Draw", function(e) {
 			if(e.type === "DOM") {
-				e.style.background = this._color;
-				e.style.lineHeight = 0;
+				this._element.style.background = this._color;
+				this._element.style.lineHeight = 0;
 			} else if(e.type === "canvas") {
 				if(this._color) e.ctx.fillStyle = this._color;
-				e.ctx.fillRect(e.pos._x,e.pos._y,e.pos._w,e.pos._h);
+				e.ctx.fillRect(e.pos.x,e.pos.y,e.pos.w,e.pos.h);
 			}
 		});
 	},
@@ -111,7 +111,7 @@ Crafty.c("Tint", {
     		var context = e.ctx || Crafty.canvas.context;
 			
 			context.fillStyle = this._color || "rgb(0,0,0)";
-			context.fillRect(e.pos._x, e.pos._y, e.pos._w, e.pos._h);
+			context.fillRect(e.pos.x, e.pos.y, e.pos.w, e.pos.h);
 		};
         
 		this.bind("Draw", draw).bind("RemoveComponent", function(id) {
@@ -154,14 +154,12 @@ Crafty.c("Image", {
 				var context = e.ctx;
 				
 				context.fillStyle = this._pattern;
-				
-				//context.save();
-				//context.translate(e.pos._x, e.pos._y);
-				context.fillRect(this._x,this._y,this._w, this._h);
-				//context.restore();
+				context.fillRect(this.x, this.y, this.w, this.h);
 			} else if(e.type === "DOM") {
-				if(this.__image) 
-					e.style.background = "url(" + this.__image + ") "+this._repeat;
+				if(this._changed.bg !== this.__image) { 
+					this._element.style.background = "url(" + this.__image + ") "+this._repeat;
+					this._changed.bg = this.__image;
+				}
 			}
 		};
         
@@ -310,13 +308,15 @@ Crafty.draw = function() {
 		o = e._changed;
 		
 		//check for rotation changes
-		if(o.rotation != e.rotation) {
+		if(o.rotation !== e.rotation) {
 			e.rotated();
 		}
 		
 		//check for position changes
-		if(o.x !== e.x || o.y !== e.x || o.w !== e.x || o.h !== e.h) {
+		if(o.x !== e.x || o.y !== e.y || o.w !== e.w || o.h !== e.h || o.z !== e.z) {
 			e.moved();
+		} else if(o.alpha !== e.alpha) {
+			e.trigger("Change");
 		}
 		
 		e.draw();

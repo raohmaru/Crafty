@@ -34,11 +34,12 @@ Crafty.c("Collision", {
 		
 		//if no polygon presented, create a square
 		if(!poly) {
-			poly = new Crafty.polygon([0,0],[area._w,0],[area._w,area._h],[0,area._h]);
+			poly = new Crafty.polygon([0,0],[area.w,0],[area.w,area.h],[0,area.h]);
 		}
+		
 		this.map = poly;
 		this.attach(this.map);
-		this.map.shift(area._x, area._y);
+		this.map.shift(area.x, area.y);
 		
 		return this;
 	},
@@ -87,8 +88,8 @@ Crafty.c("Collision", {
 			
 			//check if not added to hash and that actually intersects
 			if(!dupes[id] && this[0] !== id && obj.__c[comp] && 
-							 oarea._x < area._x + area._w && oarea._x + oarea._w > area._x &&
-							 oarea._y < area._y + area._h && oarea._h + oarea._y > area._y) 
+							 oarea.x < area.x + area.w && oarea.x + oarea.w > area.x &&
+							 oarea.y < area.y + area.h && oarea.h + oarea.y > area.y) 
 			   dupes[id] = obj;
 		}
 		

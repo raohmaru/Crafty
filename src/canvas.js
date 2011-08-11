@@ -26,12 +26,16 @@ Crafty.c("Canvas", {
 		
 		var ctx = Crafty.canvas.context,
 			old = this._changed,
-			globalAlpha;
+			globalAlpha,
+			pos;
 			
 		if(old.rotation !== this.rotation) {
 			ctx.save();
+			
 			ctx.translate(this._origin.x + this.x, this._origin.y + this.y);
-			ctx.rotate((this._rotation % 360) * (Math.PI / 180));
+			ctx.rotate((this.rotation % 360) * (Math.PI / 180));
+			
+			pos = {x: -this._origin.x, y: -this._origin.y};
 		}
 		
 		//draw with alpha
@@ -40,9 +44,10 @@ Crafty.c("Canvas", {
 			ctx.globalAlpha = this.alpha;
 		}
 		
-		this.trigger("Draw", {type: "canvas"});
+		this.trigger("Draw", {type: "canvas", pos: pos});
 		
 		if(old.rotation !== this.rotation) {
+			
 			ctx.restore();
 		}
 		
@@ -96,14 +101,14 @@ Crafty.extend({
 				return;
 			}
 			
-			//create 3 empty canvas elements
+			//create canvas element
 			var c;
 			c = document.createElement("canvas");
 			c.width = Crafty.viewport.width;
 			c.height = Crafty.viewport.height;
-			c.style.position = 'absolute';
-			c.style.left = "0px";
-			c.style.top = "0px";
+			//c.style.position = 'absolute';
+			//c.style.left = "0px";
+			//c.style.top = "0px";
 			
 			Crafty.stage.elem.appendChild(c);
 			Crafty.canvas.context = c.getContext('2d');
