@@ -42,5 +42,7 @@
 		output += tr.responseText;
 	}
 	
+	output += "\n//@ sourceURL=crafty.js";
+	
 	eval(output);
 })(window);

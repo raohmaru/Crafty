@@ -98,7 +98,59 @@ HashMap.prototype = {
 				}
 			}
 		}
-	}
+	},
+	
+	boundaries: function() {
+		var k, ent,
+			hash = {
+				max: {x: -Infinity, y: -Infinity},
+				min: {x: Infinity, y: Infinity},
+			}
+			coords = {
+				max: {x: -Infinity, y: -Infinity},
+				min: {x: Infinity, y: Infinity},
+			};
+			
+		for (var h in this.map) {
+			if (!this.map[h].length) continue;
+			
+			var coord = h.split(SPACE);
+			if (coord[0] >= hash.max.x) { 
+				hash.max.x = coord[0];
+				for (k in this.map[h]) {
+					ent = this.map[h][k];
+					coords.max.x = Math.max(coords.max.x, ent.x + ent.w);
+				}
+			}
+			if (coord[0] <= hash.min.x) {
+				hash.min.x = coord[0];
+				for (k in this.map[h]) {
+					ent = this.map[h][k];
+					coords.min.x = Math.min(coords.min.x, ent.x);
+				}
+			}
+			if (coord[1] > hash.max.y) {
+				hash.max.y = coord[1];
+				for (k in this.map[h]) {
+					ent = this.map[h][k];
+					coords.max.y = Math.max(coords.max.y, ent.y + ent.h);
+				}
+			}
+			if (coord[1] < hash.min.y) {
+				hash.min.y = coord[1];
+				for (k in this.map[h]) {
+					ent = this.map[h][k];
+					coords.min.y = Math.min(coords.min.y, ent.y);
+				}
+			}
+		}
+		/*
+		max.x = (parseInt(max.x)+1)*cellsize;
+		max.y = (parseInt(max.y)+1)*cellsize;
+		min.x = (parseInt(min.x)-1)*cellsize;
+		min.y = (parseInt(min.y)-1)*cellsize;*/
+		return coords;
+	},
 };
 
 HashMap.key = function(obj) {

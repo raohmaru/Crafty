@@ -26,8 +26,8 @@ Crafty.c("Color", {
 	* @param color - Color of the rectangle
 	* Will create a rectangle of solid color for the entity.
 	*
-	* The argument must be a color readable depending on how it's drawn. Canvas requires 
-	* using `rgb(0 - 255, 0 - 255, 0 - 255)` or `rgba()` whereas DOM can be hex or any other css format.
+	* The argument must be a color readable depending on which browser you
+	* choose to support. IE 8 and below doesn't support the rgb() syntax.
 	*/
 	color: function(color) {
 		this._color = color;
@@ -196,16 +196,21 @@ Crafty.extend({
 	* entities with the `2D` component on the stage are destroyed.
 	*
 	* If you want some entities to persist over scenes (as in not be destroyed) 
-	* simply add the component `persist`.
+	* simply add the component `Persist`.
+	*
+	* When a scene is played a SceneChange event is triggered. The callback object has
+	* the properties oldScene and newScene, which are string names of the scenes.
 	*/
 	scene: function(name, fn) {
 		//play scene
 		if(arguments.length === 1) {
 			Crafty("2D").each(function() {
-				if(!this.has("persist")) this.destroy();
-			}); //clear screen of all 2D objects except persist
+				if(!this.has("Persist")) this.destroy();
+			});
 			this._scenes[name].call(this);
+			var oldScene = this._current;
 			this._current = name;
+			Crafty.trigger("SceneChange", {oldScene: oldScene, newScene: name });
 			return;
 		}
 		//add scene
