@@ -129,14 +129,14 @@ HashMap.prototype = {
 					coords.min.x = Math.min(coords.min.x, ent.x);
 				}
 			}
-			if (coord[1] > hash.max.y) {
+			if (coord[1] >= hash.max.y) {
 				hash.max.y = coord[1];
 				for (k in this.map[h]) {
 					ent = this.map[h][k];
 					coords.max.y = Math.max(coords.max.y, ent.y + ent.h);
 				}
 			}
-			if (coord[1] < hash.min.y) {
+			if (coord[1] <= hash.min.y) {
 				hash.min.y = coord[1];
 				for (k in this.map[h]) {
 					ent = this.map[h][k];
@@ -144,11 +144,13 @@ HashMap.prototype = {
 				}
 			}
 		}
-		/*
-		max.x = (parseInt(max.x)+1)*cellsize;
-		max.y = (parseInt(max.y)+1)*cellsize;
-		min.x = (parseInt(min.x)-1)*cellsize;
-		min.y = (parseInt(min.y)-1)*cellsize;*/
+			// At least the entire viewport should be inside boundary box 
+			//(else _clamp will fail when the entities does not take up entire viewport)
+		coords.min.x = Math.min(0, coords.min.x);
+		coords.min.y = Math.min(0, coords.min.y);
+		coords.max.x = Math.max(Crafty.viewport.width, coords.max.x);
+		coords.max.y = Math.max(Crafty.viewport.height, coords.max.y);
+		
 		return coords;
 	},
 };
@@ -157,10 +159,10 @@ HashMap.key = function(obj) {
 	if (obj.hasOwnProperty('mbr')) {
 		obj = obj.mbr();
 	}
-	var x1 = ~~(obj._x / cellsize),
-		y1 = ~~(obj._y / cellsize),
-		x2 = ~~((obj._w + obj._x) / cellsize),
-		y2 = ~~((obj._h + obj._y) / cellsize);
+	var x1 = Math.floor(obj._x / cellsize),
+		y1 = Math.floor(obj._y / cellsize),
+		x2 = Math.floor((obj._w + obj._x) / cellsize),
+		y2 = Math.floor((obj._h + obj._y) / cellsize);
 	return {x1: x1, y1: y1, x2: x2, y2: y2};
 };
 

@@ -72,22 +72,30 @@
 	* @comp Crafty.support
 	* Is the `canvas` element supported?
 	*/
-	support.canvas = ('getContext' in document.createElement("canvas"));
+	support.canvas = ('getContext' in document.createElement("canvas"));	
+	
+	/**@
+	* #Crafty.support.webgl
+	* @comp Crafty.support
+	* Is WebGL supported on the canvas element?
+	*/
+	if (support.canvas) {
+		var gl;
+		try {
+			gl = document.createElement("canvas").getContext("experimental-webgl");
+			gl.viewportWidth = canvas.width;
+			gl.viewportHeight = canvas.height;
+		}
+		catch (e) {}
+		support.webgl = !!gl;
+	}
+	else {
+		support.webgl = false;
+	}
 
 	support.css3dtransform = (typeof document.createElement("div").style[support.prefix + "Perspective"] !== "undefined");
 })();
 Crafty.extend({
-	/**@
-	* #Crafty.randRange
-	* @category Misc
-	* @sign public Number Crafty.randRange(Number from, Number to)
-	* @param from - Lower bound of the range
-	* @param to - Upper bound of the range
-	* Returns a random number between (and including) the two numbers.
-	*/
-	randRange: function(from, to) {
-		return Math.floor(Math.random() * (to - from + 1) + from);
-	},
 	
 	zeroFill: function(number, width) {
 		width -= number.toString().length;
@@ -123,15 +131,19 @@ Crafty.extend({
 	sprite: function(tile, tileh, url, map, paddingX, paddingY) {
 		var pos, temp, x, y, w, h, img;
 		
-		//if no tile value, default to 16
+		//if no tile value, default to 1
 		if(typeof tile === "string") {
-			map = url;
-			url = tileh;
+			paddingY = paddingX;
+			paddingX = map;
+			map = tileh;
+			url = tile;
 			tile = 1;
 			tileh = 1;
 		}
-		
+
 		if(typeof tileh == "string") {
+			paddingY = paddingX;
+			paddingX = map;
 			map = url;
 			url = tileh;
 			tileh = tile;
@@ -326,16 +338,17 @@ Crafty.extend({
 		 * @param axis - 'x' or 'y' 
 		 * @param v - The new absolute position on the axis
 		 * 
-		 * Will move the viewport to the position given on the axis given
-		 * @example Crafty.viewport.scroll('x', 500);
-		 * Will shift everything in the viewport 500 pixels to the left
+		 * Will move the viewport to the position given on the specified axis
+		 * @example Crafty.viewport.scroll('_x', 500);
+		 * Will move the camera 500 pixels right of its initial position, in effect
+		 * shifting everything in the viewport 500 pixels to the left.
 		 */
 		scroll: function(axis, v) {
 			var change = Math.floor(v - this[axis]), //change in direction
 				context = Crafty.canvas.context,
 				style = Crafty.stage.inner.style,
 				canvas;
-			
+
 			//update viewport and DOM scroll
 			this[axis] = v;
 			if(axis == '_x') {
@@ -357,7 +370,7 @@ Crafty.extend({
 		 * @sign public void Crafty.viewport.pan(String axis, Number v, Number time)
 		 * @param String axis - 'x' or 'y'. The axis to move the camera on
 		 * @param Number v - the distance to move the camera by
-		 * @param Number time - The number of frames to move the camera over
+		 * @param Number time - The duration in frames for the entire camera movement
 		 *
 		 * Pans the camera a given number of pixels over a given number of frames
 		 */
@@ -368,7 +381,7 @@ Crafty.extend({
 				var l = 0;
 				for (i in tweens) {
 					var prop = tweens[i];
-					if (prop.remTime >= 0) {
+					if (prop.remTime > 0) {
 						prop.current += prop.diff;
 						prop.remTime--;
 						Crafty.viewport[i] = Math.floor(prop.current);
@@ -417,41 +430,34 @@ Crafty.extend({
 		 * Crafty.viewport.follow(ent, 0, 0);
 		 */
 		follow: (function (){
-			var targ, offx, offy;
+			var oldTarget, offx, offy;
 			
 			function change() {
-				var x = targ.x, 
-					y = targ.y, 
-					mid_x = targ.w/2, 
-					mid_y = targ.h/2, 
-					cent_x = Crafty.viewport.width/2, 
-					cent_y = Crafty.viewport.height/2,
-					new_x = x + mid_x - cent_x - offx,
-					new_y = y + mid_y - cent_y - offy;
-				
-				Crafty.viewport.x -= new_x;
-				Crafty.viewport.y -= new_y;
+				Crafty.viewport.scroll('_x', -(this.x + (this.w / 2) - (Crafty.viewport.width / 2) - offx));
+				Crafty.viewport.scroll('_y', -(this.y + (this.h / 2) - (Crafty.viewport.height / 2) - offy));
 				Crafty.viewport._clamp();
 			}
 			
 			return function (target, offsetx, offsety) {
-				if (target && target.has('2D')) {
-					Crafty.viewport.pan('reset');
-					target.bind('Change', change);
-				}				
-				if (targ) {
-					targ.unbind('Change', change);
-				}
-				targ = target;
-				offx = (typeof offsetx != 'undefined')?offsetx:0;
-				offy = (typeof offsety != 'undefined')?offsety:0;
+				if (oldTarget)
+					oldTarget.unbind('Change', change);
+				if (!target || !target.has('2D'))
+					return;
+				Crafty.viewport.pan('reset');
+
+				oldTarget = target;
+				offx = (typeof offsetx != 'undefined') ? offsetx : 0;
+				offy = (typeof offsety != 'undefined') ? offsety : 0;
+
+				target.bind('Change', change);
+				change.call(target);
 			}
 		})(),
 		
 		/** 
 		 * #Crafty.viewport.centerOn
 		 * @comp Crafty.viewport
-		 * @sign public void Crafty.viewport.centerOn(Object target)
+		 * @sign public void Crafty.viewport.centerOn(Object target, Number time)
 		 * @param Object target - An entity with the 2D component
 		 * @param Number time - The number of frames to perform the centering over
 		 *
@@ -475,10 +481,11 @@ Crafty.extend({
 		/**
 		 * #Crafty.viewport.zoom
 		 * @comp Crafty.viewport
-		 * @sign public void Crafty.viewport.zoom(Number amt, Number cent_x, Number cent_y)
+		 * @sign public void Crafty.viewport.zoom(Number amt, Number cent_x, Number cent_y, Number time)
 		 * @param Number amt - amount to zoom in on the target by (eg. 2, 4, 0.5)
 		 * @param Number cent_x - the center to zoom on
 		 * @param Number cent_y - the center to zoom on
+		 * @param Number time - the duration in frames of the entire zoom operation
 		 *
 		 * Zooms the camera in on a given point. amt > 1 will bring the camera closer to the subject
 		 * amt < 1 will bring it farther away. amt = 0 will do nothing. 
@@ -603,11 +610,11 @@ Crafty.extend({
 			bound.max.x -= Crafty.viewport.width;
 			bound.max.y -= Crafty.viewport.height;
 				
-			if (Crafty.viewport.x > bound.max.x) {
-				Crafty.viewport.x = bound.max.x;
+			if (Crafty.viewport.x < -bound.max.x) {
+				Crafty.viewport.x = -bound.max.x;
 			}
-			else if (Crafty.viewport.x < bound.min.x) {
-				Crafty.viewport.x = bound.min.x;
+			else if (Crafty.viewport.x > -bound.min.x) {
+				Crafty.viewport.x = -bound.min.x;
 			}
 			
 			if (Crafty.viewport.y < -bound.max.y) {
