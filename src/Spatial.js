@@ -1,10 +1,9 @@
 /**@
 * #Crafty.map
-* @category 2D
+* @category Spatial
 * Functions related with quering entities. 
 * @see Crafty.HashMap
 */
-Crafty.map = new Crafty.HashMap();
 var M = Math,
 	Mc = M.cos,
 	Ms = M.sin,
@@ -13,17 +12,17 @@ var M = Math,
 
 
 /**@
-* #2D
-* @category 2D
+* #Spatial
+* @category Spatial
 * Component for any entity that has a position on the stage.
 * @trigger Move - when the entity has moved - { _x:Number, _y:Number, _w:Number, _h:Number } - Old position
 * @trigger Change - when the entity has moved - { _x:Number, _y:Number, _w:Number, _h:Number } - Old position
 * @trigger Rotate - when the entity is rotated - { cos:Number, sin:Number, deg:Number, rad:Number, o: {x:Number, y:Number}, matrix: {M11, M12, M21, M22} }
 */
-Crafty.c("2D", {
+Crafty.c("Spatial", {
 /**@
 	* #.x
-	* @comp 2D
+	* @comp Spatial
 	* The `x` position on the stage. When modified, will automatically be redrawn.
 	* Is actually a getter/setter so when using this value for calculations and not modifying it,
 	* use the `._x` property.
@@ -32,7 +31,7 @@ Crafty.c("2D", {
 	_x: 0,
 	/**@
 	* #.y
-	* @comp 2D
+	* @comp Spatial
 	* The `y` position on the stage. When modified, will automatically be redrawn.
 	* Is actually a getter/setter so when using this value for calculations and not modifying it,
 	* use the `._y` property.
@@ -40,8 +39,17 @@ Crafty.c("2D", {
 	*/
 	_y: 0,
 	/**@
+	* #.z
+	* @comp Spatial
+	* The `z` position on the stage. When modified, will automatically be redrawn.
+	* Is actually a getter/setter so when using this value for calculations and not modifying it,
+	* use the `._z` property.
+	* @see ._attr
+	*/
+	_z: 0,
+	/**@
 	* #.w
-	* @comp 2D
+	* @comp Spatial
 	* The width of the entity. When modified, will automatically be redrawn.
 	* Is actually a getter/setter so when using this value for calculations and not modifying it,
 	* use the `._w` property.
@@ -52,7 +60,18 @@ Crafty.c("2D", {
 	_w: 0,
 	/**@
 	* #.h
-	* @comp 2D
+	* @comp Spatial
+	* The height of the entity. When modified, will automatically be redrawn.
+	* Is actually a getter/setter so when using this value for calculations and not modifying it,
+	* use the `._h` property.
+	*
+	* Changing this value is not recommended as canvas has terrible resize quality and DOM will just clip the image.
+	* @see ._attr
+	*/
+	_l: 0,
+	/**@
+	* #.l
+	* @comp Spatial
 	* The height of the entity. When modified, will automatically be redrawn.
 	* Is actually a getter/setter so when using this value for calculations and not modifying it,
 	* use the `._h` property.
@@ -63,7 +82,7 @@ Crafty.c("2D", {
 	_h: 0,
 	/**@
 	* #.z
-	* @comp 2D
+	* @comp Spatial
 	* The `z` index on the stage. When modified, will automatically be redrawn.
 	* Is actually a getter/setter so when using this value for calculations and not modifying it,
 	* use the `._z` property.
@@ -76,7 +95,7 @@ Crafty.c("2D", {
 	_z: 0,
 	/**@
 	* #.rotation
-	* @comp 2D
+	* @comp Spatial
 	* Set the rotation of your entity. Rotation takes degrees in a clockwise direction.
 	* It is important to note there is no limit on the rotation value. Setting a rotation
 	* mod 360 will give the same rotation without reaching huge numbers.
@@ -85,13 +104,13 @@ Crafty.c("2D", {
 	_rotation: 0,
 	/**@
 	* #.alpha
-	* @comp 2D
+	* @comp Spatial
 	* Transparency of an entity. Must be a decimal value between 0.0 being fully transparent to 1.0 being fully opaque.
 	*/
 	_alpha: 1.0,
 	/**@
 	* #.visible
-	* @comp 2D
+	* @comp Spatial
 	* If the entity is visible or not. Accepts a true or false value.
 	* Can be used for optimization by setting an entities visibility to false when not needed to be drawn.
 	*
@@ -102,7 +121,7 @@ Crafty.c("2D", {
 
 	/**@
 	* #._globalZ
-	* @comp 2D
+	* @comp Spatial
 	* When two entities overlap, the one with the larger `_globalZ` will be on top of the other.
 	* @see Crafty.DrawManager.draw, Crafty.DrawManager.drawAll
 	*/
@@ -352,7 +371,7 @@ Crafty.c("2D", {
 
 	/**@
 	* #.area
-	* @comp 2D
+	* @comp Spatial
 	* @sign public Number .area(void)
 	* Calculates the area of the entity
 	*/
@@ -362,7 +381,7 @@ Crafty.c("2D", {
 
 	/**@
 	* #.intersect
-	* @comp 2D
+	* @comp Spatial
 	* @sign public Boolean .intersect(Number x, Number y, Number w, Number h)
 	* @param x - X position of the rect
 	* @param y - Y position of the rect
@@ -386,7 +405,7 @@ Crafty.c("2D", {
 
 	/**@
 	* #.within
-	* @comp 2D
+	* @comp Spatial
 	* @sign public Boolean .within(Number x, Number y, Number w, Number h)
 	* @param x - X position of the rect
 	* @param y - Y position of the rect
@@ -410,7 +429,7 @@ Crafty.c("2D", {
 
 	/**@
 	* #.contains
-	* @comp 2D
+	* @comp Spatial
 	* @sign public Boolean .contains(Number x, Number y, Number w, Number h)
 	* @param x - X position of the rect
 	* @param y - Y position of the rect
@@ -434,7 +453,7 @@ Crafty.c("2D", {
 
 	/**@
 	* #.pos
-	* @comp 2D
+	* @comp Spatial
 	* @sign public Object .pos(void)
 	* Returns the x, y, w, h properties as a rect object
 	* (a rect object is just an object with the keys _x, _y, _w, _h).
@@ -453,7 +472,7 @@ Crafty.c("2D", {
 
 	/**@
 	* #.mbr
-	* @comp 2D
+	* @comp Spatial
 	* @sign public Object .mbr()
 	* Returns the minimum bounding rectangle. If there is no rotation
 	* on the entity it will return the rect.
@@ -470,7 +489,7 @@ Crafty.c("2D", {
 
 	/**@
 	* #.isAt
-	* @comp 2D
+	* @comp Spatial
 	* @sign public Boolean .isAt(Number x, Number y)
 	* @param x - X position of the point
 	* @param y - Y position of the point
@@ -487,7 +506,7 @@ Crafty.c("2D", {
 
 	/**@
 	* #.move
-	* @comp 2D
+	* @comp Spatial
 	* @sign public this .move(String dir, Number by)
 	* @param dir - Direction to move (n,s,e,w,ne,nw,se,sw)
 	* @param by - Amount to move in the specified direction
@@ -504,7 +523,7 @@ Crafty.c("2D", {
 
 	/**@
 	* #.shift
-	* @comp 2D
+	* @comp Spatial
 	* @sign public this .shift(Number x, Number y, Number w, Number h)
 	* @param x - Amount to move X
 	* @param y - Amount to move Y
@@ -524,7 +543,7 @@ Crafty.c("2D", {
 
 	/**@
 	* #._cascade
-	* @comp 2D
+	* @comp Spatial
   * @sign public void ._cascade(e)
 	* @param e - Amount to move X
 	* Shift or move the entity by an amount. Use negative values
@@ -559,7 +578,7 @@ Crafty.c("2D", {
 
 	/**
 	* #.attach
-	* @comp 2D
+	* @comp Spatial
 	* @sign public this .attach(Entity obj[, .., Entity objN])
 	* @param obj - Entity(s) to attach
 	* Attaches an entities position and rotation to current entity. When the current entity moves,
@@ -581,7 +600,7 @@ Crafty.c("2D", {
 
 	/**@
 	* #.detach
-	* @comp 2D
+	* @comp Spatial
 	* @sign public this .detach([Entity obj])
 	* @param obj - The entity to detach. Left blank will remove all attached entities
 	* Stop an entity from following the current entity. Passing no arguments will stop
@@ -610,7 +629,7 @@ Crafty.c("2D", {
 
 	/**@
 	* #.origin
-	* @comp 2D
+	* @comp Spatial
 	* @sign public this .origin(Number x, Number y)
 	* @param x - Pixel value of origin offset on the X axis
 	* @param y - Pixel value of origin offset on the Y axis
@@ -670,8 +689,8 @@ Crafty.c("2D", {
 
 	/**@
 	* #._attr
-	* @comp 2D
-	* Setter method for all 2D properties including
+	* @comp Spatial
+	* Setter method for all Spatial properties including
 	* x, y, w, h, alpha, rotation and visible.
 	*/
 	_attr: function (name, value) {
@@ -717,7 +736,7 @@ Crafty.c("Physics", {
 
 /**@
 * #Gravity
-* @category 2D
+* @category Spatial
 * Adds gravitational pull to the entity.
 */
 Crafty.c("Gravity", {
@@ -727,7 +746,7 @@ Crafty.c("Gravity", {
 	_anti: null,
 
 	init: function () {
-		this.requires("2D");
+		this.requires("Spatial");
 	},
 
 	/**@
@@ -740,7 +759,7 @@ Crafty.c("Gravity", {
 	* For a player entity in a platform game this would be a component that is added to all entities
 	* that the player should be able to walk on.
 	* ~~~
-	* Crafty.e("2D, DOM, Color, Gravity")
+	* Crafty.e("Spatial, DOM, Color, Gravity")
 	*	 .color("red")
 	*	 .attr({ w: 100, h: 100 })
 	*	 .gravity("platform")
@@ -761,7 +780,7 @@ Crafty.c("Gravity", {
 	* @param g - gravitational constant
 	* Set the gravitational constant to g. The default is .2. The greater g, the faster the object falls.
 	* ~~~
-	* Crafty.e("2D, DOM, Color, Gravity")
+	* Crafty.e("Spatial, DOM, Color, Gravity")
 	*   .color("red")
 	*   .attr({ w: 100, h: 100 })
 	*   .gravity("platform")
@@ -837,7 +856,7 @@ Crafty.c("Gravity", {
 
 /**@
 * #Crafty.Polygon
-* @category 2D
+* @category Spatial
 * Polygon object used for hitboxes and click maps. Must pass an Array for each point as an
 * argument where index 0 is the x position and index 1 is the y position.
 *
@@ -930,7 +949,7 @@ Crafty.polygon.prototype = {
 
 /**@
 * #Crafty.Circle
-* @category 2D
+* @category Spatial
 * Circle object used for hitboxes and click maps. Must pass a `x`, a `y` and a `radius` value.
 *
 * ~~~
