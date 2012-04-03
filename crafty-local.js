@@ -8,7 +8,7 @@
 		'core',
 		'intro',
 		'HashMap',
-		'2D',
+		'Spatial',
 		'collision',
 		'DOM',
 		'extensions',
