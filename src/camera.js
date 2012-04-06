@@ -25,7 +25,9 @@
  *		canvas: boolean - force all rendering onto a Canvas. Has no affect in browsers that do not support canvas
  *		layers: key => value pairs - contains options on what to do with layers. Use null to not render a layer and a float to represent the speed the layer should move relative to the camera
  *
- * 
+ * 3D and Layers:
+ * Layers are less useful in 3D games, although they can still serve some function in keeping UI elements on top of game world elements
+ * In a 3D game, all layers should be set to 0.0, since the Camera is positioned in the world, and moving layers around doesn't make sense.
  */
 (function (Crafty) {
 	Crafty.extend({
@@ -53,6 +55,17 @@
 				y: 0,
 				z: 0
 			};
+			this.layers = {};
+			if ("canvas" in options) this.canvas = options.canvas;
+			if ("layers" in options) {
+				for (var l in options.layers) {
+					this.layers[l] = {
+						ratio: options.layers[l],
+						x: 0,
+						y: 0,
+					};
+				}
+			}
 		},
 		
 		/**
@@ -67,32 +80,46 @@
 			if (isFinite(x)) this.x = parseInt(x);
 			if (isFinite(y)) this.y = parseInt(y);
 			if (isFinite(z)) this.z = parseInt(z);
+			for (var l in this.layers) {
+				var la = this.layers[l];
+				la.x = this.x * la.ratio;
+				la.y = this.y = la.ratio;
+			}
 			return this;
+		},
+		
+		getEntitiesInView: function() {
+			var es = Crafty("Spatial"),
+				arr = [];
+			for (var i=0, l=es.length; i<l; i++) {
+				arr.push(Crafty(es[i]));
+			}
+			return arr;
 		},
 		
 		render: function () {
 			if (!this.active) return;
 			// pre render logic
-			var data;
+			var entities = this.getEntitiesInView();
 			
 			switch (this.type) {
 				case "Top": 
-					topdown(data);
+					topdown.call(this, data);
 					break;
 				case "Side":
-					sideview(data);
+					sideview.call(this, data);
 					break;
 				case "Isometric":
-					isometric(data);
+					isometric.call(this, data);
 					break;
 				case "IsometricFaces":
-					isofaces(data);
+					isofaces.call(this, data);
 					break;
 				case "3DSquare":
-					dom3D(data);
+					dom3D.call(this, data);
 					break;
 				case "3DFull":
-					full3D(data);
+					full3D.call(this, data);
 					break;
 			}
 			return this;
