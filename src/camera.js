@@ -100,8 +100,19 @@
 		render: function () {
 			if (!this.active) return;
 			// pre render logic
-			var entities = this.getEntitiesInView();
+			var entities = this.getEntitiesInView(),
+				i = 0, l = entities.length,
+				data = {};
 			
+			for (; i<l; i++) {
+				var e = entities[i],
+					d = {};
+				e.trigger('PreRender', this.type, d);
+				data[e[0]] = d;
+			}
+			
+			// javascript! 
+			// call the private functions as instance methods
 			switch (this.type) {
 				case "Top": 
 					topdown.call(this, data);
@@ -122,6 +133,7 @@
 					full3D.call(this, data);
 					break;
 			}
+
 			return this;
 		}
 	};
