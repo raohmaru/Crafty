@@ -106,7 +106,12 @@
 			
 			for (; i<l; i++) {
 				var e = entities[i],
-					d = {};
+					d = {
+						top: {
+							paint: null,
+							dimensions: null,
+						},
+					};
 				e.trigger('PreRender', this.type, d);
 				data[e[0]] = d;
 			}
@@ -156,5 +161,17 @@
 	}
 	
 	function full3D(data) {
+	}
+	
+	function Face() {
+		this.paint = "";
+		this.x = 0;
+		this.y = 0;
+		this.h = 0;
+		this.w = 0;
+	}
+	
+	Face.prototype.addPaint(new_rule) {
+		this.paint += " "+new_rule;
 	}
 })(Crafty);
