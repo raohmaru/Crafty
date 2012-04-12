@@ -319,6 +319,8 @@ Crafty.c("Spatial", {
 
 			this.detach();
 		});
+		
+		this.bind('PreRender', _prerender);
 	},
 
 	/**
@@ -721,6 +723,19 @@ Crafty.c("Spatial", {
 
 		//trigger a change
 		this.trigger("Change", old);
+	},
+	
+	/**@
+	* #._prerender
+	* @comp Spatial
+	* Puts together the data need to render this object
+	* The default faces are already added by the camera for us
+	* We just need to fill them with data
+	*/
+	_prerender: function(camera_type, data) {
+		for (var i in data) {
+			data[i].facing(i, this.w, this.l, this.h);
+		}
 	}
 });
 

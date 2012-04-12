@@ -89,7 +89,7 @@
 		},
 		
 		getEntitiesInView: function() {
-			var es = Crafty("Spatial"),
+			var es = Crafty("Render"),
 				arr = [];
 			for (var i=0, l=es.length; i<l; i++) {
 				arr.push(Crafty(es[i]));
@@ -101,17 +101,20 @@
 			if (!this.active) return;
 			// pre render logic
 			var entities = this.getEntitiesInView(),
-				i = 0, l = entities.length,
-				data = {};
+				i = 0, l = entities.length;
 			
 			for (; i<l; i++) {
 				var e = entities[i],
-					d = {
-						top: {
-							paint: null,
-							dimensions: null,
-						},
+					d = data[e[0]] || {
+						top: new Face(),
+						front: new Face(),
+						left: new Face(),
+						right: new Face(),
+						back: new Face(),
+						below: new Face(),
 					};
+				// the entity gets its own data passed into it
+				// a good entity will modify this data only if its been changed
 				e.trigger('PreRender', this.type, d);
 				data[e[0]] = d;
 			}
@@ -167,11 +170,57 @@
 		this.paint = "";
 		this.x = 0;
 		this.y = 0;
+		this.z = 0;
 		this.h = 0;
 		this.w = 0;
+		this.rZ = 0;
+		this.rX = 0;
 	}
 	
 	Face.prototype.addPaint(new_rule) {
 		this.paint += " "+new_rule;
+		return this;
+	}
+	
+	/**
+	 * Helper function
+	 * Automatically sizes and orients a face based on the entity dimensions and the direction given
+	 */
+	Face.prototype.setFacing(facing, w, l, h) {
+		switch (facing.toLowerCase()) {
+			case 'top':
+				this.w = w;
+				this.h = l;
+				this.z = parseInt(h/2);
+			break;
+			case 'front':
+				this.w = h;
+				this.h = l;
+				this.rX = 90;
+			break;
+			case 'left':
+				this.w = h;
+				this.h = w;
+				this.rZ = 90;
+				this.rX = 90;
+			break;
+			case 'right':
+				this.w = h;
+				this.h = w;
+				this.rZ = 90;
+				this.rX = -90;
+			break;
+			case 'back':
+				this.w = h;
+				this.h = l;
+				this.rX = -90;
+			break;
+			case 'below':
+				this.w = w;
+				this.h = l;
+				this.rX = 180;
+			break;
+		}
+		return this
 	}
 })(Crafty);
