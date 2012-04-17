@@ -105,18 +105,21 @@
 			
 			for (; i<l; i++) {
 				var e = entities[i],
+					// if the data object already exists for this entity, use it
+					// otherwise, create a new one
+					// this data object only represents the faces as data
+					// it contains no objects related to the actual rendering (i.e. DOM elements)
 					d = data[e[0]] || {
-						top: new Face(),
-						front: new Face(),
-						left: new Face(),
-						right: new Face(),
-						back: new Face(),
-						below: new Face(),
+						top: (new Face()).setFacing('top', e.w, e.l, e.h),
+						front: (new Face()).setFacing('front', e.w, e.l, e.h),
+						left: (new Face()).setFacing('left', e.w, e.l, e.h),
+						right:(new Face()).setFacing('right', e.w, e.l, e.h),
+						back: (new Face()).setFacing('back', e.w, e.l, e.h),
+						below: (new Face()).setFacing('below', e.w, e.l, e.h)
 					};
 				// the entity gets its own data passed into it
 				// a good entity will modify this data only if its been changed
 				e.trigger('PreRender', this.type, d);
-				data[e[0]] = d;
 			}
 			
 			// javascript! 
@@ -148,24 +151,61 @@
 	Crafty.camera.fn.init.prototype = Crafty.camera.fn;
 			
 	// render implementations go here
+	/**
+	 * All render implementations should work in the same general way
+	 * For each entity that needs drawing,
+	 * 	it should loop through the entities list of faces
+	 *  and draw them based on the parameters of the face
+	 *  and the entity itself
+	 
+	 * If an implementation only needs to make use of one face,
+	 * the implementation should handle this accordingly.
+	 */
+	
+	/**
+	 * Only renders the top face of each box
+	 */
 	function topdown(data) {
 	}
 	
+	/**
+	 * Only renders the right face
+	 */
 	function sideview(data) {
 	}
 	
+	/**
+	 * Only renders the front face. The front face should already have the isometric transforms applied to it in the sprite itself
+	 */
 	function isometric(data) {
 	}
 	
+	/**
+	 * Renders all 6 faces. The camera is at a fixed angle, with no perspective applied
+	 */
 	function isofaces(data) {
 	}
 	
+	/**
+	 * Renders all 6 faces. Camera can be anywhere. Has perspective.
+	 */
 	function dom3D(data) {
 	}
 	
+	/**
+	 * Renders all 6 faces with WebGL. Camera can be anywhere. Has perspective.
+	 * Good luck with this one. I ain't touching it.
+	 */
 	function full3D(data) {
 	}
 	
+	/**
+	 * Represents a single face of a larger object.
+	 * A face is defined a rectangle in which all 4 points are on the same plane
+	 * For instance, a cube is made up of 6 faces. 
+	 * By default, all Spatial entities are cubes
+	 * Other components can change this.
+	 */
 	function Face() {
 		this.paint = "";
 		this.x = 0;
@@ -177,6 +217,13 @@
 		this.rX = 0;
 	}
 	
+	/**
+	 * Paints are just css rules.
+	 * Components should be as specific as possible to avoid collisions
+	 * and odd behavior due to the order things happen
+	 * eg. Sprite will add background-url and background-position
+	 * Color will add background-color.
+	 */
 	Face.prototype.addPaint(new_rule) {
 		this.paint += " "+new_rule;
 		return this;
@@ -221,6 +268,6 @@
 				this.rX = 180;
 			break;
 		}
-		return this
+		return this;
 	}
 })(Crafty);
