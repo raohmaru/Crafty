@@ -5,17 +5,15 @@
 */
 Crafty.c("Color", {
 	_color: "",
-	ready: true,
 
 	init: function () {
-		this.bind("Draw", function (e) {
-			if (e.type === "DOM") {
-				e.style.background = this._color;
-				e.style.lineHeight = 0;
-			} else if (e.type === "canvas") {
-				if (this._color) e.ctx.fillStyle = this._color;
-				e.ctx.fillRect(e.pos._x, e.pos._y, e.pos._w, e.pos._h);
+		this.bind("PreRender", function color (camType, d) {
+			for (var i in d.faces) {
+				d.faces[i].addPaint('background-color: '+ this._color);
 			}
+		})
+		.bind("RemoveComponent", function () {
+			this.unbind("PreRender", color);
 		});
 	},
 
@@ -101,6 +99,12 @@ Crafty.c("Image", {
 	ready: false,
 
 	init: function () {
+		this.bind("PreRender", function (camType, data) {
+			for (var i in d.faces) {
+				d.faces[i].addPaint("background-url: "+this.__image+" "+this._repeat;
+			}
+		}); 
+		/*
 		var draw = function (e) {
 			if (e.type === "canvas") {
 				//skip if no image
@@ -123,6 +127,7 @@ Crafty.c("Image", {
 		this.bind("Draw", draw).bind("RemoveComponent", function (id) {
 			if (id === "Image") this.unbind("Draw", draw);
 		});
+		*/
 	},
 
 	/**@

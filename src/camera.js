@@ -22,7 +22,8 @@
  * Camera Options:
  *	Cameras accept an optional object containing options to change from defaults.
  *  Parameters:
- *		canvas: boolean - force all rendering onto a Canvas. Has no affect in browsers that do not support canvas
+ *		canvas: boolean - force all rendering onto a Canvas. Has no affect in browsers that do not support canvas/
+ *			Aside: I'm wondering whether we should let developers choose this at all. Pure DOM is faster, so unless they need something DOM has no way of handling, we should stick to it
  *		layers: key => value pairs - contains options on what to do with layers. Use null to not render a layer and a float to represent the speed the layer should move relative to the camera
  *
  * 3D and Layers:
@@ -109,13 +110,17 @@
 					// otherwise, create a new one
 					// this data object only represents the faces as data
 					// it contains no objects related to the actual rendering (i.e. DOM elements)
-					d = data[e[0]] || {
-						top: (new Face()).setFacing('top', e.w, e.l, e.h),
-						front: (new Face()).setFacing('front', e.w, e.l, e.h),
-						left: (new Face()).setFacing('left', e.w, e.l, e.h),
-						right:(new Face()).setFacing('right', e.w, e.l, e.h),
-						back: (new Face()).setFacing('back', e.w, e.l, e.h),
-						below: (new Face()).setFacing('below', e.w, e.l, e.h)
+					d = this.data[e[0]] || {
+						faces: {
+							top: (new Face()).setFacing('top', e.w, e.l, e.h),
+							front: (new Face()).setFacing('front', e.w, e.l, e.h),
+							left: (new Face()).setFacing('left', e.w, e.l, e.h),
+							right:(new Face()).setFacing('right', e.w, e.l, e.h),
+							back: (new Face()).setFacing('back', e.w, e.l, e.h),
+							below: (new Face()).setFacing('below', e.w, e.l, e.h),
+						},
+						tag: 'div',
+						html: []
 					};
 				// the entity gets its own data passed into it
 				// a good entity will modify this data only if its been changed
@@ -160,6 +165,10 @@
 	 
 	 * If an implementation only needs to make use of one face,
 	 * the implementation should handle this accordingly.
+	 
+	 * Each function needs to take care of its own cleanup. 
+	 * Any elements on screen that shouldn't be (deleted, w/e)
+	 * need to be removed by the function itself.
 	 */
 	
 	/**
@@ -268,6 +277,77 @@
 				this.rX = 180;
 			break;
 		}
+		return this;
+	}
+	
+	function drawDOM(elem, face) {
+		var style = this._element.style,
+			coord = this.__coord || [0, 0, 0, 0],
+			co = { x: coord[0], y: coord[1] },
+			prefix = Crafty.support.prefix,
+			trans = [];
+
+		if (!this._visible) style.visibility = "hidden";
+		else style.visibility = "visible";
+
+		//utilize CSS3 if supported
+		if (Crafty.support.css3dtransform) {
+			trans.push("translate3d(" + (~~this._x) + "px," + (~~this._y) + "px,0)");
+		} else {
+			style.left = ~~(this._x) + "px";
+			style.top = ~~(this._y) + "px";
+		}
+
+		style.width = ~~(this._w) + "px";
+		style.height = ~~(this._h) + "px";
+		style.zIndex = this._z;
+
+		style.opacity = this._alpha;
+		style[prefix + "Opacity"] = this._alpha;
+
+		//if not version 9 of IE
+		if (prefix === "ms" && Crafty.support.version < 9) {
+			//for IE version 8, use ImageTransform filter
+			if (Crafty.support.version === 8) {
+				this._filters.alpha = "progid:DXImageTransform.Microsoft.Alpha(Opacity=" + (this._alpha * 100) + ")"; // first!
+				//all other versions use filter
+			} else {
+				this._filters.alpha = "alpha(opacity=" + (this._alpha * 100) + ")";
+			}
+		}
+
+		if (this._mbr) {
+			var origin = this._origin.x + "px " + this._origin.y + "px";
+			style.transformOrigin = origin;
+			style[prefix + "TransformOrigin"] = origin;
+			if (Crafty.support.css3dtransform) trans.push("rotateZ(" + this._rotation + "deg)");
+			else trans.push("rotate(" + this._rotation + "deg)");
+		}
+
+		if (this._flipX) {
+			trans.push("scaleX(-1)");
+			if (prefix === "ms" && Crafty.support.version < 9) {
+				this._filters.flipX = "fliph";
+			}
+		}
+
+		if (this._flipY) {
+			trans.push("scaleY(-1)");
+			if (prefix === "ms" && Crafty.support.version < 9) {
+				this._filters.flipY = "flipv";
+			}
+		}
+
+		//apply the filters if IE
+		if (prefix === "ms" && Crafty.support.version < 9) {
+			this.applyFilters();
+		}
+
+		style.transform = trans.join(" ");
+		style[prefix + "Transform"] = trans.join(" ");
+
+		this.trigger("Draw", { style: style, type: "DOM", co: co });
+
 		return this;
 	}
 })(Crafty);
