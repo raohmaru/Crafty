@@ -817,7 +817,13 @@
 					loops++;
 				}
 				if (loops) {
-					Crafty.DrawManager.draw();
+					//draw all cameras
+					var activeCams = Crafty.camera.listActive();
+					for (var cam in activeCams) {
+						console.log(activeCams[cam]);
+						activeCams[cam].render();
+					}
+					Crafty.pause();
 				}
 			},
 			/**@

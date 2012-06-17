@@ -490,12 +490,7 @@ Crafty.DrawManager = (function () {
     * @see Canvas.draw, DOM.draw
 		*/
 		draw: function draw() {
-			var activeCams = Crafty.camera.listActive();
-			for (var cam in activeCams) {
-				console.log(activeCams[cam]);
-				activeCams[cam].render();
-			}
-			//Crafty.pause();
+			
 
 
 

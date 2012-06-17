@@ -330,19 +330,19 @@
 		var style = "position:absolute; " + face.paint,
 			coord = [face.x, face.y, face.w, face.h],
 			co = { x: coord[0], y: coord[1] },
-			prefix = Crafty.support.prefix,
+			prefix = "-" + Crafty.support.prefix + "-",
 			trans = [];
 
 		//if (!this._visible) style.visibility = "hidden";
 		//else style.visibility = "visible";
 
 		//utilize CSS3 if supported
-		//if (Crafty.support.css3dtransform) {
-		//	trans.push("translate3d(" + (~~face.x) + "px," + (~~face.y) + "px,0)");
-		//} else {
+		if (Crafty.support.css3dtransform) {
+			trans.push("translate3d(" + (~~face.x) + "px," + (~~face.y) + "px,0)");
+		} else {
 			style += ("left: " + ~~(face.x) + "px;");
 			style += ("top: " + ~~(face.y) + "px;");
-			//}
+			}
 
 
 			
@@ -351,14 +351,7 @@
 		style += ("height: " + ~~(face.h) + "px;");
 		style += ("zIndex: " + ~~(face.z) + ";");
 
-		console.log(style);
-
-		if (typeof(elem.style.cssText) != 'undefined') {
-			elem.style.cssText = style;
-		} else {
-			elem.setAttribute('style', style);
-		}
-		return;
+		
 
 		//style.opacity = this._alpha;
 		//style[prefix + "Opacity"] = this._alpha;
@@ -401,11 +394,22 @@
 		//	this.applyFilters();
 		//}
 
-		style.transform = trans.join(" ");
-		style[prefix + "Transform"] = trans.join(" ");
+		if (trans.length > 0) {
+			style += ("transform: " + trans.join(" ") + ";");
+			style += (prefix + "transform: " + trans.join(" ") + ";");
+		}
+
+		//style.transform = trans.join(" ");
+		//style[prefix + "Transform"] = trans.join(" ");
 
 		//this.trigger("Draw", { style: style, type: "DOM", co: co });
 
-		return this;
+		console.log(style);
+
+		if (typeof(elem.style.cssText) != 'undefined') {
+			elem.style.cssText = style;
+		} else {
+			elem.setAttribute('style', style);
+		}
 	}
 })(Crafty);
