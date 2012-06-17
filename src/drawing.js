@@ -7,12 +7,20 @@ Crafty.c("Color", {
 	_color: "",
 
 	init: function () {
-		this.bind("PreRender", function color (d) {
-			for (var i in d.data.faces) {
-				d.data.faces[i].addPaint('background-color: '+ this._color);
-			}
-		})
-		.bind("RemoveComponent", function () {
+		
+			this.bind("PreRender", function color(d) {
+				if (typeof this._color === "object") {
+					for (var i in this._color) {
+						console.log(i);
+						d.data.faces[i].addPaint('background-color: ' + this._color[i]);
+					}
+				} else {
+					for (var i in d.data.faces) {
+						d.data.faces[i].addPaint('background-color: ' + this._color);
+					}
+				}
+			})
+			.bind("RemoveComponent", function () {
 			this.unbind("PreRender", color);
 		});
 	},

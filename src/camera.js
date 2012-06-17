@@ -141,9 +141,7 @@
 							below: (new Face()).setFacing('below', e.w, e.l, e.h),
 						},
 						tag: 'div',
-						html: {
-							top: createDomElement('div', e[0] + '-top')
-						}
+						html: createDomElements(e[0]) 
 					};
 
 				if (!this.data[e[0]]) {
@@ -205,7 +203,9 @@
 	function topdown(data) {
 		for (var e in data) {
 			console.log(data[e]);
-			drawDOM(data[e].html.top, data[e].faces.top);
+			var top = data[e].faces.top;
+			updateSpatialStyles(data[e].html.container, top.x, top.y, top.z);
+			updateFaceStyle(data[e].html.top, top.paint, top.w, top.h);
 			console.log("Render TOP");
 		}
 	}
@@ -315,96 +315,40 @@
 		return this;
 	}
 
-	function createDomElement(elementType, id) {
-		var domElement = document.createElement(elementType);
-		Crafty.stage.inner.appendChild(domElement);
-		domElement.style.position = "absolute";
-		domElement.id = "ent" + id;
-		return domElement;
+	function createDomElements(id) {
+		var container = document.createElement('div');
+		container.id = "ent" + id;
+
+		var top = document.createElement('div');
+		top.id = "ent" + id + "-top";
+		container.appendChild(top);
+
+		Crafty.stage.inner.appendChild(container);
+
+		return { container: container, top: top };
 	}
-	
-	function drawDOM(elem, face) {
-		console.log("drawDom")
-		console.log(elem);
-		console.log(face);
-		var style = "position:absolute; " + face.paint,
-			coord = [face.x, face.y, face.w, face.h],
-			co = { x: coord[0], y: coord[1] },
+
+	// Modifies spatial attributes of the container div. Is called by one of the render functions,
+	// which is responsible of mapping the face values to the screen
+	function updateSpatialStyles(elem, x, y, z) {
+		var style = "position:absolute; ",
 			prefix = "-" + Crafty.support.prefix + "-",
 			trans = [];
 
-		//if (!this._visible) style.visibility = "hidden";
-		//else style.visibility = "visible";
-
 		//utilize CSS3 if supported
 		if (Crafty.support.css3dtransform) {
-			trans.push("translate3d(" + (~~face.x) + "px," + (~~face.y) + "px,0)");
+			trans.push("translate3d(" + (~~x) + "px," + (~~y) + "px,0)");
 		} else {
-			style += ("left: " + ~~(face.x) + "px;");
-			style += ("top: " + ~~(face.y) + "px;");
-			}
+			style += ("left: " + ~~(x) + "px;");
+			style += ("top: " + ~~(y) + "px;");
+		}
 
-
-			
-
-		style += ("width: " + ~~(face.w) + "px;");
-		style += ("height: " + ~~(face.h) + "px;");
-		style += ("zIndex: " + ~~(face.z) + ";");
-
-		
-
-		//style.opacity = this._alpha;
-		//style[prefix + "Opacity"] = this._alpha;
-
-		//if not version 9 of IE
-		//if (prefix === "ms" && Crafty.support.version < 9) {
-		//	//for IE version 8, use ImageTransform filter
-		//	if (Crafty.support.version === 8) {
-		//		this._filters.alpha = "progid:DXImageTransform.Microsoft.Alpha(Opacity=" + (this._alpha * 100) + ")"; // first!
-		//		//all other versions use filter
-		//	} else {
-		//		this._filters.alpha = "alpha(opacity=" + (this._alpha * 100) + ")";
-		//	}
-		//}
-
-		//if (this._mbr) {
-		//	var origin = this._origin.x + "px " + this._origin.y + "px";
-		//	style.transformOrigin = origin;
-		//	style[prefix + "TransformOrigin"] = origin;
-		//	if (Crafty.support.css3dtransform) trans.push("rotateZ(" + this._rotation + "deg)");
-		//	else trans.push("rotate(" + this._rotation + "deg)");
-		//}
-
-		//if (this._flipX) {
-		//	trans.push("scaleX(-1)");
-		//	if (prefix === "ms" && Crafty.support.version < 9) {
-		//		this._filters.flipX = "fliph";
-		//	}
-		//}
-
-		//if (this._flipY) {
-		//	trans.push("scaleY(-1)");
-		//	if (prefix === "ms" && Crafty.support.version < 9) {
-		//		this._filters.flipY = "flipv";
-		//	}
-		//}
-
-		//apply the filters if IE
-		//if (prefix === "ms" && Crafty.support.version < 9) {
-		//	this.applyFilters();
-		//}
+		style += ("zIndex: " + ~~(z) + ";");
 
 		if (trans.length > 0) {
 			style += ("transform: " + trans.join(" ") + ";");
 			style += (prefix + "transform: " + trans.join(" ") + ";");
 		}
-
-		//style.transform = trans.join(" ");
-		//style[prefix + "Transform"] = trans.join(" ");
-
-		//this.trigger("Draw", { style: style, type: "DOM", co: co });
-
-		console.log(style);
 
 		if (typeof(elem.style.cssText) != 'undefined') {
 			elem.style.cssText = style;
@@ -412,4 +356,15 @@
 			elem.setAttribute('style', style);
 		}
 	}
+
+	function updateFaceStyle(elem, paint, w, h) {
+		var style = paint + ("width: " + ~~(w) + "px;") + ("height: " + ~~(h) + "px;");
+
+		if (typeof(elem.style.cssText) != 'undefined') {
+			elem.style.cssText = style;
+		} else {
+			elem.setAttribute('style', style);
+		}
+	}
+	
 })(Crafty);
