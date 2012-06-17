@@ -61,6 +61,7 @@
 	Crafty.fn = Crafty.prototype = {
 
 		init: function (selector) {
+
 			//select entities by component
 			if (typeof selector === "string") {
 				var elem = 0, //index elements
@@ -679,6 +680,9 @@
 		init: function (w, h) {
 			Crafty.viewport.init(w, h);
 
+			Crafty.camera("default", "Top", { canvas: false });
+			Crafty.camera("default").active = true;
+
 			//call all arbitrary functions attached to onload
 			this.trigger("Load");
 			this.timer.init();
@@ -773,7 +777,7 @@
 						tickID = onFrame(tick);
 					}
 
-					tick();
+					tickID = onFrame(tick);
 				} else {
 					tick = setInterval(Crafty.timer.step, 1000 / FPS);
 				}

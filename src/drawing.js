@@ -7,9 +7,9 @@ Crafty.c("Color", {
 	_color: "",
 
 	init: function () {
-		this.bind("PreRender", function color (camType, d) {
-			for (var i in d.faces) {
-				d.faces[i].addPaint('background-color: '+ this._color);
+		this.bind("PreRender", function color (d) {
+			for (var i in d.data.faces) {
+				d.data.faces[i].addPaint('background-color: '+ this._color);
 			}
 		})
 		.bind("RemoveComponent", function () {
@@ -101,7 +101,7 @@ Crafty.c("Image", {
 	init: function () {
 		this.bind("PreRender", function (camType, data) {
 			for (var i in d.faces) {
-				d.faces[i].addPaint("background-url: "+this.__image+" "+this._repeat;
+				d.faces[i].addPaint("background-url: "+this.__image+" "+this._repeat)
 			}
 		}); 
 		/*
@@ -490,6 +490,16 @@ Crafty.DrawManager = (function () {
     * @see Canvas.draw, DOM.draw
 		*/
 		draw: function draw() {
+			var activeCams = Crafty.camera.listActive();
+			for (var cam in activeCams) {
+				console.log(activeCams[cam]);
+				activeCams[cam].render();
+			}
+			//Crafty.pause();
+
+
+
+		/*
 			//if nothing in dirty_rects, stop
 			if (!dirty_rects.length && !dom.length) return;
 
@@ -578,6 +588,7 @@ Crafty.DrawManager = (function () {
 			dirty_rects.length = 0;
 			//all merged IDs are now invalid
 			merged = {};
+			*/
 		}
 	};
 })();

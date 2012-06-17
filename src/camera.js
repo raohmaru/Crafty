@@ -32,10 +32,29 @@
  */
 (function (Crafty) {
 	Crafty.extend({
+	// Either creates a camera, or returns the camera with the given label. 
+	// I think this is better than the array syntax Crafty.camera[], as it allows us to iterate over Crafty.camera.cameras 
+	// without having to deal with functions on Crafty.camera. Agree?
 		camera: function (label, type, options) {
-			return Crafty.camera[label] = new Crafty.camera.fn.init(type, options);
+			if (!type) {
+				return Crafty.camera.cameras[label];
+			}
+			
+			return Crafty.camera.cameras[label] = new Crafty.camera.fn.init(type, options);
 		}
 	});
+
+	Crafty.camera.cameras = {};
+
+	Crafty.camera.listActive = function () {
+		var activeCams = {}, cameras = Crafty.camera.cameras;
+		for (var c in cameras) {
+			if (cameras[c].active) {
+				activeCams[c] = cameras[c];
+			}
+		}
+		return activeCams;
+	}
 	
 	Crafty.camera.fn = {
 		active: false,
@@ -95,6 +114,8 @@
 			for (var i=0, l=es.length; i<l; i++) {
 				arr.push(Crafty(es[i]));
 			}
+			console.log("In View: ")
+			console.log(es);
 			return arr;
 		},
 		
@@ -112,7 +133,7 @@
 					// it contains no objects related to the actual rendering (i.e. DOM elements)
 					d = this.data[e[0]] || {
 						faces: {
-							top: (new Face()).setFacing('top', e.w, e.l, e.h),
+							top: (new Face()).setFacing('top', e.w, e.l, e.h, e.x, e.y),
 							front: (new Face()).setFacing('front', e.w, e.l, e.h),
 							left: (new Face()).setFacing('left', e.w, e.l, e.h),
 							right:(new Face()).setFacing('right', e.w, e.l, e.h),
@@ -120,33 +141,40 @@
 							below: (new Face()).setFacing('below', e.w, e.l, e.h),
 						},
 						tag: 'div',
-						html: []
+						html: {
+							top: createDomElement('div', e[0] + '-top')
+						}
 					};
+
+				if (!this.data[e[0]]) {
+					this.data[e[0]] = d;
+				}
+
 				// the entity gets its own data passed into it
 				// a good entity will modify this data only if its been changed
-				e.trigger('PreRender', this.type, d);
+				e.trigger('PreRender', { type: this.type, data: d });
 			}
 			
 			// javascript! 
 			// call the private functions as instance methods
 			switch (this.type) {
 				case "Top": 
-					topdown.call(this, data);
+					topdown.call(this, this.data);
 					break;
 				case "Side":
-					sideview.call(this, data);
+					sideview.call(this, this.data);
 					break;
 				case "Isometric":
-					isometric.call(this, data);
+					isometric.call(this, this.data);
 					break;
 				case "IsometricFaces":
-					isofaces.call(this, data);
+					isofaces.call(this, this.data);
 					break;
 				case "3DSquare":
-					dom3D.call(this, data);
+					dom3D.call(this, this.data);
 					break;
 				case "3DFull":
-					full3D.call(this, data);
+					full3D.call(this, this.data);
 					break;
 			}
 
@@ -175,6 +203,11 @@
 	 * Only renders the top face of each box
 	 */
 	function topdown(data) {
+		for (var e in data) {
+			console.log(data[e]);
+			drawDOM(data[e].html.top, data[e].faces.top);
+			console.log("Render TOP");
+		}
 	}
 	
 	/**
@@ -233,8 +266,8 @@
 	 * eg. Sprite will add background-url and background-position
 	 * Color will add background-color.
 	 */
-	Face.prototype.addPaint(new_rule) {
-		this.paint += " "+new_rule;
+	Face.prototype.addPaint = function(new_rule) {
+		this.paint += " "+new_rule + ";";
 		return this;
 	}
 	
@@ -242,12 +275,14 @@
 	 * Helper function
 	 * Automatically sizes and orients a face based on the entity dimensions and the direction given
 	 */
-	Face.prototype.setFacing(facing, w, l, h) {
+	Face.prototype.setFacing = function(facing, w, l, h, x, y) {
 		switch (facing.toLowerCase()) {
 			case 'top':
 				this.w = w;
 				this.h = l;
-				this.z = parseInt(h/2);
+				this.z = parseInt(h / 2);
+				this.x = x;
+				this.y = y;
 			break;
 			case 'front':
 				this.w = h;
@@ -279,74 +314,97 @@
 		}
 		return this;
 	}
+
+	function createDomElement(elementType, id) {
+		var domElement = document.createElement(elementType);
+		Crafty.stage.inner.appendChild(domElement);
+		domElement.style.position = "absolute";
+		domElement.id = "ent" + id;
+		return domElement;
+	}
 	
 	function drawDOM(elem, face) {
-		var style = this._element.style,
-			coord = this.__coord || [0, 0, 0, 0],
+		console.log("drawDom")
+		console.log(elem);
+		console.log(face);
+		var style = "position:absolute; " + face.paint,
+			coord = [face.x, face.y, face.w, face.h],
 			co = { x: coord[0], y: coord[1] },
 			prefix = Crafty.support.prefix,
 			trans = [];
 
-		if (!this._visible) style.visibility = "hidden";
-		else style.visibility = "visible";
+		//if (!this._visible) style.visibility = "hidden";
+		//else style.visibility = "visible";
 
 		//utilize CSS3 if supported
-		if (Crafty.support.css3dtransform) {
-			trans.push("translate3d(" + (~~this._x) + "px," + (~~this._y) + "px,0)");
+		//if (Crafty.support.css3dtransform) {
+		//	trans.push("translate3d(" + (~~face.x) + "px," + (~~face.y) + "px,0)");
+		//} else {
+			style += ("left: " + ~~(face.x) + "px;");
+			style += ("top: " + ~~(face.y) + "px;");
+			//}
+
+
+			
+
+		style += ("width: " + ~~(face.w) + "px;");
+		style += ("height: " + ~~(face.h) + "px;");
+		style += ("zIndex: " + ~~(face.z) + ";");
+
+		console.log(style);
+
+		if (typeof(elem.style.cssText) != 'undefined') {
+			elem.style.cssText = style;
 		} else {
-			style.left = ~~(this._x) + "px";
-			style.top = ~~(this._y) + "px";
+			elem.setAttribute('style', style);
 		}
+		return;
 
-		style.width = ~~(this._w) + "px";
-		style.height = ~~(this._h) + "px";
-		style.zIndex = this._z;
-
-		style.opacity = this._alpha;
-		style[prefix + "Opacity"] = this._alpha;
+		//style.opacity = this._alpha;
+		//style[prefix + "Opacity"] = this._alpha;
 
 		//if not version 9 of IE
-		if (prefix === "ms" && Crafty.support.version < 9) {
-			//for IE version 8, use ImageTransform filter
-			if (Crafty.support.version === 8) {
-				this._filters.alpha = "progid:DXImageTransform.Microsoft.Alpha(Opacity=" + (this._alpha * 100) + ")"; // first!
-				//all other versions use filter
-			} else {
-				this._filters.alpha = "alpha(opacity=" + (this._alpha * 100) + ")";
-			}
-		}
+		//if (prefix === "ms" && Crafty.support.version < 9) {
+		//	//for IE version 8, use ImageTransform filter
+		//	if (Crafty.support.version === 8) {
+		//		this._filters.alpha = "progid:DXImageTransform.Microsoft.Alpha(Opacity=" + (this._alpha * 100) + ")"; // first!
+		//		//all other versions use filter
+		//	} else {
+		//		this._filters.alpha = "alpha(opacity=" + (this._alpha * 100) + ")";
+		//	}
+		//}
 
-		if (this._mbr) {
-			var origin = this._origin.x + "px " + this._origin.y + "px";
-			style.transformOrigin = origin;
-			style[prefix + "TransformOrigin"] = origin;
-			if (Crafty.support.css3dtransform) trans.push("rotateZ(" + this._rotation + "deg)");
-			else trans.push("rotate(" + this._rotation + "deg)");
-		}
+		//if (this._mbr) {
+		//	var origin = this._origin.x + "px " + this._origin.y + "px";
+		//	style.transformOrigin = origin;
+		//	style[prefix + "TransformOrigin"] = origin;
+		//	if (Crafty.support.css3dtransform) trans.push("rotateZ(" + this._rotation + "deg)");
+		//	else trans.push("rotate(" + this._rotation + "deg)");
+		//}
 
-		if (this._flipX) {
-			trans.push("scaleX(-1)");
-			if (prefix === "ms" && Crafty.support.version < 9) {
-				this._filters.flipX = "fliph";
-			}
-		}
+		//if (this._flipX) {
+		//	trans.push("scaleX(-1)");
+		//	if (prefix === "ms" && Crafty.support.version < 9) {
+		//		this._filters.flipX = "fliph";
+		//	}
+		//}
 
-		if (this._flipY) {
-			trans.push("scaleY(-1)");
-			if (prefix === "ms" && Crafty.support.version < 9) {
-				this._filters.flipY = "flipv";
-			}
-		}
+		//if (this._flipY) {
+		//	trans.push("scaleY(-1)");
+		//	if (prefix === "ms" && Crafty.support.version < 9) {
+		//		this._filters.flipY = "flipv";
+		//	}
+		//}
 
 		//apply the filters if IE
-		if (prefix === "ms" && Crafty.support.version < 9) {
-			this.applyFilters();
-		}
+		//if (prefix === "ms" && Crafty.support.version < 9) {
+		//	this.applyFilters();
+		//}
 
 		style.transform = trans.join(" ");
 		style[prefix + "Transform"] = trans.join(" ");
 
-		this.trigger("Draw", { style: style, type: "DOM", co: co });
+		//this.trigger("Draw", { style: style, type: "DOM", co: co });
 
 		return this;
 	}
