@@ -830,13 +830,10 @@
 			*/
 			gameTick: function () {
 				if (!Crafty.isPaused()) {
-					var start = Date.now(),
-						fps = Crafty.getFPS();
-					if (Crafty.timer.timeForTick > 0) {
-						fps = 1000/Crafty.timer.timeForTick;
-					}
+					var start = Date.now();
+					
 					// pass the fps to Tick so implementing components can make intelligent decisions
-					this.trigger('Tick', Math.min(fps, Crafty.getFPS()));
+					this.trigger('Tick', Math.max(skipTick, Crafty.timer.timeForTick));
 					
 					// average out the time we take, to try and provide a consistent framerate
 					// will also be useful for debugging, to see just how long one game tick takes
