@@ -37,6 +37,8 @@
 	entities = {}, //map of entities and their data
 	handlers = {}, //global event handlers
 	onloads = [], //temporary storage of onload handlers
+	draw,
+	drawID,
 	tick,
 	tickID,
 
@@ -762,6 +764,7 @@
 			prev: (+new Date),
 			current: (+new Date),
 			curTime: Date.now(),
+			timeForTick: 0,
 
 			init: function () {
 				var onFrame = window.requestAnimationFrame ||
@@ -772,15 +775,16 @@
 					null;
 
 				if (onFrame) {
-					tick = function () {
+					draw = function () {
 						Crafty.timer.step();
-						tickID = onFrame(tick);
+						drawID = onFrame(tick);
 					}
 
-					tickID = onFrame(tick);
+					drawID = onFrame(tick);
 				} else {
-					tick = setInterval(Crafty.timer.step, 1000 / FPS);
+					draw = setInterval(Crafty.timer.step, 1000 / FPS);
 				}
+				tick = setInterval(Crafty.timer.gameTick, 1000 / FPS);
 			},
 
 			stop: function () {
@@ -803,35 +807,49 @@
 		* #Crafty.timer.step
 		* @comp Crafty.timer
 		* @sign public void Crafty.timer.step()
-		* Advances the game by triggering `EnterFrame` and calls `Crafty.DrawManager.draw` to update the stage.
+		* Draws the game world on every frame.
 		*/
 			step: function () {
-				loops = 0;
-				this.curTime = Date.now();
-				if (this.curTime - nextGameTick > 60 * skipTicks) {
-					nextGameTick = this.curTime - skipTicks;
-				}
-				while (this.curTime > nextGameTick) {
-					Crafty.trigger("EnterFrame", { frame: frame++ });
-					nextGameTick += skipTicks;
-					loops++;
-				}
-				if (loops) {
+				if (!Crafty.isPaused()) {
 					//draw all cameras
 					var activeCams = Crafty.camera.listActive();
 					for (var cam in activeCams) {
 						console.log(activeCams[cam]);
 						activeCams[cam].render();
 					}
-					Crafty.pause();
+					//Crafty.pause();
 				}
 			},
+			
 			/**@
-		* #Crafty.timer.getFPS
-		* @comp Crafty.timer
-		* @sign public void Crafty.timer.getFPS()
-		* Returns the target frames per second. This is not an actual frame rate.
-		*/
+			* #Crafty.timer.gameTick
+			* @comp Crafty.timer
+			* @sign public void Crafty.timer.gameTick()
+			* Advances the game by one tick. A tick occurs independent of the drawing process.
+			* It should not interfere with the drawing process in any way.
+			*/
+			gameTick: function () {
+				if (!Crafty.isPaused()) {
+					var start = Date.now(),
+						fps = Crafty.getFPS();
+					if (Crafty.timer.timeForTick > 0) {
+						fps = 1000/Crafty.timer.timeForTick;
+					}
+					// pass the fps to Tick so implementing components can make intelligent decisions
+					this.trigger('Tick', Math.min(fps, Crafty.getFPS()));
+					
+					// average out the time we take, to try and provide a consistent framerate
+					// will also be useful for debugging, to see just how long one game tick takes
+					Crafty.timer.timeForTick = (Crafty.timer.timeForTick + (Date.now() - start)/2);
+				}
+			},
+			
+			/**@
+			* #Crafty.timer.getFPS
+			* @comp Crafty.timer
+			* @sign public void Crafty.timer.getFPS()
+			* Returns the target frames per second. This is not an actual frame rate.
+			*/
 			getFPS: function () {
 				return FPS;
 			},
