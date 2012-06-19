@@ -659,26 +659,26 @@
 * Used to extend the Crafty namespace.
 */
 	Crafty.extend({
-	/**@
-	* #Crafty.init
-	* @category Core
-	* @trigger EnterFrame - on each frame - { frame: Number }
-	* @trigger Load - Just after the viewport is initialised. Before the EnterFrame loops is started
-	* @sign public this Crafty.init([Number width, Number height])
-	* @param width - Width of the stage
-	* @param height - Height of the stage
-	* Create a div with id `cr-stage`, if there is not already an HTMLElement with id `cr-stage` (by `Crafty.viewport.init`).
-	*
-	* Starts the `EnterFrame` interval. This will call the `EnterFrame` event for every frame.
-	*
-	* Can pass width and height values for the stage otherwise will default to window size (see `Crafty.DOM.window`).
-	*
-	* All `Load` events will be executed.
-	*
-	* Uses `requestAnimationFrame` to sync the drawing with the browser but will default to `setInterval` if the browser does not support it.
-	* @see Crafty.stop
-	* @see Crafty.viewport.init <!-- This link is broken. Document generation engine needs to be fixed. Although a reference to Crafty.viewport could be used, it is better use a more specific reference to EnterFrame. -->
-	*/
+		/**@
+		 * #Crafty.init
+		 * @category Core
+		 * @trigger EnterFrame - on each frame - { frame: Number }
+		 * @trigger Load - Just after the viewport is initialised. Before the EnterFrame loops is started
+		 * @sign public this Crafty.init([Number width, Number height])
+		 * @param width - Width of the stage
+		 * @param height - Height of the stage
+		 * Create a div with id `cr-stage`, if there is not already an HTMLElement with id `cr-stage` (by `Crafty.viewport.init`).
+		 *
+		 * Starts the `EnterFrame` interval. This will call the `EnterFrame` event for every frame.
+		 *
+		 * Can pass width and height values for the stage otherwise will default to window size (see `Crafty.DOM.window`).
+		 *
+		 * All `Load` events will be executed.
+		 *
+		 * Uses `requestAnimationFrame` to sync the drawing with the browser but will default to `setInterval` if the browser does not support it.
+		 * @see Crafty.stop
+		 * @see Crafty.viewport.init <!-- This link is broken. Document generation engine needs to be fixed. Although a reference to Crafty.viewport could be used, it is better use a more specific reference to EnterFrame. -->
+		 */
 		init: function (w, h) {
 			Crafty.viewport.init(w, h);
 
@@ -693,15 +693,15 @@
 		},
 
 		/**@
-	* #Crafty.stop
-	* @category Core
-	* @trigger CraftyStop - when the game is stopped
-	* @sign public this Crafty.stop(void)
-	* Stops the EnterFrame interval and removes the stage element.
-	*
-	* To restart, use `Crafty.init()`.
-	* @see Crafty.init
-	*/
+		 * #Crafty.stop
+		 * @category Core
+		 * @trigger CraftyStop - when the game is stopped
+		 * @sign public this Crafty.stop(void)
+		 * Stops the EnterFrame interval and removes the stage element.
+		 *
+		 * To restart, use `Crafty.init()`.
+		 * @see Crafty.init
+		 */
 		stop: function () {
 			this.timer.stop();
 			Crafty.stage.elem.parentNode.removeChild(Crafty.stage.elem);
@@ -710,23 +710,23 @@
 		},
 
 		/**@
-	* #Crafty.pause
-	* @category Core
-	* @trigger Pause - when the game is paused
-	* @trigger Unpause - when the game is unpaused
-	* @sign public this Crafty.pause(void)
-	* Pauses the game by stoping the EnterFrame event from firing. If the game is already paused it is unpaused.
-	* You can pass a boolean parameter if you want to pause or unpause mo matter what the current state is.
-	* Modern browsers pauses the game when the page is not visible to the user. If you want the Pause event
-	* to be triggered when that happens you can enable autoPause in `Crafty.settings`.
-	* @example
-	* Have an entity pause the game when it is clicked.
-	* ~~~
-	* button.bind("click", function() {
-	* 	Crafty.pause();
-	* });
-	* ~~~
-	*/
+		 * #Crafty.pause
+		 * @category Core
+		 * @trigger Pause - when the game is paused
+		 * @trigger Unpause - when the game is unpaused
+		 * @sign public this Crafty.pause(void)
+		 * Pauses the game by stoping the EnterFrame event from firing. If the game is already paused it is unpaused.
+		 * You can pass a boolean parameter if you want to pause or unpause mo matter what the current state is.
+		 * Modern browsers pauses the game when the page is not visible to the user. If you want the Pause event
+		 * to be triggered when that happens you can enable autoPause in `Crafty.settings`.
+		 * @example
+		 * Have an entity pause the game when it is clicked.
+		 * ~~~
+		 * button.bind("click", function() {
+		 * 	Crafty.pause();
+		 * });
+		 * ~~~
+		 */
 		pause: function (toggle) {
 			if (arguments.length == 1 ? toggle : !this._paused) {
 				this.trigger('Pause');
@@ -756,15 +756,15 @@
 			return this._paused;
 		},
 		/**@
-	* #Crafty.timer
-	* @category Internal
-	* Handles game ticks
-	*/
+		 * #Crafty.timer
+		 * @category Internal
+		 * Handles game ticks
+		 */
 		timer: {
 			prev: (+new Date),
 			current: (+new Date),
 			curTime: Date.now(),
-			timeForTick: 0,
+			tickLast: Date.now(),
 
 			init: function () {
 				var onFrame = window.requestAnimationFrame ||
@@ -804,11 +804,11 @@
 			},
 
 			/**@
-		* #Crafty.timer.step
-		* @comp Crafty.timer
-		* @sign public void Crafty.timer.step()
-		* Draws the game world on every frame.
-		*/
+			 * #Crafty.timer.step
+			 * @comp Crafty.timer
+			 * @sign public void Crafty.timer.step()
+			 * Draws the game world on every frame.
+			 */
 			step: function () {
 				if (!Crafty.isPaused()) {
 					//draw all cameras
@@ -822,41 +822,40 @@
 			},
 			
 			/**@
-			* #Crafty.timer.gameTick
-			* @comp Crafty.timer
-			* @sign public void Crafty.timer.gameTick()
-			* Advances the game by one tick. A tick occurs independent of the drawing process.
-			* It should not interfere with the drawing process in any way.
-			*/
+			 * #Crafty.timer.gameTick
+			 * @comp Crafty.timer
+			 * @sign public void Crafty.timer.gameTick()
+			 * Advances the game by one tick. A tick occurs independent of the drawing process.
+			 * It should not interfere with the drawing process in any way.
+			 */
 			gameTick: function () {
 				if (!Crafty.isPaused()) {
 					var start = Date.now();
 					
-					// pass the fps to Tick so implementing components can make intelligent decisions
-					this.trigger('Tick', Math.max(skipTick, Crafty.timer.timeForTick));
-					
-					// average out the time we take, to try and provide a consistent framerate
-					// will also be useful for debugging, to see just how long one game tick takes
-					Crafty.timer.timeForTick = (Crafty.timer.timeForTick + (Date.now() - start)/2);
+					// pass the time passed since the last tick so componenets can do time-based things intelligently
+					// the parameter is in ms, i.e. 20ms
+					this.trigger('Tick', start - Crafty.tickLast);
+
+					Crafty.timer.tickLast = start;
 				}
 			},
 			
 			/**@
-			* #Crafty.timer.getFPS
-			* @comp Crafty.timer
-			* @sign public void Crafty.timer.getFPS()
-			* Returns the target frames per second. This is not an actual frame rate.
-			*/
+			 * #Crafty.timer.getFPS
+			 * @comp Crafty.timer
+			 * @sign public void Crafty.timer.getFPS()
+			 * Returns the target frames per second. This is not an actual frame rate.
+			 */
 			getFPS: function () {
 				return FPS;
 			},
 			/**@
-		* #Crafty.timer.simulateFrames
-		* @comp Crafty.timer
-		* Advances the game state by a number of frames and draws the resulting stage at the end. Useful for tests and debugging.
-		* @sign public this Crafty.timer.simulateFrames(Number frames)
-		* @param frames - number of frames to simulate
-		*/
+			 * #Crafty.timer.simulateFrames
+			 * @comp Crafty.timer
+			 * Advances the game state by a number of frames and draws the resulting stage at the end. Useful for tests and debugging.
+			 * @sign public this Crafty.timer.simulateFrames(Number frames)
+			 * @param frames - number of frames to simulate
+			 */
 			simulateFrames: function (frames) {
 				while (frames-- > 0) {
 					Crafty.trigger("EnterFrame", { frame: frame++ });
@@ -867,23 +866,23 @@
 		},
 
 		/**@
-	* #Crafty.e
-	* @category Core
-	* @trigger NewEntity - When the entity is created and all components are added - { id:Number }
-	* @sign public Entity Crafty.e(String componentList)
-	* @param componentList - List of components to assign to new entity
-	* @sign public Entity Crafty.e(String component1[, .., String componentN])
-	* @param component# - Component to add
-	* Creates an entity. Any arguments will be applied in the same
-	* way `.addComponent()` is applied as a quick way to add components.
-	*
-	* Any component added will augment the functionality of
-	* the created entity by assigning the properties and methods from the component to the entity.
-	* ~~~
-	* var myEntity = Crafty.e("2D, DOM, Color");
-	* ~~~
-	* @see Crafty.c
-	*/
+		 * #Crafty.e
+		 * @category Core
+		 * @trigger NewEntity - When the entity is created and all components are added - { id:Number }
+		 * @sign public Entity Crafty.e(String componentList)
+		 * @param componentList - List of components to assign to new entity
+		 * @sign public Entity Crafty.e(String component1[, .., String componentN])
+		 * @param component# - Component to add
+		 * Creates an entity. Any arguments will be applied in the same
+		 * way `.addComponent()` is applied as a quick way to add components.
+		 *
+		 * Any component added will augment the functionality of
+		 * the created entity by assigning the properties and methods from the component to the entity.
+		 * ~~~
+		 * var myEntity = Crafty.e("2D, DOM, Color");
+		 * ~~~
+		 * @see Crafty.c
+		 */
 		e: function () {
 			var id = UID(), craft;
 
