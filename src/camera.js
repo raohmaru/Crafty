@@ -1,3 +1,4 @@
+/// camera.js
 /**
  * Camera
  * ~~~~~~~~~~~~~~
@@ -114,14 +115,17 @@
 			for (var i=0, l=es.length; i<l; i++) {
 				arr.push(Crafty(es[i]));
 			}
-			console.log("In View: ")
-			console.log(es);
+			//console.log("In View: ")
+			//console.log(es);
 			return arr;
 		},
 		
 		render: function () {
-			if (!this.active) return;
-			// pre render logic
+			if (!this.active) {
+			    return this;
+			}
+
+		    // pre render logic
 			var entities = this.getEntitiesInView(),
 				i = 0, l = entities.length;
 			
@@ -202,11 +206,11 @@
 	 */
 	function topdown(data) {
 		for (var e in data) {
-			console.log(data[e]);
+			//console.log(data[e]);
 			var top = data[e].faces.top;
 			updateSpatialStyles(data[e].html.container, top.x, top.y, top.z);
 			updateFaceStyle(data[e].html.top, top.paint, top.w, top.h);
-			console.log("Render TOP");
+			//console.log("Render TOP");
 		}
 	}
 	
@@ -249,7 +253,7 @@
 	 * Other components can change this.
 	 */
 	function Face() {
-		this.paint = "";
+		this.paint = [];
 		this.x = 0;
 		this.y = 0;
 		this.z = 0;
@@ -259,17 +263,20 @@
 		this.rX = 0;
 	}
 	
-	/**
+    /**
+    * @sign public void Face.sePaint(String name, String value)
+	* @param name - the css name (ie. "background-color")
+    * @param value - the css value (ie. "red")
 	 * Paints are just css rules.
 	 * Components should be as specific as possible to avoid collisions
 	 * and odd behavior due to the order things happen
 	 * eg. Sprite will add background-url and background-position
 	 * Color will add background-color.
 	 */
-	Face.prototype.addPaint = function(new_rule) {
-		this.paint += " "+new_rule + ";";
-		return this;
-	}
+    Face.prototype.addPaint = function(name, value) {
+        this.paint[name] = value;
+        return this;
+    };
 	
 	/**
 	 * Helper function
@@ -358,7 +365,11 @@
 	}
 
 	function updateFaceStyle(elem, paint, w, h) {
-		var style = paint + ("width: " + ~~(w) + "px;") + ("height: " + ~~(h) + "px;");
+	    var style = "";
+	    for (var name in paint) {
+	        style += name + ": " + paint[name] + ";";
+	    }
+		style += ("width: " + ~~(w) + "px;") + ("height: " + ~~(h) + "px;");
 
 		if (typeof(elem.style.cssText) != 'undefined') {
 			elem.style.cssText = style;

@@ -1,3 +1,4 @@
+/// layers.js
 /**
  * Layers
  */
@@ -35,7 +36,7 @@
 				if ('has' in e && e.has('Spatial')) {
 					if (!self.find(e)) {
 						hashMap.insert(e);
-						entities[entities.length]+;
+						entities[entities.length]++;
 					}
 				}
 			};

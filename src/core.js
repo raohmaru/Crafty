@@ -1,3 +1,5 @@
+/// core.js
+
 (function (window, undefined) {
 
 	/**@
@@ -40,6 +42,7 @@
 	draw,
 	drawID,
 	tick,
+	drawFrame,
 	tickID,
 
 	noSetter,
@@ -775,14 +778,14 @@
 					null;
 
 				if (onFrame) {
-					draw = function () {
-						Crafty.timer.step();
-						drawID = onFrame(tick);
-					}
+				    drawFrame = function() {
+				        Crafty.timer.step();
+				        drawID = onFrame(drawFrame);
+				    };
 
-					drawID = onFrame(tick);
+					drawFrame();
 				} else {
-					draw = setInterval(Crafty.timer.step, 1000 / FPS);
+				    drawFrame = setInterval(Crafty.timer.step, 1000 / FPS);
 				}
 				tick = setInterval(Crafty.timer.gameTick, 1000 / FPS);
 			},
@@ -814,7 +817,7 @@
 					//draw all cameras
 					var activeCams = Crafty.camera.listActive();
 					for (var cam in activeCams) {
-						console.log(activeCams[cam]);
+						//console.log(activeCams[cam]);
 						activeCams[cam].render();
 					}
 					//Crafty.pause();
@@ -834,7 +837,7 @@
 					
 					// pass the time passed since the last tick so componenets can do time-based things intelligently
 					// the parameter is in ms, i.e. 20ms
-					this.trigger('Tick', start - Crafty.tickLast);
+					Crafty.trigger('Tick', start - Crafty.timer.tickLast);
 
 					Crafty.timer.tickLast = start;
 				}

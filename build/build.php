@@ -202,11 +202,12 @@ function merge($files, $path = "", $save) {
 	file_put_contents($save."crafty.js", $src);
 }
 
-$files = array("license.txt", 
-			   "core.js",
+$files = array("license.txt",
+			   "core.js", 
+         "camera.js",
 			   "intro.js", 
-			   "HashMap.js", 
-			   "2D.js", 
+			   "HashMap.js",
+         "spatial.js", 
 			   "collision.js", 
 			   "DOM.js",
 			   "html.js",

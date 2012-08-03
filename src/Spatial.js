@@ -4,6 +4,7 @@
 * Functions related with quering entities. 
 * @see Crafty.HashMap
 */
+Crafty.map = new Crafty.HashMap();
 var M = Math,
 	Mc = M.cos,
 	Ms = M.sin,
@@ -319,8 +320,9 @@ Crafty.c("Spatial", {
 
 			this.detach();
 		});
-		
-		this.bind('PreRender', _prerender);
+
+	    console.log("Spatial");
+	    this.bind('PreRender', this._prerender);
 	},
 
 	/**
@@ -732,9 +734,9 @@ Crafty.c("Spatial", {
 	* The default faces are already added by the camera for us
 	* We just need to fill them with data
 	*/
-	_prerender: function(camera_type, data) {
-		for (var i in data) {
-			data[i].facing(i, this.w, this.l, this.h);
+	_prerender: function (d) {
+		for (var i in d.data.faces) {
+		    d.data.faces[i].setFacing(i, this.w, this.l, this.h, this.x, this.y);
 		}
 	}
 });
