@@ -1,5 +1,5 @@
 Crafty.extend({
-/**@
+	/**@
 	* #Crafty.assets
 	* @category Assets
 	* An object containing every asset used in the current Crafty game.
@@ -11,7 +11,7 @@ Crafty.extend({
 	* var isLoaded = !!Crafty.assets["images/sprite.png"];
 	* ~~~
 	* @see Crafty.loader
-	*/
+		*/
 	assets: {},
 
 	/**@
@@ -32,12 +32,12 @@ Crafty.extend({
 	* The `onProgress` function will be passed on object with information about
 	* the progress including how many assets loaded, total of all the assets to
 	* load and a percentage of the progress.
-  *
-  *
-  *           { loaded: j, total: total, percent: (j / total * 100) })
+	*
+	*
+	*           { loaded: j, total: total, percent: (j / total * 100) })
 	*
 	* `onError` will be passed with the asset that couldn't load.
-  *
+	*
 	* When `onError` is not provided, the onLoad is loaded even some assests are not successfully loaded. Otherwise, onLoad will be called no matter whether there are errors or not. 
 	* @example
 	* ~~~

@@ -74,7 +74,7 @@ Crafty.c("Text", {
     */
 	text: function (text) {
 		if (!text) return this._text;
-		if (typeof(text) == "function")
+		if (typeof (text) == "function")
 			this._text = text.call(this);
 		else
 			this._text = text;

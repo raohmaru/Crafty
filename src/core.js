@@ -216,53 +216,53 @@
 			this.trigger("NewComponent", ul);
 			return this;
 		},
-  /**@
-            * @comp Crafty Core
-            * @sign public this. toggleComponent(String componentID,String componentToggle)
-            * @param componentID - Component ID to add or remove.
-            * @param componentToggle - Component ID to replace instead of remove
-            * Add or Remove Components
-            * @example
-            * ~~~
-            * var e = Crafty.e("2D,DOM,Test");
-            * e.toggleComponent("Test,Test2"); //Remove Test add Test2 and vice versa
-            * ~~~
-            */
-           toggleComponent:function(toggle){
-            var i = 0, l, comps;
-            if (arguments.length > 1) {
-                l = arguments.length;
-                        
-                for (; i < l; i++) {
-                    if(this.has(arguments[i])){ 
-                        this.removeComponent(arguments[i]);
-                    }else{
-                        this.addComponent(arguments[i]);
-                    }
-                }
-            //split components if contains comma
-            } else if (toggle.indexOf(',') !== -1) {
-                comps = toggle.split(rlist);
-                l = comps.length;
-                for (; i < l; i++) {
-                    if(this.has(comps[i])){ 
-                        this.removeComponent(comps[i]);
-                    }else{
-                        this.addComponent(comps[i]);
-                    }
-                }
-                
-            //single component passed
-            } else {
-                if(this.has(toggle)){ 
-                    this.removeComponent(toggle);
-                }else{
-                    this.addComponent(toggle);
-                }
-            }
-   
-            return this;
-        },
+		/**@
+		* @comp Crafty Core
+		* @sign public this. toggleComponent(String componentID,String componentToggle)
+		* @param componentID - Component ID to add or remove.
+		* @param componentToggle - Component ID to replace instead of remove
+		* Add or Remove Components
+		* @example
+		* ~~~
+		* var e = Crafty.e("2D,DOM,Test");
+		* e.toggleComponent("Test,Test2"); //Remove Test add Test2 and vice versa
+		* ~~~
+		*/
+		toggleComponent: function (toggle) {
+			var i = 0, l, comps;
+			if (arguments.length > 1) {
+				l = arguments.length;
+
+				for (; i < l; i++) {
+					if (this.has(arguments[i])) {
+						this.removeComponent(arguments[i]);
+					} else {
+						this.addComponent(arguments[i]);
+					}
+				}
+				//split components if contains comma
+			} else if (toggle.indexOf(',') !== -1) {
+				comps = toggle.split(rlist);
+				l = comps.length;
+				for (; i < l; i++) {
+					if (this.has(comps[i])) {
+						this.removeComponent(comps[i]);
+					} else {
+						this.addComponent(comps[i]);
+					}
+				}
+
+				//single component passed
+			} else {
+				if (this.has(toggle)) {
+					this.removeComponent(toggle);
+				} else {
+					this.addComponent(toggle);
+				}
+			}
+
+			return this;
+		},
 		/**@
 	* #.requires
 	* @comp Crafty Core
@@ -778,14 +778,14 @@
 					null;
 
 				if (onFrame) {
-				    drawFrame = function() {
-				        Crafty.timer.step();
-				        drawID = onFrame(drawFrame);
-				    };
+					drawFrame = function () {
+						Crafty.timer.step();
+						drawID = onFrame(drawFrame);
+					};
 
 					drawFrame();
 				} else {
-				    drawFrame = setInterval(Crafty.timer.step, 1000 / FPS);
+					drawFrame = setInterval(Crafty.timer.step, 1000 / FPS);
 				}
 				tick = setInterval(Crafty.timer.gameTick, 1000 / FPS);
 			},
@@ -823,7 +823,7 @@
 					//Crafty.pause();
 				}
 			},
-			
+
 			/**@
 			 * #Crafty.timer.gameTick
 			 * @comp Crafty.timer
@@ -834,7 +834,7 @@
 			gameTick: function () {
 				if (!Crafty.isPaused()) {
 					var start = Date.now();
-					
+
 					// pass the time passed since the last tick so componenets can do time-based things intelligently
 					// the parameter is in ms, i.e. 20ms
 					Crafty.trigger('Tick', start - Crafty.timer.tickLast);
@@ -842,7 +842,7 @@
 					Crafty.timer.tickLast = start;
 				}
 			},
-			
+
 			/**@
 			 * #Crafty.timer.getFPS
 			 * @comp Crafty.timer
@@ -1055,15 +1055,15 @@
 			callbacks = {};
 
 			return {
-			/**@
-			* #Crafty.settings.register
-			* @comp Crafty.settings
-			* @sign public void Crafty.settings.register(String settingName, Function callback)
-			* @param settingName - Name of the setting
-			* @param callback - Function to execute when use modifies setting
-			* Use this to register custom settings. Callback will be executed when `Crafty.settings.modify` is used.
-			* @see Crafty.settings.modify
-			*/
+				/**@
+				* #Crafty.settings.register
+				* @comp Crafty.settings
+				* @sign public void Crafty.settings.register(String settingName, Function callback)
+				* @param settingName - Name of the setting
+				* @param callback - Function to execute when use modifies setting
+				* Use this to register custom settings. Callback will be executed when `Crafty.settings.modify` is used.
+				* @see Crafty.settings.modify
+				*/
 				register: function (setting, callback) {
 					callbacks[setting] = callback;
 				},
@@ -1121,7 +1121,7 @@
   * Deep copy (a.k.a clone) of an object.
 	*/
 	function clone(obj) {
-		if (obj === null || typeof(obj) != 'object')
+		if (obj === null || typeof (obj) != 'object')
 			return obj;
 
 		var temp = obj.constructor(); // changed

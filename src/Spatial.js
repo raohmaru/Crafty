@@ -21,14 +21,14 @@ var M = Math,
 * @trigger Rotate - when the entity is rotated - { cos:Number, sin:Number, deg:Number, rad:Number, o: {x:Number, y:Number}, matrix: {M11, M12, M21, M22} }
 */
 Crafty.c("Spatial", {
-/**@
-	* #.x
-	* @comp Spatial
-	* The `x` position on the stage. When modified, will automatically be redrawn.
-	* Is actually a getter/setter so when using this value for calculations and not modifying it,
-	* use the `._x` property.
-	* @see ._attr
-	*/
+	/**@
+		* #.x
+		* @comp Spatial
+		* The `x` position on the stage. When modified, will automatically be redrawn.
+		* Is actually a getter/setter so when using this value for calculations and not modifying it,
+		* use the `._x` property.
+		* @see ._attr
+		*/
 	_x: 0,
 	/**@
 	* #.y
@@ -135,7 +135,7 @@ Crafty.c("Spatial", {
 	_parent: null,
 	_changed: false,
 
-	_defineGetterSetter_setter: function() {
+	_defineGetterSetter_setter: function () {
 		//create getters and setters using __defineSetter__ and __defineGetter__
 		this.__defineSetter__('x', function (v) { this._attr('_x', v); });
 		this.__defineSetter__('y', function (v) { this._attr('_y', v); });
@@ -158,36 +158,36 @@ Crafty.c("Spatial", {
 		this.__defineGetter__('numChildren', function () { return this._children.length; });
 	},
 
-	_defineGetterSetter_defineProperty: function() {
+	_defineGetterSetter_defineProperty: function () {
 		Object.defineProperty(this, 'x', {
-				set: function (v) { this._attr('_x', v); }
+			set: function (v) { this._attr('_x', v); }
 				, get: function () { return this._x; }
 				, configurable: true
-			});
+		});
 
 		Object.defineProperty(this, 'y', {
-				set: function (v) { this._attr('_y', v); }
+			set: function (v) { this._attr('_y', v); }
 				, get: function () { return this._y; }
 				, configurable: true
-			});
+		});
 
 		Object.defineProperty(this, 'w', {
-				set: function (v) { this._attr('_w', v); }
+			set: function (v) { this._attr('_w', v); }
 				, get: function () { return this._w; }
 				, configurable: true
-			});
+		});
 
 		Object.defineProperty(this, 'h', {
-				set: function (v) { this._attr('_h', v); }
+			set: function (v) { this._attr('_h', v); }
 				, get: function () { return this._h; }
 				, configurable: true
-			});
+		});
 
 		Object.defineProperty(this, 'z', {
-				set: function (v) { this._attr('_z', v); }
+			set: function (v) { this._attr('_z', v); }
 				, get: function () { return this._z; }
 				, configurable: true
-			});
+		});
 
 		Object.defineProperty(this, 'rotation', {
 			set: function (v) { this._attr('_rotation', v); }
@@ -208,7 +208,7 @@ Crafty.c("Spatial", {
 		});
 	},
 
-	_defineGetterSetter_fallback: function() {
+	_defineGetterSetter_fallback: function () {
 		//set the public properties to the current private properties
 		this.x = this._x;
 		this.y = this._y;
@@ -268,25 +268,25 @@ Crafty.c("Spatial", {
 				this.trigger("Move", old);
 			}
 		});
-  },
+	},
 
-	init: function() {
+	init: function () {
 		this._globalZ = this[0];
 		this._origin = { x: 0, y: 0 };
 		this._children = [];
 
-		if(Crafty.support.setter) {
-      this._defineGetterSetter_setter();
+		if (Crafty.support.setter) {
+			this._defineGetterSetter_setter();
 		} else if (Crafty.support.defineProperty) {
-			//IE9 supports Object.defineProperty
-      this._defineGetterSetter_defineProperty();
+				//IE9 supports Object.defineProperty
+			this._defineGetterSetter_defineProperty();
 		} else {
 			/*
 			If no setters and getters are supported (e.g. IE8) supports,
 			check on every frame for a difference between this._(x|y|w|h|z...)
 			and this.(x|y|w|h|z) and update accordingly.
 			*/
-      this._defineGetterSetter_fallback();
+			this._defineGetterSetter_fallback();
 		}
 
 		//insert self into the HashMap
@@ -321,8 +321,8 @@ Crafty.c("Spatial", {
 			this.detach();
 		});
 
-	    console.log("Spatial");
-	    this.bind('PreRender', this._prerender);
+		console.log("Spatial");
+		this.bind('PreRender', this._prerender);
 	},
 
 	/**
@@ -334,9 +334,9 @@ Crafty.c("Spatial", {
 			ct = Math.cos(rad), //cache the sin and cosine of theta
 			st = Math.sin(rad),
 			o = {
-			x: this._origin.x + this._x,
-			y: this._origin.y + this._y
-		};
+				x: this._origin.x + this._x,
+				y: this._origin.y + this._y
+			};
 
 		//if the angle is 0 and is currently 0, skip
 		if (!theta) {
@@ -726,7 +726,7 @@ Crafty.c("Spatial", {
 		//trigger a change
 		this.trigger("Change", old);
 	},
-	
+
 	/**@
 	* #._prerender
 	* @comp Spatial
@@ -736,7 +736,7 @@ Crafty.c("Spatial", {
 	*/
 	_prerender: function (d) {
 		for (var i in d.data.faces) {
-		    d.data.faces[i].setFacing(i, this.w, this.l, this.h, this.x, this.y);
+			d.data.faces[i].setFacing(i, this.w, this.l, this.h, this.x, this.y);
 		}
 	}
 });
@@ -804,8 +804,8 @@ Crafty.c("Gravity", {
 	*   .gravityConst(2)
 	* ~~~
 	*/
-	gravityConst: function(g) {
-		this._gravityConst=g;
+	gravityConst: function (g) {
+		this._gravityConst = g;
 		return this;
 	},
 
@@ -899,20 +899,20 @@ Crafty.polygon = function (poly) {
 };
 
 Crafty.polygon.prototype = {
-/**@
-	* #.containsPoint
-	* @comp Crafty.Polygon
-	* @sign public Boolean .containsPoint(Number x, Number y)
-	* @param x - X position of the point
-	* @param y - Y position of the point
-	* Method is used to determine if a given point is contained by the polygon.
-	* @example
-	* ~~~
-	* var poly = new Crafty.polygon([50,0],[100,100],[0,100]);
-	* poly.containsPoint(50, 50); //TRUE
-	* poly.containsPoint(0, 0); //FALSE
-	* ~~~
-	*/
+	/**@
+		* #.containsPoint
+		* @comp Crafty.Polygon
+		* @sign public Boolean .containsPoint(Number x, Number y)
+		* @param x - X position of the point
+		* @param y - Y position of the point
+		* Method is used to determine if a given point is contained by the polygon.
+		* @example
+		* ~~~
+		* var poly = new Crafty.polygon([50,0],[100,100],[0,100]);
+		* poly.containsPoint(50, 50); //TRUE
+		* poly.containsPoint(0, 0); //FALSE
+		* ~~~
+		*/
 	containsPoint: function (x, y) {
 		var p = this.points, i, j, c = false;
 
@@ -996,20 +996,20 @@ Crafty.circle = function (x, y, radius) {
 };
 
 Crafty.circle.prototype = {
-/**@
-	* #.containsPoint
-	* @comp Crafty.Circle
-	* @sign public Boolean .containsPoint(Number x, Number y)
-	* @param x - X position of the point
-	* @param y - Y position of the point
-	* Method is used to determine if a given point is contained by the circle.
-	* @example
-	* ~~~
-	* var circle = new Crafty.circle(0, 0, 10);
-	* circle.containsPoint(0, 0); //TRUE
-	* circle.containsPoint(50, 50); //FALSE
-	* ~~~
-	*/
+	/**@
+		* #.containsPoint
+		* @comp Crafty.Circle
+		* @sign public Boolean .containsPoint(Number x, Number y)
+		* @param x - X position of the point
+		* @param y - Y position of the point
+		* Method is used to determine if a given point is contained by the circle.
+		* @example
+		* ~~~
+		* var circle = new Crafty.circle(0, 0, 10);
+		* circle.containsPoint(0, 0); //TRUE
+		* circle.containsPoint(50, 50); //FALSE
+		* ~~~
+		*/
 	containsPoint: function (x, y) {
 		var radius = this.radius,
 		    sqrt = Math.sqrt,

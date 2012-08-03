@@ -60,11 +60,11 @@ Crafty.c("Canvas", {
 			context = ctx || Crafty.canvas.context,
 			coord = this.__coord || [0, 0, 0, 0],
 			co = {
-			x: coord[0] + (x || 0),
-			y: coord[1] + (y || 0),
-			w: w || coord[2],
-			h: h || coord[3]
-		};
+				x: coord[0] + (x || 0),
+				y: coord[1] + (y || 0),
+				w: w || coord[2],
+				h: h || coord[3]
+			};
 
 		if (this._mbr) {
 			context.save();
@@ -101,12 +101,12 @@ Crafty.c("Canvas", {
 */
 Crafty.extend({
 	canvas: {
-	/**@
-		* #Crafty.canvas.context
-		* @comp Crafty.canvas
-		* This will return the 2D context of the main canvas element.
-		* The value returned from `Crafty.canvas._canvas.getContext('2d')`.
-		*/
+		/**@
+			* #Crafty.canvas.context
+			* @comp Crafty.canvas
+			* This will return the 2D context of the main canvas element.
+			* The value returned from `Crafty.canvas._canvas.getContext('2d')`.
+			*/
 		context: null,
 		/**@
 		* #Crafty.canvas._canvas

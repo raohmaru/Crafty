@@ -33,14 +33,14 @@
  */
 (function (Crafty) {
 	Crafty.extend({
-	// Either creates a camera, or returns the camera with the given label. 
-	// I think this is better than the array syntax Crafty.camera[], as it allows us to iterate over Crafty.camera.cameras 
-	// without having to deal with functions on Crafty.camera. Agree?
+		// Either creates a camera, or returns the camera with the given label. 
+		// I think this is better than the array syntax Crafty.camera[], as it allows us to iterate over Crafty.camera.cameras 
+		// without having to deal with functions on Crafty.camera. Agree?
 		camera: function (label, type, options) {
 			if (!type) {
 				return Crafty.camera.cameras[label];
 			}
-			
+
 			return Crafty.camera.cameras[label] = new Crafty.camera.fn.init(type, options);
 		}
 	});
@@ -56,7 +56,7 @@
 		}
 		return activeCams;
 	}
-	
+
 	Crafty.camera.fn = {
 		active: false,
 		x: 0,
@@ -68,7 +68,7 @@
 		/**
 		 * Constructor. Should never be invoked directly.
 		 */
-		init: function(type, options) {
+		init: function (type, options) {
 			this.type = type;
 			this.data = {};
 			this.target = {
@@ -88,7 +88,7 @@
 				}
 			}
 		},
-		
+
 		/**
 		 * Moves the camera 
 		 */
@@ -96,7 +96,7 @@
 			this.moveTo(this.x + x, this.y + y, this.z + z);
 			return this;
 		},
-		
+
 		moveTo: function (x, y, z) {
 			if (isFinite(x)) this.x = parseInt(x);
 			if (isFinite(y)) this.y = parseInt(y);
@@ -108,28 +108,28 @@
 			}
 			return this;
 		},
-		
-		getEntitiesInView: function() {
+
+		getEntitiesInView: function () {
 			var es = Crafty("Render"),
 				arr = [];
-			for (var i=0, l=es.length; i<l; i++) {
+			for (var i = 0, l = es.length; i < l; i++) {
 				arr.push(Crafty(es[i]));
 			}
 			//console.log("In View: ")
 			//console.log(es);
 			return arr;
 		},
-		
+
 		render: function () {
 			if (!this.active) {
-			    return this;
+				return this;
 			}
 
-		    // pre render logic
+			// pre render logic
 			var entities = this.getEntitiesInView(),
 				i = 0, l = entities.length;
-			
-			for (; i<l; i++) {
+
+			for (; i < l; i++) {
 				var e = entities[i],
 					// if the data object already exists for this entity, use it
 					// otherwise, create a new one
@@ -140,12 +140,12 @@
 							top: (new Face()).setFacing('top', e.w, e.l, e.h, e.x, e.y),
 							front: (new Face()).setFacing('front', e.w, e.l, e.h),
 							left: (new Face()).setFacing('left', e.w, e.l, e.h),
-							right:(new Face()).setFacing('right', e.w, e.l, e.h),
+							right: (new Face()).setFacing('right', e.w, e.l, e.h),
 							back: (new Face()).setFacing('back', e.w, e.l, e.h),
 							below: (new Face()).setFacing('below', e.w, e.l, e.h),
 						},
 						tag: 'div',
-						html: createDomElements(e[0]) 
+						html: createDomElements(e[0])
 					};
 
 				if (!this.data[e[0]]) {
@@ -156,11 +156,11 @@
 				// a good entity will modify this data only if its been changed
 				e.trigger('PreRender', { type: this.type, data: d });
 			}
-			
+
 			// javascript! 
 			// call the private functions as instance methods
 			switch (this.type) {
-				case "Top": 
+				case "Top":
 					topdown.call(this, this.data);
 					break;
 				case "Side":
@@ -184,7 +184,7 @@
 		}
 	};
 	Crafty.camera.fn.init.prototype = Crafty.camera.fn;
-			
+
 	// render implementations go here
 	/**
 	 * All render implementations should work in the same general way
@@ -200,7 +200,7 @@
 	 * Any elements on screen that shouldn't be (deleted, w/e)
 	 * need to be removed by the function itself.
 	 */
-	
+
 	/**
 	 * Only renders the top face of each box
 	 */
@@ -213,38 +213,38 @@
 			//console.log("Render TOP");
 		}
 	}
-	
+
 	/**
 	 * Only renders the right face
 	 */
 	function sideview(data) {
 	}
-	
+
 	/**
 	 * Only renders the front face. The front face should already have the isometric transforms applied to it in the sprite itself
 	 */
 	function isometric(data) {
 	}
-	
+
 	/**
 	 * Renders all 6 faces. The camera is at a fixed angle, with no perspective applied
 	 */
 	function isofaces(data) {
 	}
-	
+
 	/**
 	 * Renders all 6 faces. Camera can be anywhere. Has perspective.
 	 */
 	function dom3D(data) {
 	}
-	
+
 	/**
 	 * Renders all 6 faces with WebGL. Camera can be anywhere. Has perspective.
 	 * Good luck with this one. I ain't touching it.
 	 */
 	function full3D(data) {
 	}
-	
+
 	/**
 	 * Represents a single face of a larger object.
 	 * A face is defined a rectangle in which all 4 points are on the same plane
@@ -262,8 +262,8 @@
 		this.rZ = 0;
 		this.rX = 0;
 	}
-	
-    /**
+
+	/**
     * @sign public void Face.sePaint(String name, String value)
 	* @param name - the css name (ie. "background-color")
     * @param value - the css value (ie. "red")
@@ -273,16 +273,16 @@
 	 * eg. Sprite will add background-url and background-position
 	 * Color will add background-color.
 	 */
-    Face.prototype.addPaint = function(name, value) {
-        this.paint[name] = value;
-        return this;
-    };
-	
+	Face.prototype.addPaint = function (name, value) {
+		this.paint[name] = value;
+		return this;
+	};
+
 	/**
 	 * Helper function
 	 * Automatically sizes and orients a face based on the entity dimensions and the direction given
 	 */
-	Face.prototype.setFacing = function(facing, w, l, h, x, y) {
+	Face.prototype.setFacing = function (facing, w, l, h, x, y) {
 		switch (facing.toLowerCase()) {
 			case 'top':
 				this.w = w;
@@ -290,34 +290,34 @@
 				this.z = parseInt(h / 2);
 				this.x = x;
 				this.y = y;
-			break;
+				break;
 			case 'front':
 				this.w = h;
 				this.h = l;
 				this.rX = 90;
-			break;
+				break;
 			case 'left':
 				this.w = h;
 				this.h = w;
 				this.rZ = 90;
 				this.rX = 90;
-			break;
+				break;
 			case 'right':
 				this.w = h;
 				this.h = w;
 				this.rZ = 90;
 				this.rX = -90;
-			break;
+				break;
 			case 'back':
 				this.w = h;
 				this.h = l;
 				this.rX = -90;
-			break;
+				break;
 			case 'below':
 				this.w = w;
 				this.h = l;
 				this.rX = 180;
-			break;
+				break;
 		}
 		return this;
 	}
@@ -357,7 +357,7 @@
 			style += (prefix + "transform: " + trans.join(" ") + ";");
 		}
 
-		if (typeof(elem.style.cssText) != 'undefined') {
+		if (typeof (elem.style.cssText) != 'undefined') {
 			elem.style.cssText = style;
 		} else {
 			elem.setAttribute('style', style);
@@ -365,17 +365,17 @@
 	}
 
 	function updateFaceStyle(elem, paint, w, h) {
-	    var style = "";
-	    for (var name in paint) {
-	        style += name + ": " + paint[name] + ";";
-	    }
+		var style = "";
+		for (var name in paint) {
+			style += name + ": " + paint[name] + ";";
+		}
 		style += ("width: " + ~~(w) + "px;") + ("height: " + ~~(h) + "px;");
 
-		if (typeof(elem.style.cssText) != 'undefined') {
+		if (typeof (elem.style.cssText) != 'undefined') {
 			elem.style.cssText = style;
 		} else {
 			elem.setAttribute('style', style);
 		}
 	}
-	
+
 })(Crafty);

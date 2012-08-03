@@ -11,27 +11,27 @@
 			return l;
 		}
 	});
-	
+
 	Crafty.layer.fn = {
 		init: function (label) {
 			var hashMap = new Crafty.HashMap(),
 				entities = Crafty().addComponent('Spatial');
 			self = this;
-			
-			this.get = function(sel) {
+
+			this.get = function (sel) {
 				entities
 			};
-			
+
 			this.find = function (e) {
 				if ('has' in e && e.has('Spatial')) {
-					for (var i=0, l=entities.length; i<l; i++) {
+					for (var i = 0, l = entities.length; i < l; i++) {
 						if (entities[i][0] == e[0])
 							return i;
 					}
 				}
 				return false;
 			};
-			
+
 			this.add = function (e) {
 				if ('has' in e && e.has('Spatial')) {
 					if (!self.find(e)) {
@@ -40,7 +40,7 @@
 					}
 				}
 			};
-			 
+
 			this.remove = function (e) {
 				if ('has' in e && e.has('Spatial')) {
 					var id = self.find(e);

@@ -4,14 +4,14 @@
 * Static functions.
 */
 Crafty.math = {
-/**@
-	 * #Crafty.math.abs
-	 * @comp Crafty.math
-     * @sign public this Crafty.math.abs(Number n)
-     * @param n - Some value.
-     * @return Absolute value.
-	 * Returns the absolute value.
-     */
+	/**@
+	* #Crafty.math.abs
+	* @comp Crafty.math
+	* @sign public this Crafty.math.abs(Number n)
+	* @param n - Some value.
+	* @return Absolute value.
+	* Returns the absolute value.
+	*/
 	abs: function (x) {
 		return x < 0 ? -x : x;
 	},

@@ -1,5 +1,5 @@
 Crafty.extend({
-/**@
+	/**@
 	* #Crafty.audio
 	* @category Audio
 	* Add sound files and play them. Chooses best format for browser support.
@@ -196,7 +196,7 @@ Crafty.extend({
 				sounds[i].addEventListener('ended', function () {
 					if (repeat == -1 || j <= repeat) {
 						this.currentTime = 0;
-            this.play();
+						this.play();
 						j++;
 					}
 				}, false);
@@ -255,10 +255,10 @@ Crafty.extend({
 		mute: function (mute) {
 			var sounds, sound, i, l, elem;
 
-			if (arguments.length == 1 && typeof(mute) == "boolean")
+			if (arguments.length == 1 && typeof (mute) == "boolean")
 				this._muted = mute;
-      else
-			  this._muted = !this._muted;
+			else
+				this._muted = !this._muted;
 
 			//loop over every sound
 			for (sounds in this._elems) {
@@ -284,15 +284,15 @@ Crafty.extend({
 
 //When there is sound stop sound on Pause Event.
 //When there was sound on Pause, enable sound on Unpause Event.
-(function() {
-		var prev_mute_state;
-		Crafty.bind("Pause", function () {
-				prev_mute_state=Crafty.audio._muted;
-				Crafty.audio.mute(true);
-			});
-		Crafty.bind("Unpause", function () {
-				if(!prev_mute_state) {
-					Crafty.audio.mute(false);
-				}
-			});
+(function () {
+	var prev_mute_state;
+	Crafty.bind("Pause", function () {
+		prev_mute_state = Crafty.audio._muted;
+		Crafty.audio.mute(true);
+	});
+	Crafty.bind("Unpause", function () {
+		if (!prev_mute_state) {
+			Crafty.audio.mute(false);
+		}
+	});
 })();

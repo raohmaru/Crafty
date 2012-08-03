@@ -171,7 +171,7 @@ Crafty.storage = (function () {
 			obj = data;
 		}
 		else if (typeof obj == 'object') {
-			// recurse and look for entities
+				// recurse and look for entities
 			for (var prop in obj) {
 				obj[prop] = prep(obj[prop]);
 			}
@@ -326,7 +326,7 @@ Crafty.storage = (function () {
 				}
 
 				var str = serialize(data), t = ts();
-				if (type == 'save')	saveExternal(key, str, t);
+				if (type == 'save') saveExternal(key, str, t);
 				try {
 					var trans = db.transaction([type], IDBTransaction.READ_WRITE, 0),
 					store = trans.objectStore(type),
@@ -425,7 +425,7 @@ Crafty.storage = (function () {
 				}
 
 				var str = serialize(data), t = ts();
-				if (type == 'save')	saveExternal(key, str, t);
+				if (type == 'save') saveExternal(key, str, t);
 				db[type].transaction(function (tx) {
 					tx.executeSql('CREATE TABLE IF NOT EXISTS data (key unique, text, timestamp)');
 					tx.executeSql('SELECT * FROM data WHERE key = ?', [key], function (tx, results) {
@@ -483,7 +483,7 @@ Crafty.storage = (function () {
 				var k = gameName + '.' + type + '.' + key,
 					str = serialize(data),
 					t = ts();
-				if (type == 'save')	saveExternal(key, str, t);
+				if (type == 'save') saveExternal(key, str, t);
 				window.localStorage[k] = str;
 				if (type == 'save')
 					window.localStorage[k + '.ts'] = t;
@@ -530,7 +530,7 @@ Crafty.storage = (function () {
 				// cookies are very limited in space. we can only keep saves there
 				if (type != 'save') return;
 				var str = serialize(data), t = ts();
-				if (type == 'save')	saveExternal(key, str, t);
+				if (type == 'save') saveExternal(key, str, t);
 				document.cookie = gameName + '_' + key + '=' + str + '; ' + gameName + '_' + key + '_ts=' + t + '; expires=Thur, 31 Dec 2099 23:59:59 UTC; path=/';
 			},
 

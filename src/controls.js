@@ -98,7 +98,7 @@ Crafty.extend({
 				closest.trigger("DoubleClick", e);
 			} else if (type == "click") {
 				closest.trigger("Click", e);
-			}else if (type === "mousemove") {
+			} else if (type === "mousemove") {
 				closest.trigger("MouseMove", e);
 				if (this.over !== closest) { //if new mousemove, it is over
 					if (this.over) {
@@ -141,7 +141,7 @@ Crafty.extend({
 	* @see Crafty.mouseDispatch
 	*/
 
-	touchDispatch: function(e) {
+	touchDispatch: function (e) {
 
 		var type;
 		if (e.type === "touchstart") type = "mousedown";
@@ -319,30 +319,30 @@ Crafty.c("Mouse", {
 * @trigger StopDrag - is triggered when dragging ends - MouseEvent
 */
 Crafty.c("Draggable", {
-  _origMouseDOMPos: null,
+	_origMouseDOMPos: null,
 	_oldX: null,
 	_oldY: null,
 	_dragging: false,
-	_dir:null,
+	_dir: null,
 
 	_ondrag: null,
 	_ondown: null,
 	_onup: null,
 
-  //Note: the code is note tested with zoom, etc., that may distort the direction between the viewport and the coordinate on the canvas.
+	//Note: the code is note tested with zoom, etc., that may distort the direction between the viewport and the coordinate on the canvas.
 	init: function () {
 		this.requires("Mouse");
 		this._ondrag = function (e) {
 			var pos = Crafty.DOM.translate(e.clientX, e.clientY);
-      if(this._dir) {
-        var len = (pos.x - this._origMouseDOMPos.x) * this._dir.x
-        + (pos.y - this._origMouseDOMPos.y) * this._dir.y;
-        this.x = this._oldX + len * this._dir.x;
-        this.y = this._oldY + len * this._dir.y;
-      } else {
-        this.x = this._oldX + (pos.x - this._origMouseDOMPos.x);
-        this.y = this._oldY + (pos.y - this._origMouseDOMPos.y);
-      }
+			if (this._dir) {
+				var len = (pos.x - this._origMouseDOMPos.x) * this._dir.x
+				+ (pos.y - this._origMouseDOMPos.y) * this._dir.y;
+				this.x = this._oldX + len * this._dir.x;
+				this.y = this._oldY + len * this._dir.y;
+			} else {
+				this.x = this._oldX + (pos.x - this._origMouseDOMPos.x);
+				this.y = this._oldY + (pos.y - this._origMouseDOMPos.y);
+			}
 
 			this.trigger("Dragging", e);
 		};
@@ -351,7 +351,7 @@ Crafty.c("Draggable", {
 			if (e.mouseButton !== Crafty.mouseButtons.LEFT) return;
 
 			//start drag
-      this._origMouseDOMPos = Crafty.DOM.translate(e.clientX, e.clientY);
+			this._origMouseDOMPos = Crafty.DOM.translate(e.clientX, e.clientY);
 			this._oldX = this._x;
 			this._oldY = this._y;
 			this._dragging = true;
@@ -375,39 +375,39 @@ Crafty.c("Draggable", {
 	* #.dragDirection
 	* @comp Draggable
 	* @sign public this .dragDirection()
-  * Remove any previously specifed direction.
-  *
+	* Remove any previously specifed direction.
+	*
 	* @sign public this .dragDirection(vector)
-  * @param vector - Of the form of {x: valx, y: valy}, the vector (valx, valy) denotes the move direction.
+	* @param vector - Of the form of {x: valx, y: valy}, the vector (valx, valy) denotes the move direction.
 	* @sign public this .dragDirection(degree)
-  * @param degree - A number, the degree (clockwise) of the move direction with respect to the x axis. 
+	* @param degree - A number, the degree (clockwise) of the move direction with respect to the x axis. 
 	* Specify the dragging direction.
 	* @example
 	* ~~~
 	* this.dragDirection()
 	* this.dragDirection({x:1, y:0}) //Horizonatal
 	* this.dragDirection({x:0, y:1}) //Vertical
-  * // Note: because of the orientation of x and y axis,
-  * // this is 45 degree clockwise with respect to the x axis.
+	* // Note: because of the orientation of x and y axis,
+	* // this is 45 degree clockwise with respect to the x axis.
 	* this.dragDirection({x:1, y:1}) //45 degree.
 	* this.dragDirection(60) //60 degree.
 	* ~~~
 	*/
-	dragDirection: function(dir) {
+	dragDirection: function (dir) {
 		if (typeof dir === 'undefined') {
-			this._dir=null;
+			this._dir = null;
 		} else if (("" + parseInt(dir)) == dir) { //dir is a number
-      this._dir={
-        x: Math.cos(dir/180*Math.PI)
-        , y: Math.sin(dir/180*Math.PI)
-      };
-    }
-    else {
-      var r=Math.sqrt(dir.x * dir.x + dir.y * dir.y)
-			this._dir={
-        x: dir.x/r
-        , y: dir.y/r
-      };
+			this._dir = {
+				x: Math.cos(dir / 180 * Math.PI)
+			  , y: Math.sin(dir / 180 * Math.PI)
+			};
+		}
+		else {
+			var r = Math.sqrt(dir.x * dir.x + dir.y * dir.y)
+			this._dir = {
+				x: dir.x / r
+        , y: dir.y / r
+			};
 		}
 	},
 
@@ -477,19 +477,19 @@ Crafty.c("Draggable", {
 * Give entities keyboard events (`keydown` and `keyup`).
 */
 Crafty.c("Keyboard", {
-/**@
-	* #.isDown
-	* @comp Keyboard
-	* @sign public Boolean isDown(String keyName)
-	* @param keyName - Name of the key to check. See `Crafty.keys`.
-	* @sign public Boolean isDown(Number keyCode)
-	* @param keyCode - Key code in `Crafty.keys`.
-	* Determine if a certain key is currently down.
-	* ~~~
-	* entity.requires('KeyBoard').bind('KeyDown', function () { if (this.isDown('SPACE')) jump(); });
-	* ~~~
-	* @see Crafty.keys
-	*/
+	/**@
+		* #.isDown
+		* @comp Keyboard
+		* @sign public Boolean isDown(String keyName)
+		* @param keyName - Name of the key to check. See `Crafty.keys`.
+		* @sign public Boolean isDown(Number keyCode)
+		* @param keyCode - Key code in `Crafty.keys`.
+		* Determine if a certain key is currently down.
+		* ~~~
+		* entity.requires('KeyBoard').bind('KeyDown', function () { if (this.isDown('SPACE')) jump(); });
+		* ~~~
+		* @see Crafty.keys
+		*/
 	isDown: function (key) {
 		if (typeof key === "string") {
 			key = Crafty.keys[key];
@@ -508,7 +508,7 @@ Crafty.c("Keyboard", {
 Crafty.c("Multiway", {
 	_speed: 3,
 
-  _keydown: function (e) {
+	_keydown: function (e) {
 		if (this._keys[e.key]) {
 			this._movement.x = Math.round((this._movement.x + this._keys[e.key].x) * 1000) / 1000;
 			this._movement.y = Math.round((this._movement.y + this._keys[e.key].y) * 1000) / 1000;
@@ -516,7 +516,7 @@ Crafty.c("Multiway", {
 		}
 	},
 
-  _keyup: function (e) {
+	_keyup: function (e) {
 		if (this._keys[e.key]) {
 			this._movement.x = Math.round((this._movement.x - this._keys[e.key].x) * 1000) / 1000;
 			this._movement.y = Math.round((this._movement.y - this._keys[e.key].y) * 1000) / 1000;
@@ -524,7 +524,7 @@ Crafty.c("Multiway", {
 		}
 	},
 
-  _enterframe: function () {
+	_enterframe: function () {
 		if (this.disableControls) return;
 
 		if (this._movement.x !== 0) {
@@ -597,15 +597,15 @@ Crafty.c("Multiway", {
 	*
 	* @example
 	* ~~~
-  * this.enableControl();
+	* this.enableControl();
 	* ~~~
 	*/
-  enableControl: function() {
+	enableControl: function () {
 		this.bind("KeyDown", this._keydown)
 		.bind("KeyUp", this._keyup)
 		.bind("EnterFrame", this._enterframe);
 		return this;
-  },
+	},
 
 	/**@
 	* #.disableControl
@@ -615,16 +615,16 @@ Crafty.c("Multiway", {
 	*
 	* @example
 	* ~~~
-  * this.disableControl();
+	* this.disableControl();
 	* ~~~
 	*/
 
-  disableControl: function() {
+	disableControl: function () {
 		this.unbind("KeyDown", this._keydown)
 		.unbind("KeyUp", this._keyup)
 		.unbind("EnterFrame", this._enterframe);
 		return this;
-  },
+	},
 
 	speed: function (speed) {
 		for (var k in this._keyDirection) {

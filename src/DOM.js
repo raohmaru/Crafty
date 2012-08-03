@@ -4,11 +4,11 @@
 * Draws entities as DOM nodes, specifically `<DIV>`s.
 */
 Crafty.c("DOM", {
-/**@
-	* #._element
-	* @comp DOM
-	* The DOM element used to represent the entity.
-	*/
+	/**@
+		* #._element
+		* @comp DOM
+		* The DOM element used to represent the entity.
+		*/
 	_element: null,
 
 	init: function () {
@@ -63,7 +63,7 @@ Crafty.c("DOM", {
 	* @sign public this .getId()
 	* Get the Id of the DOM element used to represent the entity.
 	*/
-	getDomId: function() {
+	getDomId: function () {
 		return this._element.id;
 	},
 
@@ -172,18 +172,18 @@ try {
 } catch (e) { }
 
 Crafty.extend({
-/**@
-	* #Crafty.DOM
-	* @category Graphics
-	* Collection of utilities for using the DOM.
-	*/
-	DOM: {
 	/**@
-		* #Crafty.DOM.window
-		* @comp Crafty.DOM
-		* Object with `width` and `height` values representing the width
-		* and height of the `window`.
+		* #Crafty.DOM
+		* @category Graphics
+		* Collection of utilities for using the DOM.
 		*/
+	DOM: {
+		/**@
+			* #Crafty.DOM.window
+			* @comp Crafty.DOM
+			* Object with `width` and `height` values representing the width
+			* and height of the `window`.
+			*/
 		window: {
 			init: function () {
 				this.width = window.innerWidth || (window.document.documentElement.clientWidth || window.document.body.clientWidth);
@@ -242,14 +242,14 @@ Crafty.extend({
 		* Converts CSS notation to JS notation
 		*/
 		camelize: function (str) {
-			return str.replace(/-+(.)?/g, function (match, chr){ return chr ? chr.toUpperCase() : '' });
+			return str.replace(/-+(.)?/g, function (match, chr) { return chr ? chr.toUpperCase() : '' });
 		},
 
 		/**
 		* Converts JS notation to CSS notation
 		*/
 		csselize: function (str) {
-			return str.replace(/[A-Z]/g, function (chr){ return chr ? '-' + chr.toLowerCase() : '' });
+			return str.replace(/[A-Z]/g, function (chr) { return chr ? '-' + chr.toLowerCase() : '' });
 		},
 
 		/**@

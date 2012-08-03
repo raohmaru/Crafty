@@ -1,15 +1,15 @@
 Crafty.extend({
-    /**@
+	/**@
      * #Crafty.isometric
      * @category 2D
      * Place entities in a 45deg isometric fashion.
      */
-    isometric: {
-        _tile: {
-            width: 0,
-            height: 0
-        },
-        /**@
+	isometric: {
+		_tile: {
+			width: 0,
+			height: 0
+		},
+		/**@
          * #Crafty.isometric.size
          * @comp Crafty.isometric
          * @sign public this Crafty.isometric.size(Number tileSize)
@@ -22,12 +22,12 @@ Crafty.extend({
          * ~~~
          * @see Crafty.isometric.place
          */
-        size: function (width, height) {
-            this._tile.width = width;
-            this._tile.height = height > 0 ? height : width/2; //Setup width/2 if height doesnt set
-            return this;
-        },
-        /**@
+		size: function (width, height) {
+			this._tile.width = width;
+			this._tile.height = height > 0 ? height : width / 2; //Setup width/2 if height doesnt set
+			return this;
+		},
+		/**@
          * #Crafty.isometric.place
          * @comp Crafty.isometric
          * @sign public this Crafty.isometric.size(Number x, Number y, Number z, Entity tile)
@@ -42,17 +42,17 @@ Crafty.extend({
          * ~~~
          * @see Crafty.isometric.size
          */
-        place: function (x, y, l, obj) {
-            var pos = this.pos2px(x,y);
-            
-            obj.attr({
-                x: pos.left,
-                y: pos.top
-                
-            }).z = parseInt((x+l)*(y+l));
-            return this;
-        },
-        /**@
+		place: function (x, y, l, obj) {
+			var pos = this.pos2px(x, y);
+
+			obj.attr({
+				x: pos.left,
+				y: pos.top
+
+			}).z = parseInt((x + l) * (y + l));
+			return this;
+		},
+		/**@
          * #Crafty.isometric.pos2px
          * @comp Crafty.isometric
          * @sign public this Crafty.isometric.pos2px(Number x,Number y)
@@ -66,13 +66,13 @@ Crafty.extend({
          * console.log(position); //Object { left=6736, top=2652}
          * ~~~
          */
-        pos2px:function(x,y){
-            return {
-                left:x * this._tile.width + (y & 1) * (this._tile.width / 2),
-                top:y * this._tile.height / 2 
-            }
-        },
-        /**@
+		pos2px: function (x, y) {
+			return {
+				left: x * this._tile.width + (y & 1) * (this._tile.width / 2),
+				top: y * this._tile.height / 2
+			}
+		},
+		/**@
          * #Crafty.isometric.px2pos
          * @comp Crafty.isometric
          * @sign public this Crafty.isometric.px2pos(Number left,Number top)
@@ -86,14 +86,14 @@ Crafty.extend({
          * console.log(px); //Object { x=100, y=100}
          * ~~~
          */
-        px2pos:function(left,top){
-            
-            return {
-                x:Math.ceil((left) / this._tile.width - (top & 1)*0.5),
-                y:Math.ceil((top) / this._tile.height * 2)
-            };
-        },
-        /**@
+		px2pos: function (left, top) {
+
+			return {
+				x: Math.ceil((left) / this._tile.width - (top & 1) * 0.5),
+				y: Math.ceil((top) / this._tile.height * 2)
+			};
+		},
+		/**@
          * #Crafty.isometric.centerAt
          * @comp Crafty.isometric
          * @sign public this Crafty.isometric.centerAt(Number x,Number y)
@@ -104,16 +104,16 @@ Crafty.extend({
          * var iso = Crafty.isometric.size(128,96).centerAt(10,10); //Viewport is now moved
          * ~~~
          */
-        centerAt:function(x,y){
-            if(typeof x == "number" && typeof y == "number"){
-                var center = this.pos2px(x,y);
-                Crafty.viewport.scroll('_x',-center.left+Crafty.viewport.width/2-this._tile.width/2);
-                Crafty.viewport.scroll('_y',-center.top+Crafty.viewport.height/2-this._tile.height/2);
-             
-                return this;
-            }
-        },
-        /**@
+		centerAt: function (x, y) {
+			if (typeof x == "number" && typeof y == "number") {
+				var center = this.pos2px(x, y);
+				Crafty.viewport.scroll('_x', -center.left + Crafty.viewport.width / 2 - this._tile.width / 2);
+				Crafty.viewport.scroll('_y', -center.top + Crafty.viewport.height / 2 - this._tile.height / 2);
+
+				return this;
+			}
+		},
+		/**@
          * #Crafty.isometric.area
          * @comp Crafty.isometric
          * @sign public this Crafty.isometric.area()
@@ -131,28 +131,28 @@ Crafty.extend({
          *}
          * ~~~
          */
-        area:function(offsetX,offsetY){
-            if(offsetY == undefined){
-                offsetY = 0;
-            }
-            if(offsetX == undefined){
-                offsetX = 0;
-            }
-            //Get the center Point in the viewport
-            var start = this.px2pos(-Crafty.viewport.x-this._tile.width/2,-Crafty.viewport.y-this._tile.height/2);
-            var end = this.px2pos(-Crafty.viewport.x+Crafty.viewport.width-this._tile.width/2,-Crafty.viewport.y+Crafty.viewport.height-this._tile.height/2);
-            return {
-                x:{
-                    start : Math.ceil(start.x) - (offsetY &1) * offsetX,
-                    end : Math.ceil(end.x)+offsetX
-                },
-                y:{
-                    start : Math.ceil(start.y)-offsetY,
-                    end : Math.ceil(end.y)+offsetY
-                }
-            };
-        },
-        /**@
+		area: function (offsetX, offsetY) {
+			if (offsetY == undefined) {
+				offsetY = 0;
+			}
+			if (offsetX == undefined) {
+				offsetX = 0;
+			}
+			//Get the center Point in the viewport
+			var start = this.px2pos(-Crafty.viewport.x - this._tile.width / 2, -Crafty.viewport.y - this._tile.height / 2);
+			var end = this.px2pos(-Crafty.viewport.x + Crafty.viewport.width - this._tile.width / 2, -Crafty.viewport.y + Crafty.viewport.height - this._tile.height / 2);
+			return {
+				x: {
+					start: Math.ceil(start.x) - (offsetY & 1) * offsetX,
+					end: Math.ceil(end.x) + offsetX
+				},
+				y: {
+					start: Math.ceil(start.y) - offsetY,
+					end: Math.ceil(end.y) + offsetY
+				}
+			};
+		},
+		/**@
          * #Crafty.isometric.slice
          * @comp Crafty.isometric
          * @sign public this Crafty.isometric.slice()
@@ -162,25 +162,25 @@ Crafty.extend({
          * iso.slice(10,10,1,Crafty.e("2D, DOM, building")); //Display a building on X:10,Y:10 layer 1
          * ~~~
          */
-        slice:function(x,y,l,ent){
-            var clone = {},cloneX,cloneY;
-        
-  
-            for(var _y = 0;_y < ent._h / this._tile.height*2;_y++){
-                for(var _x = 0; _x < ent._w /this._tile.width ;_x++){
-                    
-                    cloneY = y+_y;                 
-                    cloneX = x+_x;   
-                    
-                    clone = ent.clone();
-                    clone.crop(_x *  this._tile.width+(cloneY & 1)*this._tile.width/2,_y * this._tile.height/2,this._tile.width,this._tile.height);
-                    this.place(cloneX,cloneY,l,clone);      
-                }
-            }
-            
-           ent.destroy(); //Undraw original
-        },
-        /**@
+		slice: function (x, y, l, ent) {
+			var clone = {}, cloneX, cloneY;
+
+
+			for (var _y = 0; _y < ent._h / this._tile.height * 2; _y++) {
+				for (var _x = 0; _x < ent._w / this._tile.width ; _x++) {
+
+					cloneY = y + _y;
+					cloneX = x + _x;
+
+					clone = ent.clone();
+					clone.crop(_x * this._tile.width + (cloneY & 1) * this._tile.width / 2, _y * this._tile.height / 2, this._tile.width, this._tile.height);
+					this.place(cloneX, cloneY, l, clone);
+				}
+			}
+
+			ent.destroy(); //Undraw original
+		},
+		/**@
          * #Crafty.isometric.polygon
          * @comp Crafty.isometric
          * @sign public this Crafty.isometric.polygon()
@@ -190,8 +190,8 @@ Crafty.extend({
          * var gras = Crafty.e("2D","DOM","gras","Solid","Collision").collision(new Crafty.polygon(iso.polygon())); //The Tile has the right collision points now
          * ~~~
          */
-        polygon:function(){
-            return [[this._tile.width/2,0],[this._tile.width,this._tile.height/2],[this._tile.width/2,this._tile.height],[0,this._tile.height/2]]
-        }
-    }
+		polygon: function () {
+			return [[this._tile.width / 2, 0], [this._tile.width, this._tile.height / 2], [this._tile.width / 2, this._tile.height], [0, this._tile.height / 2]]
+		}
+	}
 });

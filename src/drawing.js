@@ -4,24 +4,24 @@
 * Draw a solid color for the entity
 */
 Crafty.c("Color", {
-    _color: "",
-    _updatePaint: function (d) {
-        if (typeof this._color === "object") {
-            for (var i in this._color) {
-                console.log(i);
-                d.data.faces[i].addPaint('background-color', this._color[i]);
-            }
-        } else {
-            for (var i in d.data.faces) {
-                d.data.faces[i].addPaint('background-color', this._color);
-            }
-        }
-    },
+	_color: "",
+	_updatePaint: function (d) {
+		if (typeof this._color === "object") {
+			for (var i in this._color) {
+				console.log(i);
+				d.data.faces[i].addPaint('background-color', this._color[i]);
+			}
+		} else {
+			for (var i in d.data.faces) {
+				d.data.faces[i].addPaint('background-color', this._color);
+			}
+		}
+	},
 
-    init: function () {
-    },
+	init: function () {
+	},
 
-    /**@
+	/**@
 	* #.color
 	* @comp Color
 	* @trigger Change - when the color changes
@@ -38,20 +38,20 @@ Crafty.c("Color", {
 	*    .color("#969696");
 	* ~~~
 	*/
-    color: function (color) {
-        if (!color) {
-            return this._color;
-        }
-        if (this._color != color) {
-            this._color = color;
-            this.bind("PreRender", function (d) {
-                this._updatePaint(d);
-                this.unbind("PreRender", this._updatePaint);
+	color: function (color) {
+		if (!color) {
+			return this._color;
+		}
+		if (this._color != color) {
+			this._color = color;
+			this.bind("PreRender", function (d) {
+				this._updatePaint(d);
+				this.unbind("PreRender", this._updatePaint);
 
-            });
-        }
-        return this;
-    }
+			});
+		}
+		return this;
+	}
 });
 
 /**@
@@ -62,23 +62,23 @@ Crafty.c("Color", {
 * *Note: Currently only works for Canvas*
 */
 Crafty.c("Tint", {
-    _color: null,
-    _strength: 1.0,
+	_color: null,
+	_strength: 1.0,
 
-    init: function () {
-        var draw = function d(e) {
-            var context = e.ctx || Crafty.canvas.context;
+	init: function () {
+		var draw = function d(e) {
+			var context = e.ctx || Crafty.canvas.context;
 
-            context.fillStyle = this._color || "rgb(0,0,0)";
-            context.fillRect(e.pos._x, e.pos._y, e.pos._w, e.pos._h);
-        };
+			context.fillStyle = this._color || "rgb(0,0,0)";
+			context.fillRect(e.pos._x, e.pos._y, e.pos._w, e.pos._h);
+		};
 
-        this.bind("Draw", draw).bind("RemoveComponent", function (id) {
-            if (id === "Tint") this.unbind("Draw", draw);
-        });
-    },
+		this.bind("Draw", draw).bind("RemoveComponent", function (id) {
+			if (id === "Tint") this.unbind("Draw", draw);
+		});
+	},
 
-    /**@
+	/**@
 	* #.tint
 	* @comp Tint
 	* @trigger Change - when the tint is applied
@@ -92,13 +92,13 @@ Crafty.c("Tint", {
 	*    .tint("#969696", 0.3);
 	* ~~~
 	*/
-    tint: function (color, strength) {
-        this._strength = strength;
-        this._color = Crafty.toRGB(color, this._strength);
+	tint: function (color, strength) {
+		this._strength = strength;
+		this._color = Crafty.toRGB(color, this._strength);
 
-        this.trigger("Change");
-        return this;
-    }
+		this.trigger("Change");
+		return this;
+	}
 });
 
 /**@
@@ -107,16 +107,16 @@ Crafty.c("Tint", {
 * Draw an image with or without repeating (tiling).
 */
 Crafty.c("Image", {
-    _repeat: "repeat",
-    ready: false,
+	_repeat: "repeat",
+	ready: false,
 
-    init: function () {
-        this.bind("PreRender", function (camType, data) {
-            for (var i in d.faces) {
-                d.faces[i].addPaint("background-url", +this.__image + " " + this._repeat);
-            }
-        });
-        /*
+	init: function () {
+		this.bind("PreRender", function (camType, data) {
+			for (var i in d.faces) {
+				d.faces[i].addPaint("background-url", +this.__image + " " + this._repeat);
+			}
+		});
+		/*
 		var draw = function (e) {
 			if (e.type === "canvas") {
 				//skip if no image
@@ -140,9 +140,9 @@ Crafty.c("Image", {
 			if (id === "Image") this.unbind("Draw", draw);
 		});
 		*/
-    },
+	},
 
-    /**@
+	/**@
 	* #.image
 	* @comp Image
 	* @trigger Change - when the image is loaded
@@ -169,52 +169,52 @@ Crafty.c("Image", {
 	* ~~~
 	* @see Crafty.sprite
 	*/
-    image: function (url, repeat) {
-        this.__image = url;
-        this._repeat = repeat || "no-repeat";
+	image: function (url, repeat) {
+		this.__image = url;
+		this._repeat = repeat || "no-repeat";
 
 
-        this.img = Crafty.assets[url];
-        if (!this.img) {
-            this.img = new Image();
-            Crafty.assets[url] = this.img;
-            this.img.src = url;
-            var self = this;
+		this.img = Crafty.assets[url];
+		if (!this.img) {
+			this.img = new Image();
+			Crafty.assets[url] = this.img;
+			this.img.src = url;
+			var self = this;
 
-            this.img.onload = function () {
-                if (self.has("Canvas")) self._pattern = Crafty.canvas.context.createPattern(self.img, self._repeat);
-                self.ready = true;
+			this.img.onload = function () {
+				if (self.has("Canvas")) self._pattern = Crafty.canvas.context.createPattern(self.img, self._repeat);
+				self.ready = true;
 
-                if (self._repeat === "no-repeat") {
-                    self.w = self.img.width;
-                    self.h = self.img.height;
-                }
+				if (self._repeat === "no-repeat") {
+					self.w = self.img.width;
+					self.h = self.img.height;
+				}
 
-                self.trigger("Change");
-            };
+				self.trigger("Change");
+			};
 
-            return this;
-        } else {
-            this.ready = true;
-            if (this.has("Canvas")) this._pattern = Crafty.canvas.context.createPattern(this.img, this._repeat);
-            if (this._repeat === "no-repeat") {
-                this.w = this.img.width;
-                this.h = this.img.height;
-            }
-        }
+			return this;
+		} else {
+			this.ready = true;
+			if (this.has("Canvas")) this._pattern = Crafty.canvas.context.createPattern(this.img, this._repeat);
+			if (this._repeat === "no-repeat") {
+				this.w = this.img.width;
+				this.h = this.img.height;
+			}
+		}
 
 
-        this.trigger("Change");
+		this.trigger("Change");
 
-        return this;
-    }
+		return this;
+	}
 });
 
 Crafty.extend({
-    _scenes: [],
-    _current: null,
+	_scenes: [],
+	_current: null,
 
-    /**@
+	/**@
 	* #Crafty.scene
 	* @category Scenes, Stage
 	* @trigger SceneChange - when a scene is played - { oldScene:String, newScene:String }
@@ -241,33 +241,33 @@ Crafty.extend({
 	* Crafty.scene("loading");
 	* ~~~
 	*/
-    scene: function (name, intro, outro) {
-        //play scene
-        if (arguments.length === 1) {
-            Crafty("2D").each(function () {
-                if (!this.has("Persist")) this.destroy();
-            });
-            // uninitialize previous scene
-            if (this._current !== null && 'uninitialize' in this._scenes[this._current]) {
-                this._scenes[this._current].uninitialize.call(this);
-            }
-            // initialize next scene
-            this._scenes[name].initialize.call(this);
-            var oldScene = this._current;
-            this._current = name;
-            Crafty.trigger("SceneChange", { oldScene: oldScene, newScene: name });
-            return;
-        }
-        //add scene
-        this._scenes[name] = {}
-        this._scenes[name].initialize = intro
-        if (typeof outro !== 'undefined') {
-            this._scenes[name].uninitialize = outro;
-        }
-        return;
-    },
+	scene: function (name, intro, outro) {
+		//play scene
+		if (arguments.length === 1) {
+			Crafty("2D").each(function () {
+				if (!this.has("Persist")) this.destroy();
+			});
+			// uninitialize previous scene
+			if (this._current !== null && 'uninitialize' in this._scenes[this._current]) {
+				this._scenes[this._current].uninitialize.call(this);
+			}
+			// initialize next scene
+			this._scenes[name].initialize.call(this);
+			var oldScene = this._current;
+			this._current = name;
+			Crafty.trigger("SceneChange", { oldScene: oldScene, newScene: name });
+			return;
+		}
+		//add scene
+		this._scenes[name] = {}
+		this._scenes[name].initialize = intro
+		if (typeof outro !== 'undefined') {
+			this._scenes[name].uninitialize = outro;
+		}
+		return;
+	},
 
-    /**@
+	/**@
 	* #Crafty.toRGB
 	* @category Graphics
 	* @sign public String Crafty.scene(String hex[, Number alpha])
@@ -282,18 +282,18 @@ Crafty.extend({
 	* ~~~
 	* @see Text.textColor
 	*/
-    toRGB: function (hex, alpha) {
-        var hex = (hex.charAt(0) === '#') ? hex.substr(1) : hex,
+	toRGB: function (hex, alpha) {
+		var hex = (hex.charAt(0) === '#') ? hex.substr(1) : hex,
 			c = [], result;
 
-        c[0] = parseInt(hex.substr(0, 2), 16);
-        c[1] = parseInt(hex.substr(2, 2), 16);
-        c[2] = parseInt(hex.substr(4, 2), 16);
+		c[0] = parseInt(hex.substr(0, 2), 16);
+		c[1] = parseInt(hex.substr(2, 2), 16);
+		c[2] = parseInt(hex.substr(4, 2), 16);
 
-        result = alpha === undefined ? 'rgb(' + c.join(',') + ')' : 'rgba(' + c.join(',') + ',' + alpha + ')';
+		result = alpha === undefined ? 'rgb(' + c.join(',') + ')' : 'rgba(' + c.join(',') + ',' + alpha + ')';
 
-        return result;
-    }
+		return result;
+	}
 });
 
 /**@
@@ -304,32 +304,32 @@ Crafty.extend({
 * the best method of drawing in both DOM and canvas
 */
 Crafty.DrawManager = (function () {
-    /** array of dirty rects on screen */
-    var dirty_rects = [],
+	/** array of dirty rects on screen */
+	var dirty_rects = [],
 	/** array of DOMs needed updating */
 		dom = [];
 
-    return {
-        /**@
+	return {
+		/**@
 		* #Crafty.DrawManager.total2D
 		* @comp Crafty.DrawManager
 		* Total number of the entities that have the `2D` component.
 		*/
-        total2D: Crafty("2D").length,
+		total2D: Crafty("2D").length,
 
-        /**@
+		/**@
 		* #Crafty.DrawManager.onScreen
 		* @comp Crafty.DrawManager
 		* @sign public Crafty.DrawManager.onScreen(Object rect)
 		* @param rect - A rectangle with field {_x: x_val, _y: y_val, _w: w_val, _h: h_val}
 		* Test if a rectangle is completely in viewport
 		*/
-        onScreen: function (rect) {
-            return Crafty.viewport._x + rect._x + rect._w > 0 && Crafty.viewport._y + rect._y + rect._h > 0 &&
+		onScreen: function (rect) {
+			return Crafty.viewport._x + rect._x + rect._w > 0 && Crafty.viewport._y + rect._y + rect._h > 0 &&
 				   Crafty.viewport._x + rect._x < Crafty.viewport.width && Crafty.viewport._y + rect._y < Crafty.viewport.height;
-        },
+		},
 
-        /**@
+		/**@
 		* #Crafty.DrawManager.merge
 		* @comp Crafty.DrawManager
 		* @sign public Object Crafty.DrawManager.merge(Object set)
@@ -337,46 +337,46 @@ Crafty.DrawManager = (function () {
 		* Merged into non overlapping rectangular region
 		* Its an optimization for the redraw regions.
 		*/
-        merge: function (set) {
-            do {
-                var newset = [], didMerge = false, i = 0,
+		merge: function (set) {
+			do {
+				var newset = [], didMerge = false, i = 0,
 					l = set.length, current, next, merger;
 
-                while (i < l) {
-                    current = set[i];
-                    next = set[i + 1];
+				while (i < l) {
+					current = set[i];
+					next = set[i + 1];
 
-                    if (i < l - 1 && current._x < next._x + next._w && current._x + current._w > next._x &&
+					if (i < l - 1 && current._x < next._x + next._w && current._x + current._w > next._x &&
 									current._y < next._y + next._h && current._h + current._y > next._y) {
 
-                        merger = {
-                            _x: ~~Math.min(current._x, next._x),
-                            _y: ~~Math.min(current._y, next._y),
-                            _w: Math.max(current._x, next._x) + Math.max(current._w, next._w),
-                            _h: Math.max(current._y, next._y) + Math.max(current._h, next._h)
-                        };
-                        merger._w = merger._w - merger._x;
-                        merger._h = merger._h - merger._y;
-                        merger._w = (merger._w == ~~merger._w) ? merger._w : merger._w + 1 | 0;
-                        merger._h = (merger._h == ~~merger._h) ? merger._h : merger._h + 1 | 0;
+						merger = {
+							_x: ~~Math.min(current._x, next._x),
+							_y: ~~Math.min(current._y, next._y),
+							_w: Math.max(current._x, next._x) + Math.max(current._w, next._w),
+							_h: Math.max(current._y, next._y) + Math.max(current._h, next._h)
+						};
+						merger._w = merger._w - merger._x;
+						merger._h = merger._h - merger._y;
+						merger._w = (merger._w == ~~merger._w) ? merger._w : merger._w + 1 | 0;
+						merger._h = (merger._h == ~~merger._h) ? merger._h : merger._h + 1 | 0;
 
-                        newset.push(merger);
+						newset.push(merger);
 
-                        i++;
-                        didMerge = true;
-                    } else newset.push(current);
-                    i++;
-                }
+						i++;
+						didMerge = true;
+					} else newset.push(current);
+					i++;
+				}
 
-                set = newset.length ? Crafty.clone(newset) : set;
+				set = newset.length ? Crafty.clone(newset) : set;
 
-                if (didMerge) i = 0;
-            } while (didMerge);
+				if (didMerge) i = 0;
+			} while (didMerge);
 
-            return set;
-        },
+			return set;
+		},
 
-        /**@
+		/**@
 		* #Crafty.DrawManager.add
 		* @comp Crafty.DrawManager
 		* @sign public Crafty.DrawManager.add(old, current)
@@ -384,58 +384,58 @@ Crafty.DrawManager = (function () {
 		* @param current - Undocumented
 		* Calculate the bounding rect of dirty data and add to the register of dirty rectangles
 		*/
-        add: function add(old, current) {
-            if (!current) {
-                dom.push(old);
-                return;
-            }
+		add: function add(old, current) {
+			if (!current) {
+				dom.push(old);
+				return;
+			}
 
-            var rect,
+			var rect,
 				before = old._mbr || old,
 				after = current._mbr || current;
 
-            if (old === current) {
-                rect = old.mbr() || old.pos();
-            } else {
-                rect = {
-                    _x: ~~Math.min(before._x, after._x),
-                    _y: ~~Math.min(before._y, after._y),
-                    _w: Math.max(before._w, after._w) + Math.max(before._x, after._x),
-                    _h: Math.max(before._h, after._h) + Math.max(before._y, after._y)
-                };
+			if (old === current) {
+				rect = old.mbr() || old.pos();
+			} else {
+				rect = {
+					_x: ~~Math.min(before._x, after._x),
+					_y: ~~Math.min(before._y, after._y),
+					_w: Math.max(before._w, after._w) + Math.max(before._x, after._x),
+					_h: Math.max(before._h, after._h) + Math.max(before._y, after._y)
+				};
 
-                rect._w = (rect._w - rect._x);
-                rect._h = (rect._h - rect._y);
-            }
+				rect._w = (rect._w - rect._x);
+				rect._h = (rect._h - rect._y);
+			}
 
-            if (rect._w === 0 || rect._h === 0 || !this.onScreen(rect)) {
-                return false;
-            }
+			if (rect._w === 0 || rect._h === 0 || !this.onScreen(rect)) {
+				return false;
+			}
 
-            //floor/ceil
-            rect._x = ~~rect._x;
-            rect._y = ~~rect._y;
-            rect._w = (rect._w === ~~rect._w) ? rect._w : rect._w + 1 | 0;
-            rect._h = (rect._h === ~~rect._h) ? rect._h : rect._h + 1 | 0;
+			//floor/ceil
+			rect._x = ~~rect._x;
+			rect._y = ~~rect._y;
+			rect._w = (rect._w === ~~rect._w) ? rect._w : rect._w + 1 | 0;
+			rect._h = (rect._h === ~~rect._h) ? rect._h : rect._h + 1 | 0;
 
-            //add to dirty_rects, check for merging
-            dirty_rects.push(rect);
+			//add to dirty_rects, check for merging
+			dirty_rects.push(rect);
 
-            //if it got merged
-            return true;
-        },
+			//if it got merged
+			return true;
+		},
 
-        /**@
+		/**@
 		* #Crafty.DrawManager.debug
 		* @comp Crafty.DrawManager
 		* @sign public Crafty.DrawManager.debug()
 		* Undocumented
 		*/
-        debug: function () {
-            console.log(dirty_rects, dom);
-        },
+		debug: function () {
+			console.log(dirty_rects, dom);
+		},
 
-        /**@
+		/**@
 		* #Crafty.DrawManager.draw
 		* @comp Crafty.DrawManager
 		* @sign public Crafty.DrawManager.draw([Object rect])
@@ -443,28 +443,28 @@ Crafty.DrawManager = (function () {
 		* - If rect is omitted, redraw within the viewport
 		* - If rect is provided, redraw within the rect
 		*/
-        drawAll: function (rect) {
-            var rect = rect || Crafty.viewport.rect(),
+		drawAll: function (rect) {
+			var rect = rect || Crafty.viewport.rect(),
 				q = Crafty.map.search(rect),
 				i = 0,
 				l = q.length,
 				ctx = Crafty.canvas.context,
 				current;
 
-            ctx.clearRect(rect._x, rect._y, rect._w, rect._h);
+			ctx.clearRect(rect._x, rect._y, rect._w, rect._h);
 
-            //sort the objects by the global Z
-            q.sort(function (a, b) { return a._globalZ - b._globalZ; });
-            for (; i < l; i++) {
-                current = q[i];
-                if (current._visible && current.__c.Canvas) {
-                    current.draw();
-                    current._changed = false;
-                }
-            }
-        },
+			//sort the objects by the global Z
+			q.sort(function (a, b) { return a._globalZ - b._globalZ; });
+			for (; i < l; i++) {
+				current = q[i];
+				if (current._visible && current.__c.Canvas) {
+					current.draw();
+					current._changed = false;
+				}
+			}
+		},
 
-        /**@
+		/**@
 		* #Crafty.DrawManager.boundingRect
 		* @comp Crafty.DrawManager
 		* @sign public Crafty.DrawManager.boundingRect(set)
@@ -472,27 +472,27 @@ Crafty.DrawManager = (function () {
 		* - Calculate the common bounding rect of multiple canvas entities.
 		* - Returns coords
 		*/
-        boundingRect: function (set) {
-            if (!set || !set.length) return;
-            var newset = [], i = 1,
+		boundingRect: function (set) {
+			if (!set || !set.length) return;
+			var newset = [], i = 1,
 			l = set.length, current, master = set[0], tmp;
-            master = [master._x, master._y, master._x + master._w, master._y + master._h];
-            while (i < l) {
-                current = set[i];
-                tmp = [current._x, current._y, current._x + current._w, current._y + current._h];
-                if (tmp[0] < master[0]) master[0] = tmp[0];
-                if (tmp[1] < master[1]) master[1] = tmp[1];
-                if (tmp[2] > master[2]) master[2] = tmp[2];
-                if (tmp[3] > master[3]) master[3] = tmp[3];
-                i++;
-            }
-            tmp = master;
-            master = { _x: tmp[0], _y: tmp[1], _w: tmp[2] - tmp[0], _h: tmp[3] - tmp[1] };
+			master = [master._x, master._y, master._x + master._w, master._y + master._h];
+			while (i < l) {
+				current = set[i];
+				tmp = [current._x, current._y, current._x + current._w, current._y + current._h];
+				if (tmp[0] < master[0]) master[0] = tmp[0];
+				if (tmp[1] < master[1]) master[1] = tmp[1];
+				if (tmp[2] > master[2]) master[2] = tmp[2];
+				if (tmp[3] > master[3]) master[3] = tmp[3];
+				i++;
+			}
+			tmp = master;
+			master = { _x: tmp[0], _y: tmp[1], _w: tmp[2] - tmp[0], _h: tmp[3] - tmp[1] };
 
-            return master;
-        },
+			return master;
+		},
 
-        /**@
+		/**@
 		* #Crafty.DrawManager.draw
 		* @comp Crafty.DrawManager
 		* @sign public Crafty.DrawManager.draw()
@@ -501,12 +501,12 @@ Crafty.DrawManager = (function () {
 		* - Otherwise, clear the dirty regions, and redraw entities overlapping the dirty regions.
     * @see Canvas.draw, DOM.draw
 		*/
-        draw: function draw() {
+		draw: function draw() {
 
 
 
 
-            /*
+			/*
                 //if nothing in dirty_rects, stop
                 if (!dirty_rects.length && !dom.length) return;
     
@@ -596,6 +596,6 @@ Crafty.DrawManager = (function () {
                 //all merged IDs are now invalid
                 merged = {};
                 */
-        }
-    };
+		}
+	};
 })();

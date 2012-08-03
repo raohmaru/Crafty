@@ -156,14 +156,14 @@ Crafty.c("particles", {
 				this.startColour[1] + this.startColourRandom[1] * this.RANDM1TO1(),
 				this.startColour[2] + this.startColourRandom[2] * this.RANDM1TO1(),
 				this.startColour[3] + this.startColourRandom[3] * this.RANDM1TO1()
-				];
+			];
 
 			var end = [
 				this.endColour[0] + this.endColourRandom[0] * this.RANDM1TO1(),
 				this.endColour[1] + this.endColourRandom[1] * this.RANDM1TO1(),
 				this.endColour[2] + this.endColourRandom[2] * this.RANDM1TO1(),
 				this.endColour[3] + this.endColourRandom[3] * this.RANDM1TO1()
-				];
+			];
 
 			particle.colour = start;
 			particle.deltaColour[0] = (end[0] - start[0]) / particle.timeToLive;

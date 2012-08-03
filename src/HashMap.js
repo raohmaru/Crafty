@@ -22,17 +22,17 @@
 	SPACE = " ";
 
 	HashMap.prototype = {
-	/**@
-	* #Crafty.map.insert
-	* @comp Crafty.map
-  * @sign public Object Crafty.map.insert(Object obj)
-	* @param obj - An entity to be inserted.
-  * `obj` is instered in '.map' of the corresponding broad phase cells. An object of the following fields is returned.
-  *
-  * - the object that keep track of cells (keys)
-  * - `obj`
-  * - the HashMap object
-	*/
+		/**@
+		* #Crafty.map.insert
+		* @comp Crafty.map
+	  * @sign public Object Crafty.map.insert(Object obj)
+		* @param obj - An entity to be inserted.
+	  * `obj` is instered in '.map' of the corresponding broad phase cells. An object of the following fields is returned.
+	  *
+	  * - the object that keep track of cells (keys)
+	  * - `obj`
+	  * - the HashMap object
+		*/
 		insert: function (obj) {
 			var keys = HashMap.key(obj),
 			entry = new Entry(keys, obj, this),
@@ -53,16 +53,16 @@
 			return entry;
 		},
 
-	/**@
-	* #Crafty.map.search
-	* @comp Crafty.map
-  * @sign public Object Crafty.map.search(Object rect[, Boolean filter])
-	* @param rect - the rectangular region to search for entities.
-	* @param filter - Default value is true. Otherwise, must be false.
-  * - If `filter` is `false`, just search for all the entries in the give `rect` region by broad phase collision. Entity may be returned duplicated.
-  * - If `filter` is `true`, filter the above results by checking that they actually overlap `rect`.
-  * The easier usage is with `filter`=`true`. For performance reason, you may use `filter`=`false`, and filter the result youself. See examples in drawing.js and collision.js
-	*/
+		/**@
+		* #Crafty.map.search
+		* @comp Crafty.map
+	  * @sign public Object Crafty.map.search(Object rect[, Boolean filter])
+		* @param rect - the rectangular region to search for entities.
+		* @param filter - Default value is true. Otherwise, must be false.
+	  * - If `filter` is `false`, just search for all the entries in the give `rect` region by broad phase collision. Entity may be returned duplicated.
+	  * - If `filter` is `true`, filter the above results by checking that they actually overlap `rect`.
+	  * The easier usage is with `filter`=`true`. For performance reason, you may use `filter`=`false`, and filter the result youself. See examples in drawing.js and collision.js
+		*/
 		search: function (rect, filter) {
 			var keys = HashMap.key(rect),
 			i, j,
@@ -106,18 +106,18 @@
 			}
 		},
 
-	/**@
-	* #Crafty.map.remove
-	* @comp Crafty.map
-	* @sign public void Crafty.map.remove([Object keys, ]Object obj)
-	* @param keys - key region. If omitted, it will be derived from obj by `Crafty.HashMap.key`.
-	* @param obj - need more document.
-	* Remove an entity in a broad phase map.
-	* - The second form is only used in Crafty.HashMap to save time for computing keys again, where keys were computed previously from obj. End users should not call this form directly.
-	* ~~~
-	* Crafty.map.remove(e);
-	* ~~~
-	*/
+		/**@
+		* #Crafty.map.remove
+		* @comp Crafty.map
+		* @sign public void Crafty.map.remove([Object keys, ]Object obj)
+		* @param keys - key region. If omitted, it will be derived from obj by `Crafty.HashMap.key`.
+		* @param obj - need more document.
+		* Remove an entity in a broad phase map.
+		* - The second form is only used in Crafty.HashMap to save time for computing keys again, where keys were computed previously from obj. End users should not call this form directly.
+		* ~~~
+		* Crafty.map.remove(e);
+		* ~~~
+		*/
 		remove: function (keys, obj) {
 			var i = 0, j, hash;
 
@@ -145,22 +145,22 @@
 			}
 		},
 
-	/**@
-	* #Crafty.map.boundaries
-	* @comp Crafty.map
-	* @sign public Object Crafty.map.boundaries()
-  * The return `Object` is of the following format.
-	* {
-  *   min: {
-  *     x: val_x,
-  *     y: val_y
-  *   },
-  *   max: {
-  *     x: val_x,
-  *     y: val_y
-  *   }
-  * }
-	*/
+		/**@
+		* #Crafty.map.boundaries
+		* @comp Crafty.map
+		* @sign public Object Crafty.map.boundaries()
+	  * The return `Object` is of the following format.
+		* {
+	  *   min: {
+	  *     x: val_x,
+	  *     y: val_y
+	  *   },
+	  *   max: {
+	  *     x: val_x,
+	  *     y: val_y
+	  *   }
+	  * }
+		*/
 		boundaries: function () {
 			var k, ent,
 			hash = {
@@ -172,14 +172,14 @@
 				min: { x: Infinity, y: Infinity }
 			};
 
-      //Using broad phase hash to speed up the computation of boundaries.
+			//Using broad phase hash to speed up the computation of boundaries.
 			for (var h in this.map) {
 				if (!this.map[h].length) continue;
 
-        //broad phase coordinate
+				//broad phase coordinate
 				var map_coord = h.split(SPACE),
-					i=map_coord[0],
-					j=map_coord[0];
+					i = map_coord[0],
+					j = map_coord[0];
 				if (i >= hash.max.x) {
 					hash.max.x = i;
 					for (k in this.map[h]) {
@@ -223,15 +223,15 @@
 		}
 	};
 
-/**@
-* #Crafty.HashMap
-* @category 2D
-* Broad-phase collision detection engine. See background information at 
-*
-* - [N Tutorial B - Broad-Phase Collision](http://www.metanetsoftware.com/technique/tutorialB.html)
-* - [Broad-Phase Collision Detection with CUDA](http.developer.nvidia.com/GPUGems3/gpugems3_ch32.html)
-* @see Crafty.map
-*/
+	/**@
+	* #Crafty.HashMap
+	* @category 2D
+	* Broad-phase collision detection engine. See background information at 
+	*
+	* - [N Tutorial B - Broad-Phase Collision](http://www.metanetsoftware.com/technique/tutorialB.html)
+	* - [Broad-Phase Collision Detection with CUDA](http.developer.nvidia.com/GPUGems3/gpugems3_ch32.html)
+	* @see Crafty.map
+	*/
 
 	/**@
 	* #Crafty.HashMap.key

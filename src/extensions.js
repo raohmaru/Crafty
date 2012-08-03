@@ -303,14 +303,14 @@ Crafty.extend({
 	* in turn will react just like a camera moving in that direction.
 	*/
 	viewport: {
-	/**@
-		* #Crafty.viewport.clampToEntities
-		* @comp Crafty.viewport
-		* Decides if the viewport functions should clamp to game entities.
-		* When set to `true` functions such as Crafty.viewport.mouselook() will not allow you to move the
-		* viewport over areas of the game that has no entities.
-		* For development it can be useful to set this to false.
-		*/
+		/**@
+			* #Crafty.viewport.clampToEntities
+			* @comp Crafty.viewport
+			* Decides if the viewport functions should clamp to game entities.
+			* When set to `true` functions such as Crafty.viewport.mouselook() will not allow you to move the
+			* viewport over areas of the game that has no entities.
+			* For development it can be useful to set this to false.
+			*/
 		clampToEntities: true,
 		width: 0,
 		height: 0,
@@ -757,7 +757,7 @@ Crafty.extend({
 			});
 			Crafty.settings.modify("stageContextMenu", false);
 
-			Crafty.settings.register("autoPause", function (){ });
+			Crafty.settings.register("autoPause", function () { });
 			Crafty.settings.modify("autoPause", false);
 
 			//add to the body and give it an ID if not exists
