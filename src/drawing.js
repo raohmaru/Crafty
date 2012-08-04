@@ -134,7 +134,14 @@ Crafty.c("Texture", {
 		}
 		
 		if (config) {
-			this._textureConfigurations = { };
+			console.log(config);
+			this._textureConfigurations = {};
+			if(typeof (config['x']) === "number" && typeof (config['y']) === "number") {
+				config = { default: config };
+				console.log(config);
+				this.applyTexture('default');
+			}
+
 			for(var c in config) {
 				if (config[c]['top']) {
 					//the config specifies separate info for all faces
@@ -161,7 +168,7 @@ Crafty.c("Texture", {
 		this.bind("PreRender", function preRender(d) {
 			
 			for (var i in d.data.faces) {
-				d.data.faces[i].addPaint("background", "transparent url(" + this._textures[i] + ") no-repeat -" + this._textureConfigurations[this._currentTextureConfiguration][i].x + (16 * this._textureState[i]) + "px -" + this._textureConfigurations[this._currentTextureConfiguration][i].y + "px");
+				d.data.faces[i].addPaint("background", "transparent url(" + this._textures[i] + ") no-repeat -" + (this._textureConfigurations[this._currentTextureConfiguration][i].x + (16 * this._textureState[i])) + "px -" + this._textureConfigurations[this._currentTextureConfiguration][i].y + "px");
 			}
 		});
 		return this;

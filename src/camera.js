@@ -209,7 +209,7 @@
 			//console.log(data[e]);
 			var top = data[e].faces.top;
 			updateSpatialStyles(data[e].html.container, top.x, top.y, top.z);
-			updateFaceStyle(data[e].html.top, top.paint, top.w, top.h);
+			updateFaceStyle(data[e].html.top, top.paint, top.content, top.w, top.h);
 			//console.log("Render TOP");
 		}
 	}
@@ -254,6 +254,7 @@
 	 */
 	function Face() {
 		this.paint = [];
+		this.content = "";
 		this.x = 0;
 		this.y = 0;
 		this.z = 0;
@@ -364,7 +365,7 @@
 		}
 	}
 
-	function updateFaceStyle(elem, paint, w, h) {
+	function updateFaceStyle(elem, paint, content, w, h) {
 		var style = "";
 		for (var name in paint) {
 			style += name + ": " + paint[name] + ";";
@@ -376,6 +377,8 @@
 		} else {
 			elem.setAttribute('style', style);
 		}
+
+		elem.innerHTML = content;
 	}
 
 })(Crafty);
