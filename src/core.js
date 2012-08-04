@@ -32,7 +32,7 @@
 	},
 
 	GUID = 1, //GUID for entity IDs
-	FPS = 50,
+	FPS = null,
 	frame = 1,
 
 	components = {}, //map of components and their functions
@@ -768,8 +768,13 @@
 			current: (+new Date),
 			curTime: Date.now(),
 			tickLast: Date.now(),
+			tickDeviation: 0, //ms the last tick deviated from a multiple of frametime
+			frameTime: 0,
+			frame: 1,
 
 			init: function () {
+				Crafty.timer.FPS(FPS || 50);
+
 				var onFrame = window.requestAnimationFrame ||
 					window.webkitRequestAnimationFrame ||
 					window.mozRequestAnimationFrame ||
@@ -786,6 +791,13 @@
 					drawFrame();
 				} else {
 					drawFrame = setInterval(Crafty.timer.step, 1000 / FPS);
+				}
+				Crafty.timer._startGameInterval();
+			},
+			
+			_startGameInterval: function () {
+				if (tick) {
+					clearInterval(tick);
 				}
 				tick = setInterval(Crafty.timer.gameTick, 1000 / FPS);
 			},
@@ -833,25 +845,36 @@
 			 */
 			gameTick: function () {
 				if (!Crafty.isPaused()) {
-					var start = Date.now();
+					var start = Date.now(), delta = start - Crafty.timer.tickLast, frames = Math.floor((delta + Crafty.timer.tickDeviation) / Crafty.timer.frameTime);
+					Crafty.timer.frame += frames;
 
 					// pass the time passed since the last tick so componenets can do time-based things intelligently
 					// the parameter is in ms, i.e. 20ms
-					Crafty.trigger('Tick', start - Crafty.timer.tickLast);
+					Crafty.trigger('DeltaTick', delta);
+					Crafty.trigger('FrameTick', frames);
 
 					Crafty.timer.tickLast = start;
+					Crafty.timer.tickDeviation += delta - frames * Crafty.timer.frameTime;
 				}
 			},
 
 			/**@
-			 * #Crafty.timer.getFPS
+			 * #Crafty.timer.FPS
 			 * @comp Crafty.timer
 			 * @sign public void Crafty.timer.getFPS()
 			 * Returns the target frames per second. This is not an actual frame rate.
 			 */
-			getFPS: function () {
-				return FPS;
+			FPS: function (fps) {
+				if (!fps) {
+					return FPS;
+				}
+				FPS = fps;
+				Crafty.timer.frameTime = 1000 / fps;
+				Crafty.timer._startGameInterval();
 			},
+			
+			
+			
 			/**@
 			 * #Crafty.timer.simulateFrames
 			 * @comp Crafty.timer
@@ -1030,7 +1053,7 @@
 	* Returns the current frame number
 	*/
 		frame: function () {
-			return frame;
+			return Crafty.timer.frame;
 		},
 
 		components: function () {

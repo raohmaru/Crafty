@@ -6,16 +6,7 @@
 Crafty.c("Color", {
 	_color: "",
 	_updatePaint: function (d) {
-		if (typeof this._color === "object") {
-			for (var i in this._color) {
-				console.log(i);
-				d.data.faces[i].addPaint('background-color', this._color[i]);
-			}
-		} else {
-			for (var i in d.data.faces) {
-				d.data.faces[i].addPaint('background-color', this._color);
-			}
-		}
+		
 	},
 
 	init: function () {
@@ -42,12 +33,23 @@ Crafty.c("Color", {
 		if (!color) {
 			return this._color;
 		}
+		
 		if (this._color != color) {
 			this._color = color;
-			this.bind("PreRender", function (d) {
-				this._updatePaint(d);
-				this.unbind("PreRender", this._updatePaint);
-
+			
+			this.bind("PreRender", function updatePaint (d) {
+				if (typeof this._color === "object") {
+					for (var i in this._color) {
+						console.log(i);
+						d.data.faces[i].addPaint('background-color', this._color[i]);
+					}
+				} else {
+					for (var i in d.data.faces) {
+						d.data.faces[i].addPaint('background-color', this._color);
+					}
+				}
+				
+				this.unbind("PreRender", updatePaint);
 			});
 		}
 		return this;
@@ -101,6 +103,75 @@ Crafty.c("Tint", {
 	}
 });
 
+Crafty.c("Texture", {
+	_currentTextureConfiguration: "default",
+	init: function() {
+		// either an url "image.png"
+		// or an object of urls {top: "image1.png", ...}
+		this._textures = {};
+		this._textureConfigurations = { default: { top: { x: 0, y: 0, frames: 1}, below: { x: 0, y: 0, frames: 1}, left: { x: 0, y: 0, frames: 1}, right: { x: 0, y: 0, frames: 1}, front: { x: 0, y: 0, frames: 1}, back: { x: 0, y: 0, frames: 1} } };
+		this._textureState = { top: 0, below: 0, left: 0, right: 0, front: 0, back: 0 };
+	},
+	
+	//config should detail x,y offset, repeating, scale etc.
+	config: {
+		walkleft: {
+			x: 0, 
+			y: 16,
+			frames: 5,
+		},
+		stand: {
+			x: 0,
+			y: 0,
+			frames: 1,
+		}
+	},
+	texture: function (texture, config) {
+		if(typeof texture === "string") {
+			this._textures = { top: texture, below: texture, left: texture, right: texture, front: texture, back: texture };
+		} else {
+			this._textures = texture;
+		}
+		
+		if (config) {
+			this._textureConfigurations = { };
+			for(var c in config) {
+				if (config[c]['top']) {
+					//the config specifies separate info for all faces
+					this._textureConfigurations[c] = config[c];
+				} else {
+					//the same configuration is used for all faces
+					this._textureConfigurations[c] = { top: config[c], below: config[c], left: config[c], right: config[c], front: config[c], back: config[c] };
+				}
+			}
+
+		} else {
+			//apply default configuration
+			this._textureConfigurations = { default: { top: { x: 0, y: 0, frames: 1}, below: { x: 0, y: 0, frames: 1}, left: { x: 0, y: 0, frames: 1}, right: { x: 0, y: 0, frames: 1}, front: { x: 0, y: 0, frames: 1}, back: { x: 0, y: 0, frames: 1} } };
+			this.applyTexture('default');
+
+		}
+
+		this.bind("FrameTick", function(frames) {
+			for(var face in this._textureState) {
+				this._textureState[face] = (this._textureState[face] + frames) % this._textureConfigurations[this._currentTextureConfiguration][face].frames;
+			}
+		});
+		
+		this.bind("PreRender", function preRender(d) {
+			
+			for (var i in d.data.faces) {
+				d.data.faces[i].addPaint("background", "transparent url(" + this._textures[i] + ") no-repeat -" + this._textureConfigurations[this._currentTextureConfiguration][i].x + (16 * this._textureState[i]) + "px -" + this._textureConfigurations[this._currentTextureConfiguration][i].y + "px");
+			}
+		});
+		return this;
+	},
+	applyTexture: function (configuration) {
+		this._currentTextureConfiguration = configuration;
+		return this;
+	}
+});
+
 /**@
 * #Image
 * @category Graphics
@@ -111,9 +182,9 @@ Crafty.c("Image", {
 	ready: false,
 
 	init: function () {
-		this.bind("PreRender", function (camType, data) {
-			for (var i in d.faces) {
-				d.faces[i].addPaint("background-url", +this.__image + " " + this._repeat);
+		this.bind("PreRender", function (d) {
+			for (var i in d.data.faces) {
+				d.data.faces[i].addPaint("background-image", "url(" + this.__image + ")");
 			}
 		});
 		/*
