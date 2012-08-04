@@ -145,16 +145,30 @@
 							below: (new Face()).setFacing('below', e.w, e.l, e.h),
 						},
 						tag: 'div',
-						html: createDomElements(e[0])
+						html: createDomElements(e[0]),
+						dirty: true
 					};
 
 				if (!this.data[e[0]]) {
 					this.data[e[0]] = d;
 				}
 
+				// As to not apply styles when nothing has changed. This really speeds rendering up!
+				// Point in case: RPG demo improved from 200ms to 40 ms pr rendering.
+				function generateRenderHash(face) {
+					var hash = face.x + " " + face.y + " " + face.l + " " + face.w + " " + face.content;
+					for (var name in face.paint) {
+						hash += name + face.paint[name];
+					}
+					return hash;
+				}
+
+				var renderHash = generateRenderHash(d.faces.top);
+
 				// the entity gets its own data passed into it
 				// a good entity will modify this data only if its been changed
 				e.trigger('PreRender', { type: this.type, data: d });
+				d.dirty = renderHash != generateRenderHash(d.faces.top);
 			}
 
 			// javascript! 
@@ -207,6 +221,11 @@
 	function topdown(data) {
 		for (var e in data) {
 			//console.log(data[e]);
+			if(!data[e].dirty) {
+				continue;
+			}
+			console.log("Dirty!");
+
 			var top = data[e].faces.top;
 			updateSpatialStyles(data[e].html.container, top.x, top.y, top.z);
 			updateFaceStyle(data[e].html.top, top.paint, top.content, top.w, top.h);
@@ -253,7 +272,7 @@
 	 * Other components can change this.
 	 */
 	function Face() {
-		this.paint = [];
+		this.paint = {};
 		this.content = "";
 		this.x = 0;
 		this.y = 0;
