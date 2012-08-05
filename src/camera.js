@@ -163,12 +163,12 @@
 					return hash;
 				}
 
-				var renderHash = generateRenderHash(d.faces.top);
+				var renderHash = generateRenderHash(d.faces.front);
 
 				// the entity gets its own data passed into it
 				// a good entity will modify this data only if its been changed
 				e.trigger('PreRender', { type: this.type, data: d });
-				d.dirty = renderHash != generateRenderHash(d.faces.top);
+				d.dirty = renderHash != generateRenderHash(d.faces.front);
 			}
 
 			// javascript! 
@@ -179,6 +179,9 @@
 					break;
 				case "Side":
 					sideview.call(this, this.data);
+					break;
+				case "Front":
+					frontview.call(this, this.data);
 					break;
 				case "Isometric":
 					isometric.call(this, this.data);
@@ -236,6 +239,34 @@
 	 * Only renders the right face
 	 */
 	function sideview(data) {
+		for (var e in data) {
+			//console.log(data[e]);
+			//if (!data[e].dirty) {
+			//	continue;
+			//}
+
+			var face = data[e].faces.right;
+			updateSpatialStyles(data[e].html.container, face.x, face.y, face.z);
+			updateFaceStyle(data[e].html.right, face.paint, face.content, face.w, face.h);
+			//console.log("Render TOP");
+		}
+	}
+	
+	/**
+	 * Only renders the front face
+	 */
+	function frontview(data) {
+		for (var e in data) {
+			//console.log(data[e]);
+			if (!data[e].dirty) {
+				continue;
+			}
+
+			var face = data[e].faces.front;
+			updateSpatialStyles(data[e].html.container, face.x, face.y, face.z);
+			updateFaceStyle(data[e].html.front, face.paint, face.content, face.w, face.h);
+			//console.log("Render TOP");
+		}
 	}
 
 	/**
@@ -324,6 +355,8 @@
 			case 'right':
 				this.w = h;
 				this.h = w;
+				this.x = x;
+				this.y = y;
 				this.rZ = 90;
 				this.rX = -90;
 				break;
@@ -348,10 +381,18 @@
 		var top = document.createElement('div');
 		top.id = "ent" + id + "-top";
 		container.appendChild(top);
+		
+		var front = document.createElement('div');
+		front.id = "ent" + id + "-front";
+		container.appendChild(front);
+		
+		var right = document.createElement('div');
+		right.id = "ent" + id + "-right";
+		container.appendChild(right);
 
 		Crafty.stage.inner.appendChild(container);
 
-		return { container: container, top: top };
+		return { container: container, top: top, front: front, right: right };
 	}
 
 	// Modifies spatial attributes of the container div. Is called by one of the render functions,
