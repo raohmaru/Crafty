@@ -94,7 +94,6 @@ window.onload = function () {
 					})
 				// A rudimentary way to prevent the user from passing solid areas
 				.bind('Moved', function (from) {
-					console.log("moved");
 					if (this.hit('solid')) {
 						console.log("solid");
 						this.attr({ x: from.x, y: from.y });
@@ -118,7 +117,7 @@ window.onload = function () {
 		//create our player entity with some premade components
 		player = Crafty.e("RightControls, Hero, Collision")
 			.attr({ x: 16, y: 16, z: 1, w: 16, l: 16 })
-			.rightControls(1);
+			.rightControls(60);
 	});
 
 	Crafty.scene("loading");

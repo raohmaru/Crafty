@@ -159,7 +159,7 @@ Crafty.c("Texture", {
 
 		}
 
-		this.bind("DeltaTick", function(delta) {
+		this.bind("Tick", function(delta) {
 			for(var face in this._textureState) {
 				this._textureState[face] = (this._textureState[face] + delta) % (this._textureConfigurations[this._currentTextureConfiguration][face].frames * Crafty.timer.frameTime);
 			}

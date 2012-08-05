@@ -849,7 +849,7 @@
 
 					// pass the time passed since the last tick so componenets can do time-based things intelligently
 					// the parameter is in ms, i.e. 20ms
-					Crafty.trigger('DeltaTick', delta);
+					Crafty.trigger('Tick', delta);
 
 					Crafty.timer.tickLast = start;
 				}

@@ -524,16 +524,18 @@ Crafty.c("Multiway", {
 		}
 	},
 
-	_enterframe: function () {
+	_multiwayLogic: function (delta) {
 		if (this.disableControls) return;
 
 		if (this._movement.x !== 0) {
-			this.x += this._movement.x;
-			this.trigger('Moved', { x: this.x - this._movement.x, y: this.y });
+			var oldX = this.x;
+			this.x += this._movement.x*(delta/1000);
+			this.trigger('Moved', { x: oldX, y: this.y });
 		}
 		if (this._movement.y !== 0) {
-			this.y += this._movement.y;
-			this.trigger('Moved', { x: this.x, y: this.y - this._movement.y });
+			var oldY = this.y;
+			this.y += this._movement.y*(delta/1000);
+			this.trigger('Moved', { x: this.x, y: this.y - oldY });
 		}
 	},
 
@@ -603,7 +605,7 @@ Crafty.c("Multiway", {
 	enableControl: function () {
 		this.bind("KeyDown", this._keydown)
 		.bind("KeyUp", this._keyup)
-		.bind("EnterFrame", this._enterframe);
+		.bind("Tick", this._multiwayLogic);
 		return this;
 	},
 
@@ -622,7 +624,7 @@ Crafty.c("Multiway", {
 	disableControl: function () {
 		this.unbind("KeyDown", this._keydown)
 		.unbind("KeyUp", this._keyup)
-		.unbind("EnterFrame", this._enterframe);
+		.unbind("Tick", this._multiwayLogic);
 		return this;
 	},
 

@@ -224,7 +224,6 @@
 			if(!data[e].dirty) {
 				continue;
 			}
-			console.log("Dirty!");
 
 			var top = data[e].faces.top;
 			updateSpatialStyles(data[e].html.container, top.x, top.y, top.z);
