@@ -141,6 +141,7 @@ Crafty.c("Spatial", {
 		this.__defineSetter__('y', function (v) { this._attr('_y', v); });
 		this.__defineSetter__('w', function (v) { this._attr('_w', v); });
 		this.__defineSetter__('h', function (v) { this._attr('_h', v); });
+		this.__defineSetter__('l', function (v) { this._attr('_l', v); });
 		this.__defineSetter__('z', function (v) { this._attr('_z', v); });
 		this.__defineSetter__('rotation', function (v) { this._attr('_rotation', v); });
 		this.__defineSetter__('alpha', function (v) { this._attr('_alpha', v); });
@@ -150,6 +151,7 @@ Crafty.c("Spatial", {
 		this.__defineGetter__('y', function () { return this._y; });
 		this.__defineGetter__('w', function () { return this._w; });
 		this.__defineGetter__('h', function () { return this._h; });
+		this.__defineGetter__('l', function () { return this._l; });
 		this.__defineGetter__('z', function () { return this._z; });
 		this.__defineGetter__('rotation', function () { return this._rotation; });
 		this.__defineGetter__('alpha', function () { return this._alpha; });
@@ -180,6 +182,12 @@ Crafty.c("Spatial", {
 		Object.defineProperty(this, 'h', {
 			set: function (v) { this._attr('_h', v); }
 				, get: function () { return this._h; }
+				, configurable: true
+		});
+		
+		Object.defineProperty(this, 'l', {
+			set: function (v) { this._attr('_l', v); }
+				, get: function () { return this._l; }
 				, configurable: true
 		});
 
@@ -214,6 +222,7 @@ Crafty.c("Spatial", {
 		this.y = this._y;
 		this.w = this._w;
 		this.h = this._h;
+		this.l = this._l;
 		this.z = this._z;
 		this.rotation = this._rotation;
 		this.alpha = this._alpha;
@@ -223,7 +232,7 @@ Crafty.c("Spatial", {
 		this.bind("EnterFrame", function () {
 			//if there are differences between the public and private properties
 			if (this.x !== this._x || this.y !== this._y ||
-				this.w !== this._w || this.h !== this._h ||
+				this.w !== this._w || this.h !== this._h || this.l !== this._l ||
 				this.z !== this._z || this.rotation !== this._rotation ||
 				this.alpha !== this._alpha || this.visible !== this._visible) {
 
@@ -256,6 +265,7 @@ Crafty.c("Spatial", {
 				this._y = this.y;
 				this._w = this.w;
 				this._h = this.h;
+				this._l = this.l;
 				this._z = this.z;
 				this._rotation = this.rotation;
 				this._alpha = this.alpha;
@@ -321,8 +331,7 @@ Crafty.c("Spatial", {
 			this.detach();
 		});
 
-		console.log("Spatial");
-		this.bind('PreRender', this._prerender);
+		this.bind('PreRender', this._spatialPrerender);
 	},
 
 	/**
@@ -734,7 +743,7 @@ Crafty.c("Spatial", {
 	* The default faces are already added by the camera for us
 	* We just need to fill them with data
 	*/
-	_prerender: function (d) {
+	_spatialPrerender: function (d) {
 		for (var i in d.data.faces) {
 			d.data.faces[i].setFacing(i, this.w, this.l, this.h, this.x, this.y);
 		}
