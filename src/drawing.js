@@ -6,7 +6,7 @@
 Crafty.c("Color", {
 	_color: "",
 	_updatePaint: function (d) {
-		
+
 	},
 
 	init: function () {
@@ -33,14 +33,13 @@ Crafty.c("Color", {
 		if (!color) {
 			return this._color;
 		}
-		
+
 		if (this._color != color) {
 			this._color = color;
-			
-			this.bind("PreRender", function updatePaint (d) {
+
+			this.bind("PreRender", function updatePaint(d) {
 				if (typeof this._color === "object") {
 					for (var i in this._color) {
-						console.log(i);
 						d.data.faces[i].addPaint('background-color', this._color[i]);
 					}
 				} else {
@@ -48,7 +47,7 @@ Crafty.c("Color", {
 						d.data.faces[i].addPaint('background-color', this._color);
 					}
 				}
-				
+
 				this.unbind("PreRender", updatePaint);
 			});
 		}
@@ -105,18 +104,18 @@ Crafty.c("Tint", {
 
 Crafty.c("Texture", {
 	_currentTextureConfiguration: "default",
-	init: function() {
+	init: function () {
 		// either an url "image.png"
 		// or an object of urls {top: "image1.png", ...}
 		this._textures = {};
-		this._textureConfigurations = { default: { top: { x: 0, y: 0, frames: 1}, below: { x: 0, y: 0, frames: 1}, left: { x: 0, y: 0, frames: 1}, right: { x: 0, y: 0, frames: 1}, front: { x: 0, y: 0, frames: 1}, back: { x: 0, y: 0, frames: 1} } };
+		this._textureConfigurations = { default: { top: { x: 0, y: 0, frames: 1 }, below: { x: 0, y: 0, frames: 1 }, left: { x: 0, y: 0, frames: 1 }, right: { x: 0, y: 0, frames: 1 }, front: { x: 0, y: 0, frames: 1 }, back: { x: 0, y: 0, frames: 1 } } };
 		this._textureState = { top: 0, below: 0, left: 0, right: 0, front: 0, back: 0 };
 	},
-	
+
 	//config should detail x,y offset, repeating, scale etc.
 	config: {
 		walkleft: {
-			x: 0, 
+			x: 0,
 			y: 16,
 			frames: 5,
 		},
@@ -126,55 +125,94 @@ Crafty.c("Texture", {
 			frames: 1,
 		}
 	},
+
+	_textureLogic: function (delta) {
+		for (var face in this._textureState) {
+			this._textureState[face] = (this._textureState[face] + delta) % (this._textureConfigurations[this._currentTextureConfiguration][face].frames * Crafty.timer.frameTime);
+		}
+	},
+
 	texture: function (texture, config) {
-		if(typeof texture === "string") {
+		
+		// takes structures like {configName{ top: {x: ...} ...} ...} and {configName: {x: ...} ...} and generates valid configurations
+		function constructConfig(conf) {
+			var newConfig = {};
+			for (var c in conf) {
+				if (conf[c]['top']) {
+					//the config specifies separate info for all faces
+					newConfig[c] = conf[c];
+				} else {
+					//the same configuration is used for all faces
+					newConfig[c] = { top: conf[c], below: conf[c], left: conf[c], right: conf[c], front: conf[c], back: conf[c] };
+				}
+			}
+			return newConfig;
+		}
+
+		if (typeof texture === "string") {
 			this._textures = { top: texture, below: texture, left: texture, right: texture, front: texture, back: texture };
 		} else {
 			this._textures = texture;
 		}
-		
-		if (config) {
-			console.log(config);
-			this._textureConfigurations = {};
-			if(typeof (config['x']) === "number" && typeof (config['y']) === "number") {
-				config = { default: config };
-				console.log(config);
-				this.applyTexture('default');
-			}
 
-			for(var c in config) {
-				if (config[c]['top']) {
-					//the config specifies separate info for all faces
-					this._textureConfigurations[c] = config[c];
-				} else {
-					//the same configuration is used for all faces
-					this._textureConfigurations[c] = { top: config[c], below: config[c], left: config[c], right: config[c], front: config[c], back: config[c] };
-				}
+		if (config) {
+			if (typeof (config['x']) === "number" && typeof (config['y']) === "number") {
+				// if there is only 1 config, go ahead and apply it as default
+				this._textureConfigurations = constructConfig({ default: config });
+				this.applyTexture("default");
+			} else {
+				this._textureConfigurations = constructConfig(config);
 			}
 
 		} else {
-			//apply default configuration
-			this._textureConfigurations = { default: { top: { x: 0, y: 0, frames: 1}, below: { x: 0, y: 0, frames: 1}, left: { x: 0, y: 0, frames: 1}, right: { x: 0, y: 0, frames: 1}, front: { x: 0, y: 0, frames: 1}, back: { x: 0, y: 0, frames: 1} } };
-			this.applyTexture('default');
+			// if there are no configs, go ahead and create one and apply it as default
+			this._textureConfigurations = constructConfig({ default: { x: 0, y: 0, frames: 1 } });
+			this.applyTexture("default");
 
 		}
 
-		this.bind("Tick", function(delta) {
-			for(var face in this._textureState) {
-				this._textureState[face] = (this._textureState[face] + delta) % (this._textureConfigurations[this._currentTextureConfiguration][face].frames * Crafty.timer.frameTime);
-			}
-		});
+		this.unbind("Tick", this._textureLogic);
+		this.bind("Tick", this._textureLogic);
 		
-		this.bind("PreRender", function preRender(d) {
-			
+		return this;
+	},
+	
+	applyTexture: function (name) {
+		this._currentTextureConfiguration = name;
+		
+		if (!this._textureConfigurations[name]) {
+			return this;
+		}
+
+		var isLiveTexture = false, currentConfiguration = this._textureConfigurations[name];
+		for (var face in currentConfiguration) {
+			if (currentConfiguration[face].frames > 1) {
+				isLiveTexture = true;
+				break;
+			}
+		}
+
+		function texturePreRender(d) {
+
 			for (var i in d.data.faces) {
 				d.data.faces[i].addPaint("background", "transparent url(" + this._textures[i] + ") no-repeat -" + (this._textureConfigurations[this._currentTextureConfiguration][i].x + (16 * Math.floor(this._textureState[i] / Crafty.timer.frameTime))) + "px -" + this._textureConfigurations[this._currentTextureConfiguration][i].y + "px");
 			}
-		});
-		return this;
-	},
-	applyTexture: function (configuration) {
-		this._currentTextureConfiguration = configuration;
+		}
+
+		// clear old prerender binding
+		this.unbind("PreRender", texturePreRender);
+
+		// entities that does not have sprite animations should not bind to PreRender forever
+		if (isLiveTexture) {
+			this.bind("PreRender", texturePreRender);
+		} else {
+			this.bind("PreRender", function onetimeTexturePreRender(d) {
+				texturePreRender.call(this, d);
+				this.unbind("PreRender", onetimeTexturePreRender);
+			});
+		}
+
+
 		return this;
 	}
 });

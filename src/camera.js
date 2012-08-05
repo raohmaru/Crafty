@@ -110,14 +110,11 @@
 		},
 
 		getEntitiesInView: function () {
-			var es = Crafty("Render"),
-				arr = [];
-			for (var i = 0, l = es.length; i < l; i++) {
-				arr.push(Crafty(es[i]));
-			}
-			//console.log("In View: ")
-			//console.log(es);
-			return arr;
+			//TODO: Only return entities in view (by fiddling with the viewport)
+			//TODO: cache the list of entities (keeping track of moving entities, change in viewport)
+
+			return Crafty.select("Render");
+
 		},
 
 		render: function () {
@@ -146,7 +143,7 @@
 						},
 						tag: 'div',
 						html: createDomElements(e[0]),
-						dirty: true
+						dirtySpatial: true
 					};
 
 				if (!this.data[e[0]]) {
@@ -163,12 +160,12 @@
 					return hash;
 				}
 
-				var renderHash = generateRenderHash(d.faces.front);
+				//var renderHash = generateRenderHash(d.faces.front);
 
 				// the entity gets its own data passed into it
 				// a good entity will modify this data only if its been changed
 				e.trigger('PreRender', { type: this.type, data: d });
-				d.dirty = renderHash != generateRenderHash(d.faces.front);
+				//d.dirty = renderHash != generateRenderHash(d.faces.front);
 			}
 
 			// javascript! 
@@ -179,9 +176,6 @@
 					break;
 				case "Side":
 					sideview.call(this, this.data);
-					break;
-				case "Front":
-					frontview.call(this, this.data);
 					break;
 				case "Isometric":
 					isometric.call(this, this.data);
@@ -224,7 +218,7 @@
 	function topdown(data) {
 		for (var e in data) {
 			//console.log(data[e]);
-			if(!data[e].dirty) {
+			if (!data[e].dirty) {
 				continue;
 			}
 
@@ -240,32 +234,16 @@
 	 */
 	function sideview(data) {
 		for (var e in data) {
-			//console.log(data[e]);
 			//if (!data[e].dirty) {
 			//	continue;
 			//}
 
 			var face = data[e].faces.right;
-			updateSpatialStyles(data[e].html.container, face.x, face.y, face.z);
-			updateFaceStyle(data[e].html.right, face.paint, face.content, face.w, face.h);
-			//console.log("Render TOP");
-		}
-	}
-	
-	/**
-	 * Only renders the front face
-	 */
-	function frontview(data) {
-		for (var e in data) {
-			//console.log(data[e]);
-			if (!data[e].dirty) {
-				continue;
+			if (face.dirty) {
+				updateSpatialStyles(data[e].html.container, face.x, face.y, face.z);
+				updateFaceStyle(data[e].html.right, face.paint, face.content, face.w, face.h);
+				face.dirty = false;
 			}
-
-			var face = data[e].faces.front;
-			updateSpatialStyles(data[e].html.container, face.x, face.y, face.z);
-			updateFaceStyle(data[e].html.front, face.paint, face.content, face.w, face.h);
-			//console.log("Render TOP");
 		}
 	}
 
@@ -311,6 +289,7 @@
 		this.w = 0;
 		this.rZ = 0;
 		this.rX = 0;
+		this.dirty = true;
 	}
 
 	/**
@@ -324,8 +303,20 @@
 	 * Color will add background-color.
 	 */
 	Face.prototype.addPaint = function (name, value) {
+		if(this.paint[name] != value) {
+			this.dirty = true;
+		}
+		
 		this.paint[name] = value;
 		return this;
+	};
+
+	Face.prototype.setContent = function (content) {
+		if(this.content != content) {
+			//this.dirty = true;
+		}
+		
+		this.content = content;
 	};
 
 	/**
@@ -333,6 +324,10 @@
 	 * Automatically sizes and orients a face based on the entity dimensions and the direction given
 	 */
 	Face.prototype.setFacing = function (facing, w, l, h, x, y) {
+		var oldW = this.w, oldH = this.h, oldZ = this.z,
+		    oldX = this.x, oldY = this.y,
+		    oldRx = this.rX, oldRz = this.rZ;
+
 		switch (facing.toLowerCase()) {
 			case 'top':
 				this.w = w;
@@ -371,8 +366,13 @@
 				this.rX = 180;
 				break;
 		}
+		if (oldW != this.w || oldH != this.h || oldZ != this.z ||
+			oldX != this.x || oldY != this.y ||
+			oldRx != this.rX || oldRz != this.rZ) {
+			this.dirty = true;
+		}
 		return this;
-	}
+	};
 
 	function createDomElements(id) {
 		var container = document.createElement('div');
@@ -381,11 +381,11 @@
 		var top = document.createElement('div');
 		top.id = "ent" + id + "-top";
 		container.appendChild(top);
-		
+
 		var front = document.createElement('div');
 		front.id = "ent" + id + "-front";
 		container.appendChild(front);
-		
+
 		var right = document.createElement('div');
 		right.id = "ent" + id + "-right";
 		container.appendChild(right);

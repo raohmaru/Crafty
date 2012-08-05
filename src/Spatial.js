@@ -744,9 +744,10 @@ Crafty.c("Spatial", {
 	* We just need to fill them with data
 	*/
 	_spatialPrerender: function (d) {
-		for (var i in d.data.faces) {
-			d.data.faces[i].setFacing(i, this.w, this.l, this.h, this.x, this.y);
-		}
+		//for (var i in d.data.faces) {
+		//	d.data.faces[i].setFacing(i, this.w, this.l, this.h, this.x, this.y);
+		//}
+		d.data.faces["right"].setFacing("right", this._w, this._l, this._h, this._x, this._y);
 	}
 });
 

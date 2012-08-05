@@ -509,11 +509,15 @@
 	* second argument is the arbitrary event data. This can be absolutely anything.
 	*/
 		trigger: function (event, data) {
+			if (event != "PreRender") {
+				var breakOnMe = true;
+			}
 			if (this.length === 1) {
 				//find the handlers assigned to the event and entity
 				if (handlers[event] && handlers[event][this[0]]) {
-					var callbacks = handlers[event][this[0]], i = 0, l = callbacks.length;
-					for (; i < l; i++) {
+					var callbacks = handlers[event][this[0]], i = 0;
+					// we cannot cache callbacks.length as it is possible to unbind in a callback
+					for (; i < callbacks.length; i++) {
 						callbacks[i].call(this, data);
 					}
 				}
@@ -662,6 +666,20 @@
 * Used to extend the Crafty namespace.
 */
 	Crafty.extend({
+
+		select: function (component) {
+			var res = [];
+
+			for (var e in entities) {
+				if (entities.hasOwnProperty(e) &&
+					entities[e].__c[component]) {
+					res.push(entities[e]);
+				}
+			}
+
+			return res;
+		},
+
 		/**@
 		 * #Crafty.init
 		 * @category Core
@@ -794,7 +812,7 @@
 				}
 				Crafty.timer._startGameInterval();
 			},
-			
+
 			_startGameInterval: function () {
 				if (tick) {
 					clearInterval(tick);
@@ -824,12 +842,11 @@
 			 * @sign public void Crafty.timer.step()
 			 * Draws the game world on every frame.
 			 */
-			Render: function () {
+			Render: function render() {
 				if (!Crafty.isPaused()) {
 					//draw all cameras
 					var activeCams = Crafty.camera.listActive();
 					for (var cam in activeCams) {
-						//console.log(activeCams[cam]);
 						activeCams[cam].render();
 					}
 					//Crafty.pause();
@@ -843,7 +860,7 @@
 			 * Advances the game by one tick. A tick occurs independent of the drawing process.
 			 * It should not interfere with the drawing process in any way.
 			 */
-			gameTick: function () {
+			gameTick: function gameTick() {
 				if (!Crafty.isPaused()) {
 					var start = Date.now(), delta = start - Crafty.timer.tickLast;
 
@@ -869,9 +886,9 @@
 				Crafty.timer.frameTime = 1000 / fps;
 				Crafty.timer._startGameInterval();
 			},
-			
-			
-			
+
+
+
 			/**@
 			 * #Crafty.timer.simulateFrames
 			 * @comp Crafty.timer
