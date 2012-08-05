@@ -171,8 +171,7 @@ Crafty.c("Texture", {
 
 		}
 
-		this.unbind("Tick", this._textureLogic);
-		this.bind("Tick", this._textureLogic);
+		
 		
 		return this;
 	},
@@ -204,6 +203,8 @@ Crafty.c("Texture", {
 
 		// entities that does not have sprite animations should not bind to PreRender forever
 		if (isLiveTexture) {
+			this.unbind("Tick", this._textureLogic);
+			this.bind("Tick", this._textureLogic);
 			this.bind("PreRender", texturePreRender);
 		} else {
 			this.bind("PreRender", function onetimeTexturePreRender(d) {
