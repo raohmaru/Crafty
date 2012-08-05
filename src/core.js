@@ -784,13 +784,13 @@
 
 				if (onFrame) {
 					drawFrame = function () {
-						Crafty.timer.step();
+						Crafty.timer.Render();
 						drawID = onFrame(drawFrame);
 					};
 
 					drawFrame();
 				} else {
-					drawFrame = setInterval(Crafty.timer.step, 1000 / FPS);
+					drawFrame = setInterval(Crafty.timer.Render, 1000 / FPS);
 				}
 				Crafty.timer._startGameInterval();
 			},
@@ -824,7 +824,7 @@
 			 * @sign public void Crafty.timer.step()
 			 * Draws the game world on every frame.
 			 */
-			step: function () {
+			Render: function () {
 				if (!Crafty.isPaused()) {
 					//draw all cameras
 					var activeCams = Crafty.camera.listActive();
@@ -845,16 +845,13 @@
 			 */
 			gameTick: function () {
 				if (!Crafty.isPaused()) {
-					var start = Date.now(), delta = start - Crafty.timer.tickLast, frames = Math.floor((delta + Crafty.timer.tickDeviation) / Crafty.timer.frameTime);
-					Crafty.timer.frame += frames;
+					var start = Date.now(), delta = start - Crafty.timer.tickLast;
 
 					// pass the time passed since the last tick so componenets can do time-based things intelligently
 					// the parameter is in ms, i.e. 20ms
 					Crafty.trigger('DeltaTick', delta);
-					Crafty.trigger('FrameTick', frames);
 
 					Crafty.timer.tickLast = start;
-					Crafty.timer.tickDeviation += delta - frames * Crafty.timer.frameTime;
 				}
 			},
 
@@ -1044,16 +1041,6 @@
 			}
 
 			return false;
-		},
-
-		/**@
-	* #Crafty.frame
-	* @category Core
-	* @sign public Number Crafty.frame(void)
-	* Returns the current frame number
-	*/
-		frame: function () {
-			return Crafty.timer.frame;
 		},
 
 		components: function () {

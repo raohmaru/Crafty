@@ -159,16 +159,16 @@ Crafty.c("Texture", {
 
 		}
 
-		this.bind("FrameTick", function(frames) {
+		this.bind("DeltaTick", function(delta) {
 			for(var face in this._textureState) {
-				this._textureState[face] = (this._textureState[face] + frames) % this._textureConfigurations[this._currentTextureConfiguration][face].frames;
+				this._textureState[face] = (this._textureState[face] + delta) % (this._textureConfigurations[this._currentTextureConfiguration][face].frames * Crafty.timer.frameTime);
 			}
 		});
 		
 		this.bind("PreRender", function preRender(d) {
 			
 			for (var i in d.data.faces) {
-				d.data.faces[i].addPaint("background", "transparent url(" + this._textures[i] + ") no-repeat -" + (this._textureConfigurations[this._currentTextureConfiguration][i].x + (16 * this._textureState[i])) + "px -" + this._textureConfigurations[this._currentTextureConfiguration][i].y + "px");
+				d.data.faces[i].addPaint("background", "transparent url(" + this._textures[i] + ") no-repeat -" + (this._textureConfigurations[this._currentTextureConfiguration][i].x + (16 * Math.floor(this._textureState[i] / Crafty.timer.frameTime))) + "px -" + this._textureConfigurations[this._currentTextureConfiguration][i].y + "px");
 			}
 		});
 		return this;
