@@ -40,6 +40,15 @@
 			if (!type) {
 				return Crafty.camera.cameras[label];
 			}
+			
+			//init redraw display
+			var redraws = document.createElement("canvas");
+			redraws.width = Crafty.viewport.width;
+			redraws.height = Crafty.viewport.height;
+			redraws.style.position = 'absolute';
+			redraws.style.zIndex = 10000;
+			document.getElementById('cr-stage').insertBefore(redraws, document.getElementById('cr-stage').firstChild);
+			Crafty.redraws = redraws.getContext("2d");
 
 			return Crafty.camera.cameras[label] = new Crafty.camera.fn.init(type, options);
 		}
@@ -47,15 +56,15 @@
 
 	Crafty.camera.cameras = {};
 
-	Crafty.camera.listActive = function () {
-		var activeCams = {}, cameras = Crafty.camera.cameras;
+	Crafty.camera.listActive = function() {
+		var activeCams = { }, cameras = Crafty.camera.cameras;
 		for (var c in cameras) {
 			if (cameras[c].active) {
 				activeCams[c] = cameras[c];
 			}
 		}
 		return activeCams;
-	}
+	};
 
 	Crafty.camera.fn = {
 		active: false,
@@ -227,22 +236,32 @@
 			updateFaceStyle(data[e].html.top, top.paint, top.content, top.w, top.h);
 			//console.log("Render TOP");
 		}
+		
 	}
 
 	/**
 	 * Only renders the right face
 	 */
 	function sideview(data) {
+		
+		if(Crafty.redraws) {
+			Crafty.redraws.clearRect(0, 0, Crafty.viewport.width, Crafty.viewport.height);
+		}
+
 		for (var e in data) {
-			//if (!data[e].dirty) {
-			//	continue;
-			//}
 
 			var face = data[e].faces.right;
 			if (face.dirty) {
 				updateSpatialStyles(data[e].html.container, face.x, face.y, face.z);
 				updateFaceStyle(data[e].html.right, face.paint, face.content, face.w, face.h);
 				face.dirty = false;
+
+				if(Crafty.redraws) {
+					
+					Crafty.redraws.fillStyle = "rgba(0, 0, 200, 1)";
+					Crafty.redraws.fillRect(face.x, face.y, face.w, face.h);
+				}
+
 			}
 		}
 	}
