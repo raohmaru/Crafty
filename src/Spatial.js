@@ -707,6 +707,7 @@ Crafty.c("Spatial", {
 	* x, y, w, h, alpha, rotation and visible.
 	*/
 	_attr: function (name, value) {
+		Crafty.dirty.push(this);
 		//keep a reference of the old positions
 		var pos = this.pos(),
 			old = this.mbr() || pos;

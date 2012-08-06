@@ -42,13 +42,15 @@
 			}
 			
 			//init redraw display
-			var redraws = document.createElement("canvas");
-			redraws.width = Crafty.viewport.width;
-			redraws.height = Crafty.viewport.height;
-			redraws.style.position = 'absolute';
-			redraws.style.zIndex = 10000;
-			document.getElementById('cr-stage').insertBefore(redraws, document.getElementById('cr-stage').firstChild);
-			Crafty.redraws = redraws.getContext("2d");
+			if (Crafty.support.enableRedrawDisplay) {
+				var redraws = document.createElement("canvas");
+				redraws.width = Crafty.viewport.width;
+				redraws.height = Crafty.viewport.height;
+				redraws.style.position = 'absolute';
+				redraws.style.zIndex = 10000;
+				document.getElementById('cr-stage').insertBefore(redraws, document.getElementById('cr-stage').firstChild);
+				Crafty.redraws = redraws.getContext("2d");
+			}
 
 			return Crafty.camera.cameras[label] = new Crafty.camera.fn.init(type, options);
 		}
@@ -122,7 +124,7 @@
 			//TODO: Only return entities in view (by fiddling with the viewport)
 			//TODO: cache the list of entities (keeping track of moving entities, change in viewport)
 
-			return Crafty.select("Render");
+			return Crafty.select("Dirty");
 
 		},
 
@@ -131,8 +133,10 @@
 				return this;
 			}
 
+			var dirtyData = { };
+
 			// pre render logic
-			var entities = this.getEntitiesInView(),
+			var entities = Crafty.dirty,
 				i = 0, l = entities.length;
 
 			for (; i < l; i++) {
@@ -158,6 +162,7 @@
 				if (!this.data[e[0]]) {
 					this.data[e[0]] = d;
 				}
+				dirtyData[e[0]] = d;
 
 				// As to not apply styles when nothing has changed. This really speeds rendering up!
 				// Point in case: RPG demo improved from 200ms to 40 ms pr rendering.
@@ -175,7 +180,10 @@
 				// a good entity will modify this data only if its been changed
 				e.trigger('PreRender', { type: this.type, data: d });
 				//d.dirty = renderHash != generateRenderHash(d.faces.front);
+
 			}
+
+			Crafty.dirty = [];
 
 			// javascript! 
 			// call the private functions as instance methods
@@ -184,7 +192,7 @@
 					topdown.call(this, this.data);
 					break;
 				case "Side":
-					sideview.call(this, this.data);
+					sideview.call(this, dirtyData);
 					break;
 				case "Isometric":
 					isometric.call(this, this.data);
@@ -243,27 +251,30 @@
 	 * Only renders the right face
 	 */
 	function sideview(data) {
+
 		
-		if(Crafty.redraws) {
-			Crafty.redraws.clearRect(0, 0, Crafty.viewport.width, Crafty.viewport.height);
-		}
 
+		//if(Crafty.redraws) {
+		//	Crafty.redraws.clearRect(0, 0, Crafty.viewport.width, Crafty.viewport.height);
+		//}
+		//var count = 0;
 		for (var e in data) {
-
+			//count++;
 			var face = data[e].faces.right;
-			if (face.dirty) {
+			//if (face.dirty) {
 				updateSpatialStyles(data[e].html.container, face.x, face.y, face.z);
 				updateFaceStyle(data[e].html.right, face.paint, face.content, face.w, face.h);
-				face.dirty = false;
+				//face.dirty = false;
 
-				if(Crafty.redraws) {
+				//if(Crafty.redraws) {
 					
-					Crafty.redraws.fillStyle = "rgba(0, 0, 200, 1)";
-					Crafty.redraws.fillRect(face.x, face.y, face.w, face.h);
-				}
+				//	Crafty.redraws.fillStyle = "rgba(0, 0, 200, 1)";
+				//	Crafty.redraws.fillRect(face.x, face.y, face.w, face.h);
+				//}
 
-			}
+			//}
 		}
+		//console.log(count);
 	}
 
 	/**
@@ -322,18 +333,18 @@
 	 * Color will add background-color.
 	 */
 	Face.prototype.addPaint = function (name, value) {
-		if(this.paint[name] != value) {
-			this.dirty = true;
-		}
+		//if(this.paint[name] != value) {
+		//	this.dirty = true;
+		//}
 		
 		this.paint[name] = value;
 		return this;
 	};
 
 	Face.prototype.setContent = function (content) {
-		if(this.content != content) {
-			//this.dirty = true;
-		}
+		//if(this.content != content) {
+		//	this.dirty = true;
+		//}
 		
 		this.content = content;
 	};
@@ -343,9 +354,9 @@
 	 * Automatically sizes and orients a face based on the entity dimensions and the direction given
 	 */
 	Face.prototype.setFacing = function (facing, w, l, h, x, y) {
-		var oldW = this.w, oldH = this.h, oldZ = this.z,
-		    oldX = this.x, oldY = this.y,
-		    oldRx = this.rX, oldRz = this.rZ;
+		//var oldW = this.w, oldH = this.h, oldZ = this.z,
+		//    oldX = this.x, oldY = this.y,
+		//    oldRx = this.rX, oldRz = this.rZ;
 
 		switch (facing.toLowerCase()) {
 			case 'top':
@@ -385,11 +396,11 @@
 				this.rX = 180;
 				break;
 		}
-		if (oldW != this.w || oldH != this.h || oldZ != this.z ||
-			oldX != this.x || oldY != this.y ||
-			oldRx != this.rX || oldRz != this.rZ) {
-			this.dirty = true;
-		}
+		//if (oldW != this.w || oldH != this.h || oldZ != this.z ||
+		//	oldX != this.x || oldY != this.y ||
+		//	oldRx != this.rX || oldRz != this.rZ) {
+		//	this.dirty = true;
+		//}
 		return this;
 	};
 
@@ -436,11 +447,11 @@
 			style += (prefix + "transform: " + trans.join(" ") + ";");
 		}
 
-		if (typeof (elem.style.cssText) != 'undefined') {
-			elem.style.cssText = style;
-		} else {
+		////if (typeof (elem.style.cssText) != 'undefined') {
+		//	elem.style.cssText = style;
+		//} else {
 			elem.setAttribute('style', style);
-		}
+		//}
 	}
 
 	function updateFaceStyle(elem, paint, content, w, h) {
@@ -450,13 +461,15 @@
 		}
 		style += ("width: " + ~~(w) + "px;") + ("height: " + ~~(h) + "px;");
 
-		if (typeof (elem.style.cssText) != 'undefined') {
-			elem.style.cssText = style;
-		} else {
+		//if (typeof (elem.style.cssText) != 'undefined') {
+		//	elem.style.cssText = style;
+		//} else {
 			elem.setAttribute('style', style);
-		}
+		//}
 
-		elem.innerHTML = content;
+			if (content) {
+				elem.innerHTML = content;
+			}
 	}
 
 })(Crafty);
