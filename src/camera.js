@@ -50,7 +50,7 @@
 			document.getElementById('cr-stage').insertBefore(redraws, document.getElementById('cr-stage').firstChild);
 			Crafty.redraws = redraws.getContext("2d");
 
-			return Crafty.camera.cameras[label] = new Crafty.camera.fn.init(type, options);
+			return Crafty.camera.cameras[label] = new Crafty.camera.fn.init(type, label, options);
 		}
 	});
 
@@ -68,17 +68,20 @@
 
 	Crafty.camera.fn = {
 		active: false,
+		label: null,
 		x: 0,
 		y: 0,
 		z: 0,
 		type: "",
 		changed: true,
 		canvas: false,
+		dom: null,
 		/**
 		 * Constructor. Should never be invoked directly.
 		 */
-		init: function (type, options) {
+		init: function (type, label, options) {
 			this.type = type;
+			this.label = label;
 			this.data = {};
 			this.target = {
 				x: 0,
@@ -86,7 +89,17 @@
 				z: 0
 			};
 			this.layers = {};
-			if ("canvas" in options) this.canvas = options.canvas;
+			if ("canvas" in options) {
+				this.canvas = options.canvas;
+			} 
+			else {
+				// creates the viewport elements
+				this.dom = document.createElement('div');
+				this.dom.id = 'camera_'+label;
+				this.dom.style.width = options.width;
+				this.dom.style.height = options.height;
+				Crafty.stage.addChild(this.dom);
+			}
 			if ("layers" in options) {
 				for (var l in options.layers) {
 					this.layers[l] = {
@@ -94,6 +107,11 @@
 						x: 0,
 						y: 0,
 					};
+					if (this.dom) {
+						var layer = document.createElement('div');
+						layer.id = 'camera_'+label+'_'+layer;
+						this.dom.addChild(layer);
+					}
 				}
 			}
 		},
@@ -282,6 +300,9 @@
 	 * Renders all 6 faces. Camera can be anywhere. Has perspective.
 	 */
 	function dom3D(data) {
+		// reposition the camera
+		
+		// redraw entities
 	}
 
 	/**
