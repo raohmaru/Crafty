@@ -130,6 +130,7 @@ Crafty.c("Texture", {
 		for (var face in this._textureState) {
 			this._textureState[face] = (this._textureState[face] + delta) % (this._textureConfigurations[this._currentTextureConfiguration][face].frames * Crafty.timer.frameTime);
 		}
+		Crafty.dirty.push(this);
 	},
 
 	texture: function (texture, config) {
