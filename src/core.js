@@ -666,6 +666,9 @@
 * Used to extend the Crafty namespace.
 */
 	Crafty.extend({
+		
+
+		dirty: [],
 
 		select: function (component) {
 			var res = [];
