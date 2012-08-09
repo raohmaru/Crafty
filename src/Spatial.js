@@ -22,13 +22,13 @@ var M = Math,
 */
 Crafty.c("Spatial", {
 	/**@
-		* #.x
-		* @comp Spatial
-		* The `x` position on the stage. When modified, will automatically be redrawn.
-		* Is actually a getter/setter so when using this value for calculations and not modifying it,
-		* use the `._x` property.
-		* @see ._attr
-		*/
+	* #.x
+	* @comp Spatial
+	* The `x` position on the stage. When modified, will automatically be redrawn.
+	* Is actually a getter/setter so when using this value for calculations and not modifying it,
+	* use the `._x` property.
+	* @see ._attr
+	*/
 	_x: 0,
 	/**@
 	* #.y
@@ -116,10 +116,18 @@ Crafty.c("Spatial", {
 	* Can be used for optimization by setting an entities visibility to false when not needed to be drawn.
 	*
 	* The entity will still exist and can be collided with but just won't be drawn.
-  * @see Crafty.DrawManager.draw, Crafty.DrawManager.drawAll
+	* @see Crafty.DrawManager.draw, Crafty.DrawManager.drawAll
 	*/
 	_visible: true,
-
+	/**@
+	* #.layer
+	* @comp Spatial
+	* Which layer the entity is in
+	* Entities on separate layers can have no interaction due to position
+	* If an entity doesn't explicitly state which layer it is on, it will not be rendered
+	* All games start with 3 layers: UI, Stage, and Background. It's expected that most entities will go in Stage.
+	*/
+	_layer: null,
 	/**@
 	* #._globalZ
 	* @comp Spatial
@@ -146,6 +154,7 @@ Crafty.c("Spatial", {
 		this.__defineSetter__('rotation', function (v) { this._attr('_rotation', v); });
 		this.__defineSetter__('alpha', function (v) { this._attr('_alpha', v); });
 		this.__defineSetter__('visible', function (v) { this._attr('_visible', v); });
+		this.__defineSetter__('layer', function (v) { this._attr('_layer', v); });
 
 		this.__defineGetter__('x', function () { return this._x; });
 		this.__defineGetter__('y', function () { return this._y; });
@@ -157,6 +166,7 @@ Crafty.c("Spatial", {
 		this.__defineGetter__('alpha', function () { return this._alpha; });
 		this.__defineGetter__('visible', function () { return this._visible; });
 		this.__defineGetter__('parent', function () { return this._parent; });
+		this.__defineGetter__('layer', function () { return this._layer; });
 		this.__defineGetter__('numChildren', function () { return this._children.length; });
 	},
 
@@ -212,6 +222,12 @@ Crafty.c("Spatial", {
 		Object.defineProperty(this, 'visible', {
 			set: function (v) { this._attr('_visible', v); }
 			, get: function () { return this._visible; }
+			, configurable: true
+		});
+
+		Object.defineProperty(this, 'layer', {
+			set: function (v) { this._attr('_layer', v); }
+			, get: function () { return this._layer; }
 			, configurable: true
 		});
 	},
@@ -727,6 +743,11 @@ Crafty.c("Spatial", {
 			}
 			this[name] = value;
 			this.trigger("Move", old);
+		}
+		else if (name == '_layer') {
+			if (typeof Crafty.layers[value] != 'undefined') {
+				Crafty.layers[value].add(this);
+			}
 		}
 
 		//everything will assume the value
