@@ -529,12 +529,12 @@ Crafty.c("Multiway", {
 
 		if (this._movement.x !== 0) {
 			var oldX = this.x;
-			this.x += this._movement.x*(delta/1000);
+			this.attr('x', this._x + this._movement.x*(delta/1000));
 			this.trigger('Moved', { x: oldX, y: this.y });
 		}
 		if (this._movement.y !== 0) {
 			var oldY = this.y;
-			this.y += this._movement.y*(delta/1000);
+			this.attr('y', this._y + this._movement.y * (delta / 1000));
 			this.trigger('Moved', { x: this.x, y: oldY });
 		}
 	},

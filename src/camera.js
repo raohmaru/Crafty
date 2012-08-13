@@ -201,7 +201,7 @@
 
 			}
 
-			Crafty.dirty = [];
+
 
 			// javascript! 
 			// call the private functions as instance methods
@@ -210,7 +210,7 @@
 					topdown.call(this, this.data);
 					break;
 				case "Side":
-					sideview.call(this, dirtyData);
+					sideview.call(this, dirtyData, Crafty.destroyed);
 					break;
 				case "Isometric":
 					isometric.call(this, this.data);
@@ -225,6 +225,9 @@
 					full3D.call(this, this.data);
 					break;
 			}
+
+			Crafty.dirty = [];
+			Crafty.destroyed = [];
 
 			return this;
 		}
@@ -268,8 +271,12 @@
 	/**
 	 * Only renders the right face
 	 */
-	function sideview(data) {
+	function sideview(data, destroyed) {
 
+		for (var id in destroyed) {
+			console.log("ent" + destroyed[id]);
+			Crafty.stage.inner.removeChild(document.getElementById("ent" + destroyed[id]));
+		}
 		
 
 		//if(Crafty.redraws) {

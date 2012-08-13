@@ -635,6 +635,7 @@
 					this.unbind(e);
 				}
 				delete entities[this[0]];
+				Crafty.destroyed.push(this[0]);
 			});
 		}
 	};
@@ -666,9 +667,9 @@
 * Used to extend the Crafty namespace.
 */
 	Crafty.extend({
-		
 
 		dirty: [],
+		destroyed: [],
 
 		select: function (component) {
 			var res = [];
