@@ -76,7 +76,7 @@
 		z: 0,
 		type: "",
 		changed: true,
-		canvas: false,
+		canvas: null,
 		dom: null,
 		/**
 		 * Constructor. Should never be invoked directly.
@@ -92,7 +92,11 @@
 			};
 			this.layers = {};
 			if ("canvas" in options) {
-				this.canvas = options.canvas;
+				this.canvas = document.createElement('canvas');
+				this.canvas.id = 'camera_'+label;
+				this.canvas.width = options.width;
+				this.canvas.height = options.height;
+				Crafty.stage.addChild(this.canvas);
 			} 
 			else {
 				// creates the viewport elements
@@ -113,6 +117,7 @@
 						var layer = document.createElement('div');
 						layer.id = 'camera_'+label+'_'+layer;
 						this.dom.addChild(layer);
+						this.layers[l].dom = layer;
 					}
 				}
 			}
@@ -159,21 +164,22 @@
 
 			for (; i < l; i++) {
 				var e = entities[i],
+					
+					// create an html element if one doesn't exist and the camera is using the dom to render
+					elem = (this.dom && !this.dom.getElementById('entity-'+e[0]))?document.createElement('div'):this.canvas,
 					// if the data object already exists for this entity, use it
 					// otherwise, create a new one
 					// this data object only represents the faces as data
 					// it contains no objects related to the actual rendering (i.e. DOM elements)
 					d = this.data[e[0]] || {
 						faces: {
-							top: (new Face()).setFacing('top', e.w, e.l, e.h, e.x, e.y),
-							front: (new Face()).setFacing('front', e.w, e.l, e.h),
-							left: (new Face()).setFacing('left', e.w, e.l, e.h),
-							right: (new Face()).setFacing('right', e.w, e.l, e.h),
-							back: (new Face()).setFacing('back', e.w, e.l, e.h),
-							below: (new Face()).setFacing('below', e.w, e.l, e.h),
+							top: (new Face(elem)).setFacing('top', e.w, e.l, e.h, e.x, e.y),
+							front: (new Face(elem)).setFacing('front', e.w, e.l, e.h),
+							left: (new Face(elem)).setFacing('left', e.w, e.l, e.h),
+							right: (new Face(elem)).setFacing('right', e.w, e.l, e.h),
+							back: (new Face(elem)).setFacing('back', e.w, e.l, e.h),
+							below: (new Face(elem)).setFacing('below', e.w, e.l, e.h),
 						},
-						tag: 'div',
-						html: createDomElements(e[0]),
 						dirtySpatial: true
 					};
 
@@ -231,7 +237,6 @@
 	};
 	Crafty.camera.fn.init.prototype = Crafty.camera.fn;
 
-	// render implementations go here
 	/**
 	 * All render implementations should work in the same general way
 	 * For each entity that needs drawing,
@@ -258,6 +263,7 @@
 			}
 
 			var top = data[e].faces.top;
+			top.render();
 			updateSpatialStyles(data[e].html.container, top.x, top.y, top.z);
 			updateFaceStyle(data[e].html.top, top.paint, top.content, top.w, top.h);
 			//console.log("Render TOP");
@@ -330,7 +336,7 @@
 	 * By default, all Spatial entities are cubes
 	 * Other components can change this.
 	 */
-	function Face() {
+	function Face(elem) {
 		this.paint = {};
 		this.content = "";
 		this.x = 0;
@@ -341,6 +347,8 @@
 		this.rZ = 0;
 		this.rX = 0;
 		this.dirty = true;
+		this.facing = 'top';
+		this.render_target = elem;
 	}
 
 	/**
@@ -378,7 +386,7 @@
 		//var oldW = this.w, oldH = this.h, oldZ = this.z,
 		//    oldX = this.x, oldY = this.y,
 		//    oldRx = this.rX, oldRz = this.rZ;
-
+		this.facing = facing.toLowerCase();
 		switch (facing.toLowerCase()) {
 			case 'top':
 				this.w = w;
@@ -424,8 +432,32 @@
 		//}
 		return this;
 	};
+	
+	Face.prototype.draw = function () {
+		// This function will need the actual offset from the canvas, based on all its ancestor containers.
+		// TODO: Implement canvas stuff.
+		if (this.render_target.nodeName == 'CANVAS') {
+			
+		}
+		else {
+			var id = 'entity-'+this.render_target.getAttribute('data-entity-id')+'-face-'+this.facing,
+				elem = this.render_target.getElementById(id);
+			if (!elem) {
+				elem = document.createElement('div');
+				elem.id = id;
+				this.render_target.addChild(elem);
+				elem.className = this.facing;
+				elem.style.position = 'absolute';
+			}
+			if (Crafty.support.css3dtransform) {
+				
+			}
+			else {
+			}
+		}
+	};
 
-	function createDomElements(id) {
+	function createDomElements(id, layer_elemn) {
 		var container = document.createElement('div');
 		container.id = "ent" + id;
 
@@ -441,7 +473,7 @@
 		right.id = "ent" + id + "-right";
 		container.appendChild(right);
 
-		Crafty.stage.inner.appendChild(container);
+		layer_elem.appendChild(container);
 
 		return { container: container, top: top, front: front, right: right };
 	}
