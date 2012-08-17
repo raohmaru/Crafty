@@ -115,7 +115,7 @@
 					};
 					if (this.dom) {
 						var layer = document.createElement('div');
-						layer.id = 'camera_'+label+'_'+layer;
+						layer.id = 'camera-'+label+'-'+layer;
 						this.dom.addChild(layer);
 						this.layers[l].dom = layer;
 					}
@@ -183,8 +183,11 @@
 						dirtySpatial: true
 					};
 
+				// some things to run the first time the data is built
 				if (!this.data[e[0]]) {
 					this.data[e[0]] = d;
+					elem.id = 'entity-'+e[0];
+					this.dom.getElementById('camera-'+this.label+'-'+e.layer).addChild(elem);
 				}
 				dirtyData[e[0]] = d;
 
@@ -422,6 +425,7 @@
 			case 'below':
 				this.w = w;
 				this.h = l;
+				this.z = - * parseInt(h/2);
 				this.rX = 180;
 				break;
 		}
@@ -441,19 +445,38 @@
 		}
 		else {
 			var id = 'entity-'+this.render_target.getAttribute('data-entity-id')+'-face-'+this.facing,
-				elem = this.render_target.getElementById(id);
+				elem = this.render_target.getElementById(id),
+				trans = '', style = [];
 			if (!elem) {
 				elem = document.createElement('div');
 				elem.id = id;
 				this.render_target.addChild(elem);
 				elem.className = this.facing;
-				elem.style.position = 'absolute';
 			}
+			// these are easier to do by manipulating the style object directly
+			// it's only difficult to do because each transform is still vendor-prefixed
 			if (Crafty.support.css3dtransform) {
-				
+				trans = 'translate3d('+face.x+', '+face.y+', '+face.z+') rotateZ('+face.rZ+") rotateX("+face.rX+")";
 			}
 			else {
+				trans = 'translate('+face.x+', '+face.y+')';
 			}
+			
+			style[style.length] = 'position: absolute;';
+			style[style.length] = 'top: '+(-this.l/2)+'px;';
+			style[style.length] = 'left: '+(-this.w/2)+'px;';
+			style[style.length] = 'width: '+(this.w)+'px;';
+			style[style.length] = 'height: '+(this.h)+'px;';
+			for (var name in paint) {
+				style[style.length] = name + ": " + paint[name] + ";";
+			}
+			if (typeof (elem.style.cssText) != 'undefined') {
+				elem.style.cssText = style.implode(' ');
+			}
+			else {
+				elem.setAttribute('style', style.implode(' '));
+			}
+			elem.style.transform = elem.style[crafty.support.prefix+"Transform"] = trans;
 		}
 	};
 
