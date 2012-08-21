@@ -138,7 +138,7 @@
 			for (var l in this.layers) {
 				var la = this.layers[l];
 				la.x = this.x * la.ratio;
-				la.y = this.y = la.ratio;
+				la.y = this.y * la.ratio;
 			}
 			return this;
 		},
@@ -173,7 +173,7 @@
 					// it contains no objects related to the actual rendering (i.e. DOM elements)
 					d = this.data[e[0]] || {
 						faces: {
-							top: (new Face(elem)).setFacing('top', e.w, e.l, e.h, e.x, e.y),
+							top: (new Face(elem)).setFacing('top', e.w, e.l, e.h),
 							front: (new Face(elem)).setFacing('front', e.w, e.l, e.h),
 							left: (new Face(elem)).setFacing('left', e.w, e.l, e.h),
 							right: (new Face(elem)).setFacing('right', e.w, e.l, e.h),
@@ -267,8 +267,8 @@
 
 			var top = data[e].faces.top;
 			top.render();
-			updateSpatialStyles(data[e].html.container, top.x, top.y, top.z);
-			updateFaceStyle(data[e].html.top, top.paint, top.content, top.w, top.h);
+			//updateSpatialStyles(data[e].html.container, top.x, top.y, top.z);
+			//updateFaceStyle(data[e].html.top, top.paint, top.content, top.w, top.h);
 			//console.log("Render TOP");
 		}
 		
@@ -384,56 +384,74 @@
 	/**
 	 * Helper function
 	 * Automatically sizes and orients a face based on the entity dimensions and the direction given
+	 * w, l, h refer to the entity's dimensions. Face dimensions and position should be derived from these.
+	 * Origin for transformation is always dead center
+	 *		topdown view: 
+	 *            back
+	 *             ^
+	 *             |
+	 *           -----
+	 *          |     |
+	 *  right <-|    l|-> left
+	 *          |  w  |
+	 *           -----          
+	 *             |            Y
+	 *             V            
+	 *           front          v>   X
 	 */
-	Face.prototype.setFacing = function (facing, w, l, h, x, y) {
-		//var oldW = this.w, oldH = this.h, oldZ = this.z,
-		//    oldX = this.x, oldY = this.y,
-		//    oldRx = this.rX, oldRz = this.rZ;
+	Face.prototype.setFacing = function (facing, w, l, h) {
 		this.facing = facing.toLowerCase();
 		switch (facing.toLowerCase()) {
 			case 'top':
 				this.w = w;
 				this.h = l;
-				this.z = parseInt(h / 2);
-				this.x = x;
-				this.y = y;
+				this.z = parseInt(h);
+				this.x = parseInt(w / 2);
+				this.y = parseInt(l / 2);
 				break;
 			case 'front':
-				this.w = h;
-				this.h = l;
+				this.w = w;
+				this.h = h;
+				this.rZ = 90;
 				this.rX = 90;
+				this.x = parseInt(w / 2);
+				this.y = parseInt(l);
+				this.z = parseInt(h / 2);
 				break;
 			case 'left':
-				this.w = h;
-				this.h = w;
-				this.rZ = 90;
+				this.w = l;
+				this.h = h;
 				this.rX = 90;
+				this.x = parseInt(w);
+				this.y = parseInt(l / 2);
+				this.z = parseInt(h / 2);
 				break;
 			case 'right':
-				this.w = h;
-				this.h = w;
-				this.x = x;
-				this.y = y;
-				this.rZ = 90;
+				this.w = l;
+				this.h = h;
 				this.rX = -90;
+				this.x = 0;
+				this.y = parseInt(l / 2);
+				this.z = parseInt(h / 2);
 				break;
 			case 'back':
-				this.w = h;
-				this.h = l;
+				this.w = w;
+				this.h = h;
+				this.rZ = 90;
 				this.rX = -90;
+				this.x = parseInt(w / 2);
+				this.y = 0;
+				this.z = parseInt(h / 2);
 				break;
 			case 'below':
 				this.w = w;
 				this.h = l;
-				this.z = - * parseInt(h/2);
+				this.x = parseInt(w / 2);
+				this.y = parseInt(l / 2);
+				this.z = -1 * h;
 				this.rX = 180;
 				break;
 		}
-		//if (oldW != this.w || oldH != this.h || oldZ != this.z ||
-		//	oldX != this.x || oldY != this.y ||
-		//	oldRx != this.rX || oldRz != this.rZ) {
-		//	this.dirty = true;
-		//}
 		return this;
 	};
 	
