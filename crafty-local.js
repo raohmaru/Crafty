@@ -9,6 +9,8 @@
 		'intro',
 		'HashMap',
 		'Spatial',
+		'camera',
+		'layers',
 		'collision',
 		'DOM',
 		'extensions',
