@@ -31,7 +31,6 @@
  * Layers are less useful in 3D games, although they can still serve some function in keeping UI elements on top of game world elements
  * In a 3D game, all layers should be set to 0.0, since the Camera is positioned in the world, and moving layers around doesn't make sense.
  */
-(function (Crafty) {
 	Crafty.extend({
 		// Either creates a camera, or returns the camera with the given label. 
 		// I think this is better than the array syntax Crafty.camera[], as it allows us to iterate over Crafty.camera.cameras 
@@ -91,12 +90,12 @@
 				z: 0
 			};
 			this.layers = {};
-			if ("canvas" in options) {
+			if ("canvas" in options && options.canvas) {
 				this.canvas = document.createElement('canvas');
 				this.canvas.id = 'camera_'+label;
 				this.canvas.width = options.width;
 				this.canvas.height = options.height;
-				Crafty.stage.addChild(this.canvas);
+				Crafty.stage.elem.appendChild(this.canvas);
 			} 
 			else {
 				// creates the viewport elements
@@ -104,7 +103,7 @@
 				this.dom.id = 'camera_'+label;
 				this.dom.style.width = options.width;
 				this.dom.style.height = options.height;
-				Crafty.stage.addChild(this.dom);
+				Crafty.stage.elem.appendChild(this.dom);
 			}
 			if ("layers" in options) {
 				for (var l in options.layers) {
@@ -468,7 +467,7 @@
 			if (!elem) {
 				elem = document.createElement('div');
 				elem.id = id;
-				this.render_target.addChild(elem);
+				this.render_target.appendChild(elem);
 				elem.className = this.facing;
 			}
 			// these are easier to do by manipulating the style object directly
@@ -565,5 +564,3 @@
 				elem.innerHTML = content;
 			}
 	}
-
-})(Crafty);
