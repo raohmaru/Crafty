@@ -706,7 +706,26 @@
 		init: function (w, h) {
 			Crafty.viewport.init(w, h);
 
-			Crafty.camera("default", "Side", { canvas: false });
+			Crafty.camera("default", "Side", { 
+				canvas: false, 
+				layers: {
+					background: {
+						ratio: 0.5,
+						x: 0,
+						y: 0
+					}, 
+					stage: {
+						ratio: 1,
+						x: 0,
+						y: 0
+					},
+					ui: {
+						ratio: 0,
+						x: 0,
+						y:0
+					}
+				}
+			});
 			Crafty.camera("default").active = true;
 
 			//call all arbitrary functions attached to onload
