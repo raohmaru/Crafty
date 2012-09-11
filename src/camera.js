@@ -114,8 +114,8 @@
 					};
 					if (this.dom) {
 						var layer = document.createElement('div');
-						layer.id = 'camera-'+label+'-'+layer;
-						this.dom.addChild(layer);
+						layer.id = 'camera-'+label+'-'+l;
+						this.dom.appendChild(layer);
 						this.layers[l].dom = layer;
 					}
 				}
@@ -162,10 +162,11 @@
 				i = 0, l = entities.length;
 
 			for (; i < l; i++) {
+			console.log(this.dom);
 				var e = entities[i],
 					
 					// create an html element if one doesn't exist and the camera is using the dom to render
-					elem = (this.dom && !this.dom.getElementById('entity-'+e[0]))?document.createElement('div'):this.canvas,
+					elem = (this.dom && !this.dom.querySelector('#entity-'+e[0]))?document.createElement('div'):this.canvas,
 					// if the data object already exists for this entity, use it
 					// otherwise, create a new one
 					// this data object only represents the faces as data
@@ -186,7 +187,7 @@
 				if (!this.data[e[0]]) {
 					this.data[e[0]] = d;
 					elem.id = 'entity-'+e[0];
-					this.dom.getElementById('camera-'+this.label+'-'+e.layer).addChild(elem);
+					this.dom.querySelector('#camera-'+this.label+'-'+e.layer).appendChild(elem);
 				}
 				dirtyData[e[0]] = d;
 
