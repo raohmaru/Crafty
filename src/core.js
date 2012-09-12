@@ -705,6 +705,11 @@
 		 */
 		init: function (w, h) {
 			Crafty.viewport.init(w, h);
+			
+			Crafty.layer('background');
+			Crafty.layer('stage');
+			Crafty.layer('ui');
+			Crafty.layer['default'] = 'stage';
 
 			Crafty.camera("default", "Side", { 
 				canvas: false, 

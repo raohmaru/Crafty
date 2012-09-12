@@ -15,7 +15,7 @@
 	Crafty.layer.fn = {
 		init: function (label) {
 			var hashMap = new Crafty.HashMap(),
-				entities = Crafty().addComponent('Spatial');
+				entities = [];
 			self = this;
 
 			this.get = function (sel) {

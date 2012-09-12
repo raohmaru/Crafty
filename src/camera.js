@@ -162,7 +162,6 @@
 				i = 0, l = entities.length;
 
 			for (; i < l; i++) {
-			console.log(this.dom);
 				var e = entities[i],
 					
 					// create an html element if one doesn't exist and the camera is using the dom to render

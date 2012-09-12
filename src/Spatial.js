@@ -127,7 +127,7 @@ Crafty.c("Spatial", {
 	* If an entity doesn't explicitly state which layer it is on, it will not be rendered
 	* All games start with 3 layers: UI, Stage, and Background. It's expected that most entities will go in Stage.
 	*/
-	_layer: null,
+	_layer: '',
 	/**@
 	* #._globalZ
 	* @comp Spatial
@@ -346,6 +346,7 @@ Crafty.c("Spatial", {
 
 			this.detach();
 		});
+		this.layer = Crafty.layer['default'];
 
 		this.bind('PreRender', this._spatialPrerender);
 	},
@@ -746,6 +747,9 @@ Crafty.c("Spatial", {
 			this.trigger("Move", old);
 		}
 		else if (name == '_layer') {
+			if (typeof Crafty.layers[this[name]] != 'undefined') {
+				Crafty.layers[this[name]].remove(this);
+			}
 			if (typeof Crafty.layers[value] != 'undefined') {
 				Crafty.layers[value].add(this);
 			}
