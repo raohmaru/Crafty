@@ -747,11 +747,11 @@ Crafty.c("Spatial", {
 			this.trigger("Move", old);
 		}
 		else if (name == '_layer') {
-			if (typeof Crafty.layers[this[name]] != 'undefined') {
-				Crafty.layers[this[name]].remove(this);
+			if (typeof Crafty.layer[this[name]] != 'undefined') {
+				Crafty.layer[this[name]].remove(this);
 			}
-			if (typeof Crafty.layers[value] != 'undefined') {
-				Crafty.layers[value].add(this);
+			if (typeof Crafty.layer[value] != 'undefined') {
+				Crafty.layer[value].add(this);
 			}
 		}
 

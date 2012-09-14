@@ -186,6 +186,7 @@
 				if (!this.data[e[0]]) {
 					this.data[e[0]] = d;
 					elem.id = 'entity-'+e[0];
+					elem.setAttribute('data-entity-id', e[0]);
 					this.dom.querySelector('#camera-'+this.label+'-'+e.layer).appendChild(elem);
 				}
 				dirtyData[e[0]] = d;
@@ -287,9 +288,10 @@
 		for (var e in data) {
 			//count++;
 			var face = data[e].faces.right;
+			face.render();
 			//if (face.dirty) {
-				updateSpatialStyles(data[e].html.container, face.x, face.y, face.z);
-				updateFaceStyle(data[e].html.right, face.paint, face.content, face.w, face.h);
+				//updateSpatialStyles(data[e].html.container, face.x, face.y, face.z);
+				//updateFaceStyle(data[e].html.right, face.paint, face.content, face.w, face.h);
 				//face.dirty = false;
 
 				//if(Crafty.redraws) {
@@ -454,7 +456,7 @@
 		return this;
 	};
 	
-	Face.prototype.draw = function () {
+	Face.prototype.render = function () {
 		// This function will need the actual offset from the canvas, based on all its ancestor containers.
 		// TODO: Implement canvas stuff.
 		if (this.render_target.nodeName == 'CANVAS') {
@@ -462,7 +464,7 @@
 		}
 		else {
 			var id = 'entity-'+this.render_target.getAttribute('data-entity-id')+'-face-'+this.facing,
-				elem = this.render_target.getElementById(id),
+				elem = document.getElementById(id),
 				trans = '', style = [];
 			if (!elem) {
 				elem = document.createElement('div');
@@ -473,10 +475,10 @@
 			// these are easier to do by manipulating the style object directly
 			// it's only difficult to do because each transform is still vendor-prefixed
 			if (Crafty.support.css3dtransform) {
-				trans = 'translate3d('+face.x+', '+face.y+', '+face.z+') rotateZ('+face.rZ+") rotateX("+face.rX+")";
+				trans = 'translate3d('+this.x+', '+this.y+', '+this.z+') rotateZ('+this.rZ+") rotateX("+this.rX+")";
 			}
 			else {
-				trans = 'translate('+face.x+', '+face.y+')';
+				trans = 'translate('+this.x+', '+this.y+')';
 			}
 			
 			style[style.length] = 'position: absolute;';
@@ -484,16 +486,16 @@
 			style[style.length] = 'left: '+(-this.w/2)+'px;';
 			style[style.length] = 'width: '+(this.w)+'px;';
 			style[style.length] = 'height: '+(this.h)+'px;';
-			for (var name in paint) {
-				style[style.length] = name + ": " + paint[name] + ";";
+			for (var name in this.paint) {
+				style[style.length] = name + ": " + this.paint[name] + ";";
 			}
 			if (typeof (elem.style.cssText) != 'undefined') {
-				elem.style.cssText = style.implode(' ');
+				elem.style.cssText = style.join(' ');
 			}
 			else {
-				elem.setAttribute('style', style.implode(' '));
+				elem.setAttribute('style', style.join(' '));
 			}
-			elem.style.transform = elem.style[crafty.support.prefix+"Transform"] = trans;
+			elem.style.transform = elem.style[Crafty.support.prefix+"Transform"] = trans;
 		}
 	};
 
