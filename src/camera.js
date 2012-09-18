@@ -179,7 +179,7 @@
 							back: (new Face(elem)).setFacing('back', e.w, e.l, e.h),
 							below: (new Face(elem)).setFacing('below', e.w, e.l, e.h),
 						},
-						dirtySpatial: true
+						old: {}
 					};
 
 				// some things to run the first time the data is built
@@ -187,6 +187,7 @@
 					this.data[e[0]] = d;
 					elem.id = 'entity-'+e[0];
 					elem.setAttribute('data-entity-id', e[0]);
+					elem.style.position = 'absolute';
 					this.dom.querySelector('#camera-'+this.label+'-'+e.layer).appendChild(elem);
 				}
 				dirtyData[e[0]] = d;
@@ -207,7 +208,6 @@
 				// a good entity will modify this data only if its been changed
 				e.trigger('PreRender', { type: this.type, data: d });
 				//d.dirty = renderHash != generateRenderHash(d.faces.front);
-
 			}
 
 			Crafty.dirty = [];
@@ -260,16 +260,25 @@
 	 */
 	function topdown(data) {
 		for (var e in data) {
-			//console.log(data[e]);
-			if (!data[e].dirty) {
-				continue;
+			var top = data[e].faces.top,
+				entity = Crafty(parseInt(e)),
+				elem = this.dom.querySelector('#entity-'+e),
+				dirty = data[e].old.x != entity.x 
+					|| data[e].old.y != entity.y 
+					|| data[e].old.z != entity.z
+					|| data[e].old.rotation != entity.rotation,
+				transform = 'translate('+entity.x+'px,'+entity.y+'px) rotate('+entity.rotation+'deg)';
+				
+			if (dirty) {
+				elem.style.zIndex = entity.z;
+				elem.style.transform = elem.style[Crafty.support.prefix+"Transform"] = transform;
+				data[e].old.x = entity.x;
+				data[e].old.y = entity.y;
+				data[e].old.z = entity.z;
+				data[e].old.rotation = entity.rotation;
 			}
-
-			var top = data[e].faces.top;
+			
 			top.render();
-			//updateSpatialStyles(data[e].html.container, top.x, top.y, top.z);
-			//updateFaceStyle(data[e].html.top, top.paint, top.content, top.w, top.h);
-			//console.log("Render TOP");
 		}
 		
 	}
@@ -278,31 +287,26 @@
 	 * Only renders the right face
 	 */
 	function sideview(data) {
-
-		
-
-		//if(Crafty.redraws) {
-		//	Crafty.redraws.clearRect(0, 0, Crafty.viewport.width, Crafty.viewport.height);
-		//}
-		//var count = 0;
 		for (var e in data) {
-			//count++;
-			var face = data[e].faces.right;
+			var face = data[e].faces.right,
+				entity = Crafty(parseInt(e)),
+				elem = this.dom.querySelector('#entity-'+e),
+				dirty = data[e].old.x != entity.x 
+					|| data[e].old.y != entity.y 
+					|| data[e].old.z != entity.z
+					|| data[e].old.rotation != entity.rotation,
+				transform = 'translate('+entity.y+'px,'+entity.z+'px) rotate('+entity.rotation+'deg)';
+			if (dirty) {
+				elem.style.zIndex = entity.x;
+				elem.style.transform = elem.style[Crafty.support.prefix+"Transform"] = transform;
+				data[e].old.x = entity.x;
+				data[e].old.y = entity.y;
+				data[e].old.z = entity.z;
+				data[e].old.rotation = entity.rotation;
+			}
+			
 			face.render();
-			//if (face.dirty) {
-				//updateSpatialStyles(data[e].html.container, face.x, face.y, face.z);
-				//updateFaceStyle(data[e].html.right, face.paint, face.content, face.w, face.h);
-				//face.dirty = false;
-
-				//if(Crafty.redraws) {
-					
-				//	Crafty.redraws.fillStyle = "rgba(0, 0, 200, 1)";
-				//	Crafty.redraws.fillRect(face.x, face.y, face.w, face.h);
-				//}
-
-			//}
 		}
-		//console.log(count);
 	}
 
 	/**
@@ -366,9 +370,9 @@
 	 * Color will add background-color.
 	 */
 	Face.prototype.addPaint = function (name, value) {
-		//if(this.paint[name] != value) {
-		//	this.dirty = true;
-		//}
+		if(this.paint[name] != value) {
+			this.dirty = true;
+		}
 		
 		this.paint[name] = value;
 		return this;
@@ -459,6 +463,7 @@
 	Face.prototype.render = function () {
 		// This function will need the actual offset from the canvas, based on all its ancestor containers.
 		// TODO: Implement canvas stuff.
+		if (!this.dirty) return;
 		if (this.render_target.nodeName == 'CANVAS') {
 			
 		}
