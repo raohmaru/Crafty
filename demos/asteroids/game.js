@@ -1,7 +1,6 @@
 $(document).ready(function() {
 	//init Crafty with FPS of 50 and create the canvas element
 	Crafty.init();
-	Crafty.canvas.init();
 	
 	//preload the needed assets
 	Crafty.load(["images/sprite.png", "images/bg.png"], function() {
@@ -20,17 +19,30 @@ $(document).ready(function() {
 	Crafty.scene("main", function() {
 		Crafty.background("url('images/bg.png')");
 		
+		Crafty.c("small", {
+			init: function () { this.requires("Texture").texture("images/sprite.png", { x: 182, y: 0, frames: 1 }) }
+		});
+		Crafty.c("medium", {
+			init: function () { this.requires("Texture").texture("images/sprite.png", { x: 128, y: 0, frames: 1 }) }
+		});
+		Crafty.c("big", {
+			init: function () { this.requires("Texture").texture("images/sprite.png", { x: 64, y: 0, frames: 1 }) }
+		});
+
 		//score display
-		var score = Crafty.e("2D, DOM, Text")
+		var score = Crafty.e("Render, Spatial, Text")
 			.text("Score: 0")
 			.attr({x: Crafty.viewport.width - 300, y: Crafty.viewport.height - 50, w: 200, h:50})
-			.css({color: "#fff"});
+			//.css({color: "#fff"});
 			
 		//player entity
-		var player = Crafty.e("2D, Canvas, ship, Controls, Collision")
+		var player = Crafty.e("Rander, Spatial,Texture, Controls, Collision")
 			.attr({move: {left: false, right: false, up: false, down: false}, xspeed: 0, yspeed: 0, decay: 0.9, 
-				x: Crafty.viewport.width / 2, y: Crafty.viewport.height / 2, score: 0})
-			.origin("center")
+			x: Crafty.viewport.width / 2, y: Crafty.viewport.height / 2, score: 0,
+			w: 64, h: 64
+			})
+			.texture("images/sprite.png", { x: 0, y: 0, frames: 1 })
+			//.origin("center")
 			.bind("KeyDown", function(e) {
 				//on keydown, set the move booleans
 				if(e.keyCode === Crafty.keys.RIGHT_ARROW) {
@@ -41,7 +53,7 @@ $(document).ready(function() {
 					this.move.up = true;
 				} else if(e.keyCode === Crafty.keys.SPACE) {
 					//create a bullet entity
-					Crafty.e("2D, DOM, Color, bullet")
+					Crafty.e("Render, Spatial, Color, bullet")
 						.attr({
 							x: this._x, 
 							y: this._y, 
@@ -52,7 +64,7 @@ $(document).ready(function() {
 							yspeed: 20 * Math.cos(this._rotation / 57.3)
 						})
 						.color("rgb(255, 0, 0)")
-						.bind("EnterFrame", function() {
+						.bind("Tick", function(delta) {
 							this.x += this.xspeed;
 							this.y -= this.yspeed;
 							
@@ -71,7 +83,7 @@ $(document).ready(function() {
 				} else if(e.keyCode === Crafty.keys.UP_ARROW) {
 					this.move.up = false;
 				}
-			}).bind("EnterFrame", function() {
+			}).bind("Tick", function(delta) {
 				if(this.move.right) this.rotation += 5;
 				if(this.move.left) this.rotation -= 5;
 				
@@ -124,14 +136,14 @@ $(document).ready(function() {
 		//Asteroid component
 		Crafty.c("asteroid", {   
 			init: function() {
-				this.origin("center");
+//				this.origin("center");
 				this.attr({
 					x: Crafty.math.randomInt(0, Crafty.viewport.width), //give it random positions, rotation and speed
 					y: Crafty.math.randomInt(0, Crafty.viewport.height),
 					xspeed: Crafty.math.randomInt(1, 5), 
 					yspeed: Crafty.math.randomInt(1, 5), 
 					rspeed: Crafty.math.randomInt(-5, 5)
-				}).bind("EnterFrame", function() {
+				}).bind("Tick", function() {
 					this.x += this.xspeed;
 					this.y += this.yspeed;
 					this.rotation += this.rspeed;
@@ -175,7 +187,7 @@ $(document).ready(function() {
 					
 					asteroidCount++;
 					//split into two asteroids by creating another asteroid
-					Crafty.e("2D, DOM, "+size+", Collision, asteroid").attr({x: this._x, y: this._y});
+					Crafty.e("Render, Spatial, "+size+", Collision, asteroid").attr({x: this._x, y: this._y});
 				});
 				
 			}
@@ -188,7 +200,7 @@ $(document).ready(function() {
 			lastCount = rocks;
 			
 			for(var i = 0; i < rocks; i++) {
-				Crafty.e("2D, DOM, big, Collision, asteroid");
+				Crafty.e("Render, Spatial, big, Collision, asteroid").attr({w: 64, h:64});
 			}
 		}
 		//first level has between 1 and 10 asteroids

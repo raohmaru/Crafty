@@ -210,7 +210,7 @@
 				//d.dirty = renderHash != generateRenderHash(d.faces.front);
 			}
 
-			Crafty.dirty = [];
+
 
 			// javascript! 
 			// call the private functions as instance methods
@@ -234,6 +234,9 @@
 					full3D.call(this, this.data);
 					break;
 			}
+
+			Crafty.dirty = [];
+			Crafty.destroyed = [];
 
 			return this;
 		}
@@ -287,6 +290,9 @@
 	 * Only renders the right face
 	 */
 	function sideview(data) {
+
+		
+		
 		for (var e in data) {
 			var face = data[e].faces.right,
 				entity = Crafty(parseInt(e)),
