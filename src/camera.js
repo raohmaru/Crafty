@@ -291,9 +291,14 @@
 	 */
 	function sideview(data) {
 
-		
+		var all_elems = this.dom.querySelectorAll('[data-entity-id]'),
+			toDel = {};
+		for (var i in all_elems) {
+			toDel[all_elems.getAttribute('data-entity-id')] = all_elems[i];
+		}
 		
 		for (var e in data) {
+			delete toDel[e];
 			var face = data[e].faces.right,
 				entity = Crafty(parseInt(e)),
 				elem = this.dom.querySelector('#entity-'+e),
@@ -312,6 +317,10 @@
 			}
 			
 			face.render();
+		}
+		
+		for (i in toDel) {
+			toDel[i].parentNode.removeChild(toDel[i]);
 		}
 	}
 
