@@ -7,7 +7,9 @@
 	window.onload = function() {
 		Crafty.init();
 		var entity = Crafty.e('Spatial, Render, Color').attr({w: 100, l: 100, h: 100, y: 100, z: 100}).color('red');
-		Crafty.e('Spatial, Render, Color, Mouse').attr({w: 100, l: 100, h: 100, y: 200, z: 200}).color('blue').bind('Click', function () { this.destroy(); console.log('destroyed')});
+		Crafty.e('Spatial, Render, Color, Mouse').attr({w: 100, l: 100, h: 100, y: 200, z: 200}).color('blue').bind('Click', function () { 
+			this.destroy(); 
+		});
 	};
 	</script>
 </head>
