@@ -101,6 +101,7 @@
 				// creates the viewport elements
 				this.dom = document.createElement('div');
 				this.dom.id = 'camera_'+label;
+				this.dom.className = 'camera';
 				this.dom.style.width = options.width;
 				this.dom.style.height = options.height;
 				Crafty.stage.elem.appendChild(this.dom);
@@ -115,6 +116,7 @@
 					if (this.dom) {
 						var layer = document.createElement('div');
 						layer.id = 'camera-'+label+'-'+l;
+						layer.className = 'layer';
 						this.dom.appendChild(layer);
 						this.layers[l].dom = layer;
 					}
@@ -204,7 +206,8 @@
 			
 			// Remove any html elements this entity has
 			for (i in toDelete) {
-				var del = this.dom.querySelector('#entity-'+e[0]);
+				delete this.data[i];
+				var del = this.dom.querySelector('#entity-'+i);
 				if (del) {
 					del.parentNode.removeChild(del);
 				}
@@ -249,6 +252,36 @@
 		}
 	};
 	Crafty.camera.fn.init.prototype = Crafty.camera.fn;
+	
+	/**
+	 * @param e_id  Unique entity id (should be integer as string)
+	 * @param data  The rendering data for the entity only
+	 * @param map	A map of camera to entity properties
+	 */
+	function entity_render(e_id, data, map) {
+		var entity = Crafty(parseInt(e_id)),
+			elem = this.dom.querySelector('#entity-'+e_id),
+			dirty = data.old.x != entity.x 
+				|| data.old.y != entity.y 
+				|| data.old.z != entity.z
+				|| data.old.rotation != entity.rotation
+				|| data.old.components != entity.__c,
+			transform = 'translate('+entity[map.x]+'px,'+entity[map.y]+'px) rotate('+entity.rotation+'deg)';
+			
+		if (dirty) {
+			var classes = [];
+			for (var i in entity.__c) {
+				classes[classes.length] = i;
+			}
+			elem.className = classes.join(' ');
+			elem.style.zIndex = entity.z;
+			elem.style.transform = elem.style[Crafty.support.prefix+"Transform"] = transform;
+			data.old.x = entity.x;
+			data.old.y = entity.y;
+			data.old.z = entity.z;
+			data.old.rotation = entity.rotation;
+		}
+	}
 
 	/**
 	 * All render implementations should work in the same general way
@@ -270,24 +303,9 @@
 	 */
 	function topdown(data) {
 		for (var e in data) {
-			var top = data[e].faces.top,
-				entity = Crafty(parseInt(e)),
-				elem = this.dom.querySelector('#entity-'+e),
-				dirty = data[e].old.x != entity.x 
-					|| data[e].old.y != entity.y 
-					|| data[e].old.z != entity.z
-					|| data[e].old.rotation != entity.rotation,
-				transform = 'translate('+entity.x+'px,'+entity.y+'px) rotate('+entity.rotation+'deg)';
-				
-			if (dirty) {
-				elem.style.zIndex = entity.z;
-				elem.style.transform = elem.style[Crafty.support.prefix+"Transform"] = transform;
-				data[e].old.x = entity.x;
-				data[e].old.y = entity.y;
-				data[e].old.z = entity.z;
-				data[e].old.rotation = entity.rotation;
-			}
+			entity_render.call(this, e, data[e], {x: 'x', y: 'y'});
 			
+			var top = data[e].faces.top;
 			top.render();
 		}
 		
@@ -299,23 +317,9 @@
 	function sideview(data) {
 		
 		for (var e in data) {
-			var face = data[e].faces.right,
-				entity = Crafty(parseInt(e)),
-				elem = this.dom.querySelector('#entity-'+e),
-				dirty = data[e].old.x != entity.x 
-					|| data[e].old.y != entity.y 
-					|| data[e].old.z != entity.z
-					|| data[e].old.rotation != entity.rotation,
-				transform = 'translate('+entity.y+'px,'+entity.z+'px) rotate('+entity.rotation+'deg)';
-			if (dirty) {
-				elem.style.zIndex = entity.x;
-				elem.style.transform = elem.style[Crafty.support.prefix+"Transform"] = transform;
-				data[e].old.x = entity.x;
-				data[e].old.y = entity.y;
-				data[e].old.z = entity.z;
-				data[e].old.rotation = entity.rotation;
-			}
+			entity_render.call(this, e, data[e], {x: 'y', y: 'z'});
 			
+			var face = data[e].faces.right;
 			face.render();
 		}
 	}
