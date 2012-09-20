@@ -49,12 +49,16 @@ Crafty.extend({
 
 		//if it's a DOM element with Mouse component we are done
 		if (tar.nodeName != "CANVAS") {
-			while (typeof (tar.id) != 'string' && tar.id.indexOf('ent') == -1) {
-				tar = tar.parentNode;
-			}
-			ent = Crafty(parseInt(tar.id.replace('ent', '')))
-			if (ent.has('Mouse') && ent.isAt(x, y))
-				closest = ent;
+			do {
+				if (tar.className && tar.className.indexOf('Mouse') != -1) {
+					closest = Crafty(parseInt(tar.getAttribute('data-entity-id')));
+					break;
+				}
+				else if (tar.className && tar.className.indexOf('layer') != -1) {
+					closest = false;
+					break;
+				}
+			} while (tar = tar.parentNode);
 		}
 		//else we search for an entity with Mouse component
 		if (!closest) {
