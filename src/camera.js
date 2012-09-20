@@ -146,7 +146,7 @@
 			//TODO: Only return entities in view (by fiddling with the viewport)
 			//TODO: cache the list of entities (keeping track of moving entities, change in viewport)
 
-			return Crafty.select("Dirty");
+			return Crafty.select("Spatial");
 
 		},
 
@@ -155,13 +155,16 @@
 				return this;
 			}
 
-			var dirtyData = { };
-
 			// pre render logic
-			var entities = Crafty.dirty,
+			var entities = this.getEntitiesInView(),
+				toDelete = {},
 				i = 0, l = entities.length;
+			
+			for (i in this.data) {
+				toDelete[i] = true;
+			}
 
-			for (; i < l; i++) {
+			for (i = 0; i < l; i++) {
 				var e = entities[i],
 					
 					// create an html element if one doesn't exist and the camera is using the dom to render
@@ -190,28 +193,33 @@
 					elem.style.position = 'absolute';
 					this.dom.querySelector('#camera-'+this.label+'-'+e.layer).appendChild(elem);
 				}
-				dirtyData[e[0]] = d;
-
-				// As to not apply styles when nothing has changed. This really speeds rendering up!
-				// Point in case: RPG demo improved from 200ms to 40 ms pr rendering.
-				function generateRenderHash(face) {
-					var hash = face.x + " " + face.y + " " + face.l + " " + face.w + " " + face.content;
-					for (var name in face.paint) {
-						hash += name + face.paint[name];
-					}
-					return hash;
+				else {
+					delete toDelete[e[0]];
 				}
-
-				//var renderHash = generateRenderHash(d.faces.front);
-
 				// the entity gets its own data passed into it
 				// a good entity will modify this data only if its been changed
 				e.trigger('PreRender', { type: this.type, data: d });
 				//d.dirty = renderHash != generateRenderHash(d.faces.front);
 			}
+			
+			// Remove any html elements this entity has
+			for (i in toDelete) {
+				var del = this.dom.querySelector('#entity-'+e[0]);
+				if (del) {
+					del.parentNode.removeChild(del);
+				}
+			}
 
-
-
+			// As to not apply styles when nothing has changed. This really speeds rendering up!
+			// Point in case: RPG demo improved from 200ms to 40 ms pr rendering.
+			function generateRenderHash(face) {
+				var hash = face.x + " " + face.y + " " + face.l + " " + face.w + " " + face.content;
+				for (var name in face.paint) {
+					hash += name + face.paint[name];
+				}
+				return hash;
+			}
+			
 			// javascript! 
 			// call the private functions as instance methods
 			switch (this.type) {
@@ -219,7 +227,7 @@
 					topdown.call(this, this.data);
 					break;
 				case "Side":
-					sideview.call(this, dirtyData);
+					sideview.call(this, this.data);
 					break;
 				case "Isometric":
 					isometric.call(this, this.data);
@@ -236,7 +244,6 @@
 			}
 
 			Crafty.dirty = [];
-			Crafty.destroyed = [];
 
 			return this;
 		}
@@ -290,15 +297,8 @@
 	 * Only renders the right face
 	 */
 	function sideview(data) {
-
-		var all_elems = this.dom.querySelectorAll('[data-entity-id]'),
-			toDel = {};
-		for (var i in all_elems) {
-			toDel[all_elems.getAttribute('data-entity-id')] = all_elems[i];
-		}
 		
 		for (var e in data) {
-			delete toDel[e];
 			var face = data[e].faces.right,
 				entity = Crafty(parseInt(e)),
 				elem = this.dom.querySelector('#entity-'+e),
@@ -317,10 +317,6 @@
 			}
 			
 			face.render();
-		}
-		
-		for (i in toDel) {
-			toDel[i].parentNode.removeChild(toDel[i]);
 		}
 	}
 
