@@ -233,10 +233,10 @@ Crafty.c("Tween", {
 		this.each(function () {
 			if (this._step == null) {
 				this._step = {};
-				this.bind('EnterFrame', tweenEnterFrame);
+				this.bind('Tick', tweenEnterFrame);
 				this.bind('RemoveComponent', function (c) {
 					if (c == 'Tween') {
-						this.unbind('EnterFrame', tweenEnterFrame);
+						this.unbind('Tick', tweenEnterFrame);
 					}
 				});
 			}

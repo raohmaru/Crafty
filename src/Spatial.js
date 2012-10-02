@@ -757,6 +757,7 @@ Crafty.c("Spatial", {
 
 		//everything will assume the value
 		this[name] = value;
+		this._changed = true;
 
 		//trigger a change
 		this.trigger("Change", old);

@@ -259,7 +259,7 @@
 	 * @param map	A map of camera to entity properties
 	 */
 	function entity_render(e_id, data, map) {
-		var entity = Crafty(parseInt(e_id)),
+		var entity = Crafty(e_id >> 0),
 			elem = this.dom.querySelector('#entity-'+e_id),
 			dirty = data.old.x != entity.x 
 				|| data.old.y != entity.y 
@@ -269,11 +269,18 @@
 			transform = 'translate('+entity[map.x]+'px,'+entity[map.y]+'px) rotate('+entity.rotation+'deg)';
 			
 		if (dirty) {
-			var classes = [];
-			for (var i in entity.__c) {
-				classes[classes.length] = i;
+			var classes_changed = false;
+			if (typeof data.old.components == 'undefined') {
+				data.old.components = {};
 			}
-			elem.className = classes.join(' ');
+			for (var i in entity.__c) {
+				if (typeof data.old.components[i] != 'undefined') {
+					classes[classes.length] = i;
+					data.old.components[i] = true;
+					classes_changed = true;
+				}
+			}
+			if (classes_changed) elem.className = classes.join(' ');
 			elem.style.zIndex = entity.z;
 			elem.style.transform = elem.style[Crafty.support.prefix+"Transform"] = transform;
 			data.old.x = entity.x;
@@ -425,49 +432,49 @@
 			case 'top':
 				this.w = w;
 				this.h = l;
-				this.z = parseInt(h);
-				this.x = parseInt(w / 2);
-				this.y = parseInt(l / 2);
+				this.z = h;
+				this.x = (w / 2) >> 0;
+				this.y = (l / 2) >> 0;
 				break;
 			case 'front':
 				this.w = w;
 				this.h = h;
 				this.rZ = 90;
 				this.rX = 90;
-				this.x = parseInt(w / 2);
-				this.y = parseInt(l);
-				this.z = parseInt(h / 2);
+				this.x = (w / 2) >> 0;
+				this.y = l;
+				this.z = (h / 2) >> 0;
 				break;
 			case 'left':
 				this.w = l;
 				this.h = h;
 				this.rX = 90;
-				this.x = parseInt(w);
-				this.y = parseInt(l / 2);
-				this.z = parseInt(h / 2);
+				this.x = w;
+				this.y = (l / 2) >> 0;
+				this.z = (h / 2) >> 0;
 				break;
 			case 'right':
 				this.w = l;
 				this.h = h;
 				this.rX = -90;
 				this.x = 0;
-				this.y = parseInt(l / 2);
-				this.z = parseInt(h / 2);
+				this.y = (l / 2) >> 0;
+				this.z = (h / 2) >> 0;
 				break;
 			case 'back':
 				this.w = w;
 				this.h = h;
 				this.rZ = 90;
 				this.rX = -90;
-				this.x = parseInt(w / 2);
+				this.x = (w / 2) >> 0;
 				this.y = 0;
-				this.z = parseInt(h / 2);
+				this.z = (h / 2) >> 0;
 				break;
 			case 'below':
 				this.w = w;
 				this.h = l;
-				this.x = parseInt(w / 2);
-				this.y = parseInt(l / 2);
+				this.x = (w / 2) >> 0;
+				this.y = (l / 2) >> 0;
 				this.z = -1 * h;
 				this.rX = 180;
 				break;
