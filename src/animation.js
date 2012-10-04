@@ -215,37 +215,39 @@ Crafty.c("Tween", {
 	* @comp Tween
 	* @sign public this .tween(Object properties, Number duration)
 	* @param properties - Object of 2D properties and what they should animate to
-	* @param duration - Duration to animate the properties over (in frames)
+	* @param duration - Duration to animate the properties over in ms (1 second = 1000 ms)
 	* This method will animate a 2D entities properties over the specified duration.
 	* These include `x`, `y`, `w`, `h`, `alpha` and `rotation`.
 	*
 	* The object passed should have the properties as keys and the value should be the resulting
 	* values of the properties.
 	* @example
-	* Move an object to 100,100 and fade out in 200 frames.
+	* Move an object to 100,100 and fade out in 4 seconds.
 	* ~~~
 	* Crafty.e("2D, Tween")
 	*    .attr({alpha: 1.0, x: 0, y: 0})
-	*    .tween({alpha: 0.0, x: 100, y: 100}, 200)
+	*    .tween({alpha: 0.0, x: 100, y: 100}, 4000)
 	* ~~~
 	*/
 	tween: function (props, duration) {
-		this.each(function () {
-			if (this._step == null) {
-				this._step = {};
-				this.bind('Tick', tweenEnterFrame);
-				this.bind('RemoveComponent', function (c) {
-					if (c == 'Tween') {
-						this.unbind('Tick', tweenEnterFrame);
-					}
-				});
-			}
+		if (this._step == null) {
+			this._step = {};
+			this.bind('Tick', tweenEnterFrame);
+			this.bind('RemoveComponent', function (c) {
+				if (c == 'Tween') {
+					this.unbind('Tick', tweenEnterFrame);
+				}
+			});
+		}
 
-			for (var prop in props) {
-				this._step[prop] = { prop: props[prop], val: (props[prop] - this[prop]) / duration, rem: duration };
-				this._numProps++;
-			}
-		});
+		for (var prop in props) {
+			this._step[prop] = {
+				prop: props[prop], 
+				dist: (props[prop] - this[prop]), 
+				rem: duration 
+			};
+			this._numProps++;
+		}
 		return this;
 	}
 });
