@@ -1,6 +1,7 @@
 window.onload = function () {
 	//start crafty
 	Crafty.init(400, 320);
+	Crafty.camera('default').type = 'Top';
 	
 	function generateWorld() {
 		//generate the grass along the x-axis
@@ -10,13 +11,13 @@ window.onload = function () {
 				grassType = Crafty.math.randomInt(0, 2);
 				Crafty.e("Render, Spatial, Texture")
 					.texture("images/sprite.png", { x: 16 * grassType, y: 0, frames: 1 })
-					.attr({ x: i * 16, y: j * 16, w: 16, h: 16 });
+					.attr({ x: i * 16 + 8, y: j * 16, w: 16, l: 16 });
 
 				//1/50 chance of drawing a flower and only within the bushes
 				if (i > 0 && i < 24 && j > 0 && j < 19 && Crafty.math.randomInt(0, 50) > 49) {
 					Crafty.e("Render, Spatial, Texture, solid")
 						.texture("images/sprite.png", { x: 0, y: 16, frames: 4 })
-						.attr({ x: i * 16, y: j * 16, h: 16, w: 16 });
+						.attr({ x: i * 16 + 8, y: j * 16, l: 16, w: 16 });
 				}
 			}
 		}
@@ -24,10 +25,10 @@ window.onload = function () {
 		//create the bushes along the x-axis which will form the boundaries
 		for (var i = 0; i < 25; i++) {
 			Crafty.e("Render, Spatial, Texture, wall_top, solid")
-				.attr({ x: i * 16, y: 0, z: 2, w: 16, h: 16 })
+				.attr({ x: i * 16 + 8, y: 0, z: 2, w: 16, l: 16 })
 				.texture("images/sprite.png", { x: 16 * Crafty.math.randomInt(0, 1), y: 32, frames: 1 });
 			Crafty.e("Render, Spatial, Texture, wall_bottom, solid")
-				.attr({ x: i * 16, y: 304, z: 2, w: 16, h: 16 })
+				.attr({ x: i * 16 + 8, y: 304, z: 2, w: 16, l: 16 })
 				.texture("images/sprite.png", { x: 16 * Crafty.math.randomInt(0, 1), y: 32, frames: 1 });
 		}
 
@@ -35,10 +36,10 @@ window.onload = function () {
 		//we need to start one more and one less to not overlap the previous bushes
 		for (var i = 1; i < 19; i++) {
 			Crafty.e("Render, Spatial, Texture, wall_left, solid")
-				.attr({ x: 0, y: i * 16, z: 2, w: 16, h: 16 })
+				.attr({ x: 8, y: i * 16, z: 2, w: 16, l: 16 })
 				.texture("images/sprite.png", { x: 16 * Crafty.math.randomInt(0, 1), y: 32, frames: 1 });
 			Crafty.e("Render, Spatial, Texture, wall_right, solid")
-				.attr({ x: 384, y: i * 16, z: 2, w: 16, h: 16 })
+				.attr({ x: 392, y: i * 16, z: 2, w: 16, l: 16 })
 				.texture("images/sprite.png", { x: 16 * Crafty.math.randomInt(0, 1), y: 32, frames: 1 });
 		}
 	}
@@ -52,7 +53,7 @@ window.onload = function () {
 
 		//black background with some loading text
 		Crafty.background("#000");
-		Crafty.e("Render, Spatial, Text").attr({ w: 100, h: 20, x: 150, y: 120 })
+		Crafty.e("Render, Spatial, Text").attr({ w: 100, l: 20, x: 150, y: 120 })
 			.text("Loading");
 //			.css({ "text-align": "center" });
 	});
@@ -116,7 +117,7 @@ window.onload = function () {
 		
 		//create our player entity with some premade components
 		player = Crafty.e("RightControls, Hero, Collision")
-			.attr({ x: 16, y: 16, z: 1, w: 16, h: 16 })
+			.attr({ x: 24, y: 16, z: 1, w: 16, l: 16 })
 			.rightControls(60);
 	});
 
