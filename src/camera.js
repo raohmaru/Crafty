@@ -156,6 +156,7 @@
 			if (!this.active) {
 				return this;
 			}
+			console.profile();
 
 			// pre render logic
 			var entities = this.getEntitiesInView(),
@@ -247,7 +248,7 @@
 			}
 
 			Crafty.dirty = [];
-
+console.profileEnd();
 			return this;
 		}
 	};
@@ -269,12 +270,13 @@
 			transform = 'translate('+entity[map.x]+'px,'+entity[map.y]+'px) rotate('+entity.rotation+'deg)';
 			
 		if (dirty) {
-			var classes_changed = false;
+			var classes_changed = false,
+				classes = [];
 			if (typeof data.old.components == 'undefined') {
 				data.old.components = {};
 			}
 			for (var i in entity.__c) {
-				if (typeof data.old.components[i] != 'undefined') {
+				if (typeof data.old.components[i] == 'undefined') {
 					classes[classes.length] = i;
 					data.old.components[i] = true;
 					classes_changed = true;
@@ -524,6 +526,7 @@
 			}
 			elem.style.transform = elem.style[Crafty.support.prefix+"Transform"] = trans;
 		}
+		this.dirty=false;
 	};
 
 	function createDomElements(id, layer_elemn) {
