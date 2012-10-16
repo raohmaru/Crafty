@@ -312,10 +312,6 @@
 	 
 	 * If an implementation only needs to make use of one face,
 	 * the implementation should handle this accordingly.
-	 
-	 * Each function needs to take care of its own cleanup. 
-	 * Any elements on screen that shouldn't be (deleted, w/e)
-	 * need to be removed by the function itself.
 	 */
 
 	/**
@@ -328,13 +324,12 @@
 					dom = this.dom.querySelector('#camera-'+this.label+'-'+i);
 				l.x += this.diff.x*l.ratio;
 				l.y += this.diff.y*l.ratio;
-				
-				dom.style.transform = dom.style[Crafty.support.prefix+'Transform'] = 'translate('+(-1*l.x)+', '+(-1*l.y)+')';
+
+				dom.style.transform = dom.style[Crafty.support.prefix+'Transform'] = 'translate('+(-1*l.x)+'px, '+(-1*l.y)+'px)';
 			}
 			this.move(0, 0, 0, true);
 			this.changed = false;
 		}
-	
 		for (var e in data) {
 			entity_render.call(this, e, data[e], {x: 'x', y: 'y'});
 			
@@ -348,6 +343,18 @@
 	 * Only renders the right face
 	 */
 	function sideview(data) {
+		if (this.changed) {
+			for (var i in this.layers) {
+				var l = this.layers[i],
+					dom = this.dom.querySelector('#camera-'+this.label+'-'+i);
+				l.x += this.diff.y*l.ratio;
+				l.y += this.diff.z*l.ratio;
+
+				dom.style.transform = dom.style[Crafty.support.prefix+'Transform'] = 'translate('+(-1*l.x)+'px, '+(-1*l.y)+'px)';
+			}
+			this.move(0, 0, 0, true);
+			this.changed = false;
+		}
 		
 		for (var e in data) {
 			entity_render.call(this, e, data[e], {x: 'y', y: 'z'});
