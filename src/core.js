@@ -718,17 +718,20 @@
 					background: {
 						ratio: 0.5,
 						x: 0,
-						y: 0
+						y: 0,
+						flat: true
 					}, 
 					stage: {
 						ratio: 1,
 						x: 0,
-						y: 0
+						y: 0,
+						flat: false,
 					},
 					ui: {
 						ratio: 0,
 						x: 0,
-						y:0
+						y: 0,
+						flat: true,
 					}
 				}
 			});
