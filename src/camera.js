@@ -70,13 +70,14 @@
 	Crafty.camera.fn = {
 		active: false,
 		label: null,
-		x: 0,
+		x: 0,				// actual position (in world)
 		y: 0,
 		z: 0,
+		diff: null,			// change in position since last frame
 		type: "",
 		changed: true,
 		canvas: null,
-		dom: null,
+		dom: null,			// the dom tree in use
 		/**
 		 * Constructor. Should never be invoked directly.
 		 */
@@ -84,6 +85,11 @@
 			this.type = type;
 			this.label = label;
 			this.data = {};
+			this.diff = {
+				x: 0,
+				y: 0,
+				z: 0
+			}
 			this.target = {
 				x: 0,
 				y: 0,
@@ -109,9 +115,10 @@
 			if ("layers" in options) {
 				for (var l in options.layers) {
 					this.layers[l] = {
-						ratio: options.layers[l],
-						x: 0,
-						y: 0,
+						ratio: options.layers[l].ratio,
+						x: options.layers[l].x,
+						y: options.layers[l].y,
+						flat: typeof options.layers[l].flat != 'undefined'?options.layers[l].flat:true
 					};
 					if (this.dom) {
 						var layer = document.createElement('div');
@@ -127,20 +134,25 @@
 		/**
 		 * Moves the camera 
 		 */
-		move: function (x, y, z) {
-			this.moveTo(this.x + x, this.y + y, this.z + z);
+		move: function (x, y, z, reset) {
+			if (arguments.length == 3) {
+				reset = false;
+			}
+			if (reset) {
+				this.diff.x = 0;
+				this.diff.y = 0;
+				this.diff.z = 0;
+			}
+			
+			this.diff.x += x >> 0;
+			this.diff.y += y >> 0;
+			this.diff.z += z >> 0;
+			this.changed = true;
 			return this;
 		},
 
 		moveTo: function (x, y, z) {
-			if (isFinite(x)) this.x = parseInt(x);
-			if (isFinite(y)) this.y = parseInt(y);
-			if (isFinite(z)) this.z = parseInt(z);
-			for (var l in this.layers) {
-				var la = this.layers[l];
-				la.x = this.x * la.ratio;
-				la.y = this.y * la.ratio;
-			}
+			this.move(this.x - x, this.y - y, this.z - z, true);
 			return this;
 		},
 
@@ -156,7 +168,6 @@
 			if (!this.active) {
 				return this;
 			}
-			console.profile();
 
 			// pre render logic
 			var entities = this.getEntitiesInView(),
@@ -248,7 +259,7 @@
 			}
 
 			Crafty.dirty = [];
-console.profileEnd();
+			this.changed = false;
 			return this;
 		}
 	};
@@ -311,6 +322,19 @@ console.profileEnd();
 	 * Only renders the top face of each box
 	 */
 	function topdown(data) {
+		if (this.changed) {
+			for (var i in this.layers) {
+				var l = this.layers[i],
+					dom = this.dom.querySelector('#camera-'+this.label+'-'+i);
+				l.x += this.diff.x*l.ratio;
+				l.y += this.diff.y*l.ratio;
+				
+				dom.style.transform = dom.style[Crafty.support.prefix+'Transform'] = 'translate('+(-1*l.x)+', '+(-1*l.y)+')';
+			}
+			this.move(0, 0, 0, true);
+			this.changed = false;
+		}
+	
 		for (var e in data) {
 			entity_render.call(this, e, data[e], {x: 'x', y: 'y'});
 			
