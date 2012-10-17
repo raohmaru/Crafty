@@ -209,6 +209,7 @@ Crafty.c("SpriteAnimation", {
 Crafty.c("Tween", {
 	_step: null,
 	_numProps: 0,
+	_tweenLastTick: 0,
 
 	/**@
 	* #.tween
@@ -238,13 +239,15 @@ Crafty.c("Tween", {
 					this.unbind('Tick', tweenEnterFrame);
 				}
 			});
+			this._tweenLastTick = Date.now();
 		}
 
 		for (var prop in props) {
 			this._step[prop] = {
-				prop: props[prop], 
+				act: this[prop],
 				dist: (props[prop] - this[prop]), 
-				rem: duration 
+				dur: duration?duration:1,
+				rem: duration?duration:1
 			};
 			this._numProps++;
 		}
@@ -253,18 +256,27 @@ Crafty.c("Tween", {
 });
 
 function tweenEnterFrame(e) {
+	var curr = Date.now(),
+		diff = curr - this._tweenLastTick;
+	this._tweenLastTick = curr;
 	if (this._numProps <= 0) return;
 
-	var prop, k;
+	var prop, k, diff_act;
 	for (k in this._step) {
 		prop = this._step[k];
-		this[k] += prop.val;
-		if (--prop.rem == 0) {
-			// decimal numbers rounding fix
-			this[k] = prop.prop;
+		if (diff > prop.rem) {
+			diff_act = prop.rem;
+		}
+		else {
+			diff_act = diff;
+		}
+		prop.act += (prop.dist * (diff_act/prop.dur));
+		this[k] = Math.round(prop.act);
+		
+		if ((prop.rem -= diff_act) == 0) {
 			this.trigger("TweenEnd", k);
 			// make sure the duration wasn't changed in TweenEnd
-			if (this._step[k].rem <= 0) {
+			if (prop.rem <= 0) {
 				delete this._step[k];
 			}
 			this._numProps--;
@@ -283,5 +295,6 @@ function tweenEnterFrame(e) {
 			this.trigger('MouseOver', Crafty.lastEvent);
 		}
 	}
+	this._tweenLastTick = curr;
 }
 
