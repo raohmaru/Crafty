@@ -271,7 +271,7 @@ function tweenEnterFrame(e) {
 			diff_act = diff;
 		}
 		prop.act += (prop.dist * (diff_act/prop.dur));
-		this[k] = Math.round(prop.act);
+		this[k] = (0.5 + prop.act) | 0;		// performance hack to round off float to int
 		
 		if ((prop.rem -= diff_act) == 0) {
 			this.trigger("TweenEnd", k);
