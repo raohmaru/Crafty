@@ -107,7 +107,7 @@
 				// creates the viewport elements
 				this.dom = document.createElement('div');
 				this.dom.id = 'camera_'+label;
-				this.dom.className = 'camera';
+				this.dom.className = (['camera', type, label]).join(' ');
 				this.dom.style.width = options.width;
 				this.dom.style.height = options.height;
 				Crafty.stage.elem.appendChild(this.dom);
@@ -278,7 +278,19 @@
 				|| data.old.z != entity.z
 				|| data.old.rotation != entity.rotation
 				|| data.old.components != entity.__c,
+			transform = '';
+		
+		if (typeof map.z != 'undefined') {
+			if (!Crafty.support.css3dtransform) {
+				throw 'Your browser does not support 3D properties. Please upgrade to a more recent browser.';
+			}
+			else {
+				transform = 'translate3d('+entity.x+'px, '+entity.y+'px, '+entity.z+') rotateZ('+entity.rotation+'deg)';
+			}
+		}
+		else {
 			transform = 'translate('+entity[map.x]+'px,'+entity[map.y]+'px) rotate('+entity.rotation+'deg)';
+		}
 			
 		if (dirty) {
 			var classes_changed = false,
@@ -627,3 +639,7 @@
 				elem.innerHTML = content;
 			}
 	}
+
+	(function createStyles(document) {
+		
+	})(window.document);
