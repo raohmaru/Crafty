@@ -299,10 +299,16 @@
 				data.old.components = {};
 			}
 			for (var i in entity.__c) {
-				if (typeof data.old.components[i] == 'undefined') {
-					classes[classes.length] = i;
-					data.old.components[i] = true;
-					classes_changed = true;
+				if (entity.__c[i]) {
+					if (typeof data.old.components[i] == 'undefined') {
+						classes[classes.length] = i;
+						data.old.components[i] = true;
+						classes_changed = true;
+					}
+				}
+				else {
+					data.old.componenets[i] = false;
+					classes_changed = false;
 				}
 			}
 			if (classes_changed) elem.className = classes.join(' ');

@@ -304,7 +304,7 @@
 					delete this[prop];
 				}
 			}
-			delete this.__c[id];
+			this.__c[id] = false;
 
 			this.trigger("RemoveComponent", id);
 			return this;
