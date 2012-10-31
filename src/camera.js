@@ -123,7 +123,7 @@
 					if (this.dom) {
 						var layer = document.createElement('div');
 						layer.id = 'camera-'+label+'-'+l;
-						layer.className = 'layer';
+						layer.className = 'layer'+(!this.layers[l].flat?' threeD':'');
 						this.dom.appendChild(layer);
 						this.layers[l].dom = layer;
 					}
@@ -250,10 +250,10 @@
 				case "IsometricFaces":
 					isofaces.call(this, this.data);
 					break;
-				case "3DSquare":
+				case "ThreeDSquare":
 					dom3D.call(this, this.data);
 					break;
-				case "3DFull":
+				case "ThreeDFull":
 					full3D.call(this, this.data);
 					break;
 			}
@@ -294,18 +294,27 @@
 			
 		if (dirty) {
 			var classes_changed = false,
-				classes = [];
-			if (typeof data.old.components == 'undefined') {
-				data.old.components = {};
-			}
-			for (var i in entity.__c) {
-				if (typeof data.old.components[i] == 'undefined') {
-					classes[classes.length] = i;
-					data.old.components[i] = true;
-					classes_changed = true;
+				classes = [], i;
+			if (!Crafty.support.classList) {
+				if (typeof data.old.components == 'undefined') {
+					data.old.components = {};
+				}
+				for (i in entity.__c) {
+					if (typeof data.old.components[i] == 'undefined') {
+						classes[classes.length] = i;
+						data.old.components[i] = true;
+						classes_changed = true;
+					}
+				}
+				if (classes_changed) {
+					elem.className = classes.join(' ');
 				}
 			}
-			if (classes_changed) elem.className = classes.join(' ');
+			else {
+				for (i in entity.__c) {
+					elem.classList.add(i);
+				}
+			}
 			elem.style.zIndex = entity.z;
 			elem.style.transform = elem.style[Crafty.support.prefix+"Transform"] = transform;
 			data.old.x = entity.x;
@@ -393,6 +402,7 @@
 	 */
 	function dom3D(data) {
 		// reposition the camera
+		// this will happen on the layer element
 		
 		// redraw entities
 	}
@@ -542,7 +552,7 @@
 				elem = document.createElement('div');
 				elem.id = id;
 				this.render_target.appendChild(elem);
-				elem.className = this.facing;
+				elem.className = 'Face '+this.facing;
 			}
 			// these are easier to do by manipulating the style object directly
 			// it's only difficult to do because each transform is still vendor-prefixed
@@ -553,7 +563,6 @@
 				trans = 'translate('+this.x+', '+this.y+')';
 			}
 			
-			style[style.length] = 'position: absolute;';
 			style[style.length] = 'top: '+(-this.l/2)+'px;';
 			style[style.length] = 'left: '+(-this.w/2)+'px;';
 			style[style.length] = 'width: '+(this.w)+'px;';
@@ -571,75 +580,27 @@
 		}
 		this.dirty=false;
 	};
-
-	function createDomElements(id, layer_elemn) {
-		var container = document.createElement('div');
-		container.id = "ent" + id;
-
-		var top = document.createElement('div');
-		top.id = "ent" + id + "-top";
-		container.appendChild(top);
-
-		var front = document.createElement('div');
-		front.id = "ent" + id + "-front";
-		container.appendChild(front);
-
-		var right = document.createElement('div');
-		right.id = "ent" + id + "-right";
-		container.appendChild(right);
-
-		layer_elem.appendChild(container);
-
-		return { container: container, top: top, front: front, right: right };
-	}
-
-	// Modifies spatial attributes of the container div. Is called by one of the render functions,
-	// which is responsible of mapping the face values to the screen
-	function updateSpatialStyles(elem, x, y, z) {
-		var style = "position:absolute; ",
-			prefix = "-" + Crafty.support.prefix + "-",
-			trans = [];
-
-		//utilize CSS3 if supported
-		if (Crafty.support.css3dtransform) {
-			trans.push("translate3d(" + (~~x) + "px," + (~~y) + "px,0)");
-		} else {
-			style += ("left: " + ~~(x) + "px;");
-			style += ("top: " + ~~(y) + "px;");
-		}
-
-		style += ("zIndex: " + ~~(z) + ";");
-
-		if (trans.length > 0) {
-			style += ("transform: " + trans.join(" ") + ";");
-			style += (prefix + "transform: " + trans.join(" ") + ";");
-		}
-
-		////if (typeof (elem.style.cssText) != 'undefined') {
-		//	elem.style.cssText = style;
-		//} else {
-			elem.setAttribute('style', style);
-		//}
-	}
-
-	function updateFaceStyle(elem, paint, content, w, h) {
-		var style = "";
-		for (var name in paint) {
-			style += name + ": " + paint[name] + ";";
-		}
-		style += ("width: " + ~~(w) + "px;") + ("height: " + ~~(h) + "px;");
-
-		//if (typeof (elem.style.cssText) != 'undefined') {
-		//	elem.style.cssText = style;
-		//} else {
-			elem.setAttribute('style', style);
-		//}
-
-			if (content) {
-				elem.innerHTML = content;
-			}
-	}
-
-	(function createStyles(document) {
-		
-	})(window.document);
+	
+	// add common styles
+	Crafty.style.add('.obj', 'position', 'absolute');
+	Crafty.style.add('.Face', 'position', 'absolute');
+	Crafty.style.add('.layer', 'position', 'absolute');
+	Crafty.style.add('.camera', 'position', 'absolute');
+	
+	var three_d_wrapper = {};
+	three_d_wrapper['-webkit-perspective'] = '1000';
+	three_d_wrapper['-moz-perspective'] = '1000';
+	three_d_wrapper['-o-perspective'] = '1000';
+	three_d_wrapper['-ms-perspective'] = '1000';
+	three_d_wrapper['perspective'] = '1000';
+	Crafty.style.add('.camera.ThreeDSquare', three_d_wrapper);
+	Crafty.style.add('.camera.IsometricFaces', three_d_wrapper);
+	
+	var three_d_container = {};
+	three_d_container['-webkit-transform-style'] = 'preserve-3d';
+	three_d_container['-moz-transform-style'] = 'preserve-3d';
+	three_d_container['-o-transform-style'] = 'preserve-3d';
+	three_d_container['-ms-transform-style'] = 'preserve-3d';
+	three_d_container['transform-style'] = 'preserve-3d';
+	Crafty.style.add('.camera.ThreeDSquare .layer.threeD', three_d_container);
+	Crafty.style.add('.camera.IsometricFaces', three_d_container);
