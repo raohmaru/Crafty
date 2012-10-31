@@ -1,6 +1,11 @@
-/* This file aggregates all the src/ files at runtime.
- * You just need to source this file, then any changes in src/ files will be automatically sourced.
- * Therefore, you do not need to regenerate crafty.js (by bulid.sh) anymore each time when you make changes in src/.
+/* 
+ * This file aggregates all the src/ files at runtime
+ * You just need to source this file. The src/ files will be loaded and aggregated and evaluated like a final build of a crafty is
+ * When using this, Crafty does not need to be rebuilt after every change to a file
+ *
+ * WARNING!!!
+ * This file is to be used for local development of Crafty ONLY. It does a number of Bad Things to achieve its goals, 
+ * and should not be used in a production environment for any reason.
  */
 
 (function (window) {
@@ -22,6 +27,7 @@
 		'isometric',
 		'particles',
 		'sound',
+		'style',
 		'storage',
 		'html',
 		'math',
