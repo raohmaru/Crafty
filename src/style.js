@@ -9,62 +9,57 @@
 				style_elem = document.createElement('style'),
 				sheet;
 				
-			document.getElementsByTagName('head')[0].appendChild('style_elem');
+			document.getElementsByTagName('head')[0].appendChild(style_elem);
 			
 			if (!window.createPopup) {
-				style_elem.appendChild(document.createTextnode(''));
+				style_elem.appendChild(document.createTextNode(''));
 			}
 			
 			sheet = document.styleSheets[document.styleSheets.length - 1];
 			
 			function writeStyles() {
-				var i, j, str, del;
-				
+				var i, j, str;
+
 				for (i in styles) {
-					del = true
 					// W3C method
-					if ('insertRule' in s) {
+					if ('insertRule' in sheet) {
 						str = i + ' { ';
 						for (j in styles[i]) {
-							if (styles[i][j] && j != 'index') {
+							if (j != 'index' && styles[i][j]) {
 								str += j+': '+styles[i][j]+'; ';
-								del = false;
 							}
 						}
 						str += '}';
 						if (typeof styles[i].index != 'undefined') {
-							if (del) {
-								s.deleteRule(styles[i].index);
-							}
-							else {
-								s.insertRule(str, styles[i].index);
-							}
+							// insertRule will not overwrite a rule at that position. 
+							// It will instead shift everything at the position and above up one.
+							// If we want to replace a rule, we have to delete it first
+							
+							// It seems that index positions are not fixed in stone. 
+							// Be very careful about deleting a rule without inserting at the same position
+							// I'm worried the index positions will break if you do
+							sheet.deleteRule(styles[i].index);
+							sheet.insertRule(str, styles[i].index);
 						}
 						else {
-							if (!del) {
-								styles[i].index = s.insertRule(str, s.cssRules.length);
-							}
-							// the style hasn't been added yet, so there's nothing to delete
+							styles[i].index = sheet.insertRule(str, sheet.cssRules.length);
 						}
 					}
 					// IE bullcrap
 					else {
 						str = '';
 						for (j in styles[i]) {
-							if (styles[i][j] && j != 'index') {
+							if (j != 'index' && styles[i][j]) {
 								str += j+': '+styles[i][j]+'; ';
-								del = false;
 							}
 						}
 						if (typeof styles[i].index == 'undefined') {
-							styles[i].index = s.rules.length;
-							s.addRule(i, str, styles[i].index);
-						}
-						else if (del) {
-							s.removeRule(styles[i].index);
+							styles[i].index = sheet.rules.length;
+							sheet.addRule(i, str, styles[i].index);
 						}
 						else {
-							s.addRule(i, str, styles[i].index);
+							sheet.removeRule(styles[i].index);
+							sheet.addRule(i, str, styles[i].index);
 						}
 					}
 				}
@@ -125,5 +120,5 @@
 					}
 				}
 			};
-		})();
+		})()
 	});
