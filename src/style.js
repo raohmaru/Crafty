@@ -23,7 +23,7 @@
 				for (i in styles) {
 					// W3C method
 					if ('insertRule' in sheet) {
-						str = i + ' { ';
+						str = '#cr-stage '+i + ' { ';
 						for (j in styles[i]) {
 							if (j != 'index' && styles[i][j]) {
 								str += j+': '+styles[i][j]+'; ';
@@ -55,11 +55,11 @@
 						}
 						if (typeof styles[i].index == 'undefined') {
 							styles[i].index = sheet.rules.length;
-							sheet.addRule(i, str, styles[i].index);
+							sheet.addRule('#cr-stage '+i, str, styles[i].index);
 						}
 						else {
 							sheet.removeRule(styles[i].index);
-							sheet.addRule(i, str, styles[i].index);
+							sheet.addRule('#cr-stage '+i, str, styles[i].index);
 						}
 					}
 				}
