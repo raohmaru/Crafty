@@ -148,6 +148,7 @@
 			this.diff.y += y >> 0;
 			this.diff.z += z >> 0;
 			this.changed = true;
+
 			return this;
 		},
 
@@ -213,7 +214,6 @@
 				// the entity gets its own data passed into it
 				// a good entity will modify this data only if its been changed
 				e.trigger('PreRender', { type: this.type, data: d });
-				//d.dirty = renderHash != generateRenderHash(d.faces.front);
 			}
 			
 			// Remove any html elements this entity has
@@ -223,16 +223,6 @@
 				if (del) {
 					del.parentNode.removeChild(del);
 				}
-			}
-
-			// As to not apply styles when nothing has changed. This really speeds rendering up!
-			// Point in case: RPG demo improved from 200ms to 40 ms pr rendering.
-			function generateRenderHash(face) {
-				var hash = face.x + " " + face.y + " " + face.l + " " + face.w + " " + face.content;
-				for (var name in face.paint) {
-					hash += name + face.paint[name];
-				}
-				return hash;
 			}
 			
 			// javascript! 
@@ -404,7 +394,75 @@
 		// reposition the camera
 		// this will happen on the layer element
 		
+		if (this.changed) {
+			// figure out the 3d transformations needed
+			var vector = {
+				x: this.target.x - this.x, 
+				y: this.target.y - this.y, 
+				z: this.target.z - this.z
+			},
+			trans = {}, hyp;
+			
+			trans.origin = {};
+			trans.origin.x = this.target.x;
+			trans.origin.y = this.target.y;
+			trans.origin.z = this.target.z;
+			trans.form = [];
+			trans.form.push({op: 'translateZ', val: [1000]});	// move the browser's viewpoint to 0,0,0
+			trans.form.push({op: 'translate3d', val:[(-1*this.target.x), (-1*this.target.y), (-1*this.target.z)]});
+			
+			// figure out the x rotation based on the vector
+			hyp = Math.sqrt(vector.x*vector.x + vector.y*vector.y + vector.z*vector.z);
+			trans.form.push({op: 'rotateX', val:[(90 + Crafty.math.radToDeg(Math.asin(vector.z/hyp)))]});
+			
+			// figure out the z rotation based on the vector
+			// this was tricky.
+			// things to remember: 
+			// the angle we want to measure has the camera at 0,0. so the vector needs to be reversed.
+			// the coord grid is 90 degrees from what i expected, so x and y needed to be switched.
+			trans.form.push({op: 'rotateZ', val:[(Crafty.math.radToDeg(Math.atan2(-vector.x, -vector.y)))]});
+			
+			// figure out the translation needed based on the vector
+			trans.form.push({op: 'translate3d', val: [vector.x, vector.y, vector.z]});
+			
+			// add transformations to 3D space layers
+			for (var i in this.layers) {
+				var l = this.layers[i],
+					dom = this.dom.querySelector('#camera-'+this.label+'-'+i),
+					pref = Crafty.support.prefix, 
+					i, style = [], unit, j, rot = /rotate/i, mov = /translate/i, scl = /scale/i, str;
+				if (!l.flat) {
+					dom.style.transformOrigin = dom.style[pref+"TransformOrigin"] = transforms.origin.x+"px "+transforms.origin.y+"px "+transforms.origin.z+"px";
+					for (i in transforms.form) {
+						j = transforms.form[i];
+						if (j.op.search(mov) != -1) {
+							unit = 'px';
+						}
+						else if (j.op.search(rot) != -1) {
+							unit = 'deg';
+						}
+						else if (j.op.search(scl) != -1) {
+							unit = '';
+						}
+						
+						for (var m in j.val) {
+							j.val[m] = j.val[m]+unit;
+						}
+						style.push(j.op+'('+(j.val.join(', '))+')');
+					}
+					dom.style.transform = dom.style[pref+"Transform"] = style.join(' ');
+				}
+			}
+		}
+		
 		// redraw entities
+		for (var e in data) {
+			entity_render.call(this, e, data[e], {x: 'x', y: 'y', z: 'z'});
+			
+			for (var i in data[e].faces) {
+				data[e].faces[i].render();
+			}
+		}
 	}
 
 	/**
