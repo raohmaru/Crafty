@@ -68,7 +68,7 @@
 	};
 
 	Crafty.camera.fn = {
-		active: false,
+		active: true,
 		label: null,
 		x: 0,				// actual position (in world)
 		y: 0,
@@ -129,6 +129,34 @@
 					}
 				}
 			}
+	
+			// add common styles
+			Crafty.style.add('.obj', 'position', 'absolute');
+			Crafty.style.add('.obj', '-webkit-transform-style', 'preserve-3d');
+			Crafty.style.add('.Face', 'position', 'absolute');
+			Crafty.style.add('.Face', 'border', '3px solid black');
+			Crafty.style.add('.layer', 'position', 'absolute');
+			Crafty.style.add('.camera', {position: 'absolute', width: '100%', height: '100%'});
+			
+			var three_d_wrapper = {};
+			three_d_wrapper['-webkit-perspective'] = '1000';
+			three_d_wrapper['-moz-perspective'] = '1000';
+			three_d_wrapper['-o-perspective'] = '1000';
+			three_d_wrapper['-ms-perspective'] = '1000';
+			three_d_wrapper['perspective'] = '1000';
+			Crafty.style.add('.camera.ThreeDSquare', three_d_wrapper);
+			Crafty.style.add('.camera.IsometricFaces', three_d_wrapper);
+			
+			var three_d_container = {};
+			three_d_container['-webkit-transform-style'] = 'preserve-3d';
+			three_d_container['-moz-transform-style'] = 'preserve-3d';
+			three_d_container['-o-transform-style'] = 'preserve-3d';
+			three_d_container['-ms-transform-style'] = 'preserve-3d';
+			three_d_container['transform-style'] = 'preserve-3d';
+			three_d_container['top'] = '50%';
+			three_d_container['left'] = '50%';
+			Crafty.style.add('.camera.ThreeDSquare .layer.threeD', three_d_container);
+			Crafty.style.add('.camera.IsometricFaces', three_d_container);
 		},
 
 		/**
@@ -250,6 +278,7 @@
 
 			Crafty.dirty = [];
 			this.changed = false;
+			this.diff = {x: 0, y: 0, z: 0};
 			return this;
 		}
 	};
@@ -275,7 +304,7 @@
 				throw 'Your browser does not support 3D properties. Please upgrade to a more recent browser.';
 			}
 			else {
-				transform = 'translate3d('+entity.x+'px, '+entity.y+'px, '+entity.z+') rotateZ('+entity.rotation+'deg)';
+				transform = 'translate3d('+entity.x+'px, '+entity.y+'px, '+entity.z+'px) rotateZ('+entity.rotation+'deg)';
 			}
 		}
 		else {
@@ -306,6 +335,8 @@
 				}
 			}
 			elem.style.zIndex = entity.z;
+			elem.style.top = (-0.5*entity.l)+'px';
+			elem.style.left = (-0.5*entity.w)+'px';
 			elem.style.transform = elem.style[Crafty.support.prefix+"Transform"] = transform;
 			data.old.x = entity.x;
 			data.old.y = entity.y;
@@ -397,9 +428,9 @@
 		if (this.changed) {
 			// figure out the 3d transformations needed
 			var vector = {
-				x: this.target.x - this.x, 
-				y: this.target.y - this.y, 
-				z: this.target.z - this.z
+				x: this.target.x - (this.x += this.diff.x), 
+				y: this.target.y - (this.y += this.diff.y), 
+				z: this.target.z - (this.z += this.diff.z)
 			},
 			trans = {}, hyp;
 			
@@ -413,14 +444,14 @@
 			
 			// figure out the x rotation based on the vector
 			hyp = Math.sqrt(vector.x*vector.x + vector.y*vector.y + vector.z*vector.z);
-			trans.form.push({op: 'rotateX', val:[(90 + Crafty.math.radToDeg(Math.asin(vector.z/hyp)))]});
+			trans.form.push({op: 'rotateX', val:[90 + Crafty.math.radToDeg(Math.asin(vector.z/hyp))]});
 			
 			// figure out the z rotation based on the vector
 			// this was tricky.
 			// things to remember: 
 			// the angle we want to measure has the camera at 0,0. so the vector needs to be reversed.
 			// the coord grid is 90 degrees from what i expected, so x and y needed to be switched.
-			trans.form.push({op: 'rotateZ', val:[(Crafty.math.radToDeg(Math.atan2(-vector.x, -vector.y)))]});
+			trans.form.push({op: 'rotateZ', val:[(Crafty.math.radToDeg(Math.atan2(vector.x, vector.y)))]});
 			
 			// figure out the translation needed based on the vector
 			trans.form.push({op: 'translate3d', val: [vector.x, vector.y, vector.z]});
@@ -432,9 +463,9 @@
 					pref = Crafty.support.prefix, 
 					i, style = [], unit, j, rot = /rotate/i, mov = /translate/i, scl = /scale/i, str;
 				if (!l.flat) {
-					dom.style.transformOrigin = dom.style[pref+"TransformOrigin"] = transforms.origin.x+"px "+transforms.origin.y+"px "+transforms.origin.z+"px";
-					for (i in transforms.form) {
-						j = transforms.form[i];
+					dom.style.transformOrigin = dom.style[pref+"TransformOrigin"] = trans.origin.x+"px "+trans.origin.y+"px "+trans.origin.z+"px";
+					for (i in trans.form) {
+						j = trans.form[i];
 						if (j.op.search(mov) != -1) {
 							unit = 'px';
 						}
@@ -453,6 +484,7 @@
 					dom.style.transform = dom.style[pref+"Transform"] = style.join(' ');
 				}
 			}
+			this.changed = false;
 		}
 		
 		// redraw entities
@@ -615,13 +647,13 @@
 			// these are easier to do by manipulating the style object directly
 			// it's only difficult to do because each transform is still vendor-prefixed
 			if (Crafty.support.css3dtransform) {
-				trans = 'translate3d('+this.x+', '+this.y+', '+this.z+') rotateZ('+this.rZ+") rotateX("+this.rX+")";
+				trans = 'translate3d('+this.x+'px, '+this.y+'px, '+this.z+'px) rotateZ('+this.rZ+"deg) rotateX("+this.rX+"deg)";
 			}
 			else {
-				trans = 'translate('+this.x+', '+this.y+')';
+				trans = 'translate('+this.x+'px, '+this.y+'px)';
 			}
 			
-			style[style.length] = 'top: '+(-this.l/2)+'px;';
+			style[style.length] = 'top: '+(-this.h/2)+'px;';
 			style[style.length] = 'left: '+(-this.w/2)+'px;';
 			style[style.length] = 'width: '+(this.w)+'px;';
 			style[style.length] = 'height: '+(this.h)+'px;';
@@ -638,27 +670,3 @@
 		}
 		this.dirty=false;
 	};
-	
-	// add common styles
-	Crafty.style.add('.obj', 'position', 'absolute');
-	Crafty.style.add('.Face', 'position', 'absolute');
-	Crafty.style.add('.layer', 'position', 'absolute');
-	Crafty.style.add('.camera', 'position', 'absolute');
-	
-	var three_d_wrapper = {};
-	three_d_wrapper['-webkit-perspective'] = '1000';
-	three_d_wrapper['-moz-perspective'] = '1000';
-	three_d_wrapper['-o-perspective'] = '1000';
-	three_d_wrapper['-ms-perspective'] = '1000';
-	three_d_wrapper['perspective'] = '1000';
-	Crafty.style.add('.camera.ThreeDSquare', three_d_wrapper);
-	Crafty.style.add('.camera.IsometricFaces', three_d_wrapper);
-	
-	var three_d_container = {};
-	three_d_container['-webkit-transform-style'] = 'preserve-3d';
-	three_d_container['-moz-transform-style'] = 'preserve-3d';
-	three_d_container['-o-transform-style'] = 'preserve-3d';
-	three_d_container['-ms-transform-style'] = 'preserve-3d';
-	three_d_container['transform-style'] = 'preserve-3d';
-	Crafty.style.add('.camera.ThreeDSquare .layer.threeD', three_d_container);
-	Crafty.style.add('.camera.IsometricFaces', three_d_container);
