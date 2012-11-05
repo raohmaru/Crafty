@@ -23,7 +23,7 @@
 						flat: true,
 					}
 				}});
-		cam.move(-1000, 0, 5);
+		cam.move(500, 500, 500);
 		cam.target = {x: 100, y: 100, z: 100};
 		Crafty.camera('default').active = false;
 		Crafty.e('Spatial, Render, Color, Tween, Mouse').attr({w: 100, l: 100, h: 100, x: 100, y: 0, z: 200}).color('blue').tween({y: 200}, 2000).bind('Click', function (e) {
