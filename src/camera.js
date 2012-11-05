@@ -451,7 +451,7 @@
 			// things to remember: 
 			// the angle we want to measure has the camera at 0,0. so the vector needs to be reversed.
 			// the coord grid is 90 degrees from what i expected, so x and y needed to be switched.
-			trans.form.push({op: 'rotateZ', val:[(Crafty.math.radToDeg(Math.atan2(vector.x, vector.y)))]});
+			trans.form.push({op: 'rotateZ', val:[(Crafty.math.radToDeg(Math.atan2(-vector.x, -vector.y)))]});
 			
 			// figure out the translation needed based on the vector
 			trans.form.push({op: 'translate3d', val: [vector.x, vector.y, vector.z]});
@@ -584,7 +584,7 @@
 			case 'front':
 				this.w = w;
 				this.h = h;
-				this.rZ = 90;
+				this.rZ = 0;
 				this.rX = 90;
 				this.x = (w / 2) >> 0;
 				this.y = l;
@@ -593,6 +593,7 @@
 			case 'left':
 				this.w = l;
 				this.h = h;
+				this.rZ = 90;
 				this.rX = 90;
 				this.x = w;
 				this.y = (l / 2) >> 0;
@@ -601,6 +602,7 @@
 			case 'right':
 				this.w = l;
 				this.h = h;
+				this.rZ = 90;
 				this.rX = -90;
 				this.x = 0;
 				this.y = (l / 2) >> 0;
@@ -609,7 +611,7 @@
 			case 'back':
 				this.w = w;
 				this.h = h;
-				this.rZ = 90;
+				this.rZ = 0;
 				this.rX = -90;
 				this.x = (w / 2) >> 0;
 				this.y = 0;
@@ -620,7 +622,7 @@
 				this.h = l;
 				this.x = (w / 2) >> 0;
 				this.y = (l / 2) >> 0;
-				this.z = -1 * h;
+				this.z = 0;
 				this.rX = 180;
 				break;
 		}
