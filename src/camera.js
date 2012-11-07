@@ -133,17 +133,22 @@
 			// add common styles
 			Crafty.style.add('.obj', 'position', 'absolute');
 			Crafty.style.add('.obj', '-webkit-transform-style', 'preserve-3d');
+			Crafty.style.add('.obj', '-moz-transform-style', 'preserve-3d');
+			Crafty.style.add('.obj', '-o-transform-style', 'preserve-3d');
+			Crafty.style.add('.obj', '-ms-transform-style', 'preserve-3d');
+			Crafty.style.add('.obj', 'transform-style', 'preserve-3d');
+			
 			Crafty.style.add('.Face', 'position', 'absolute');
 			Crafty.style.add('.Face', 'border', '3px solid black');
 			Crafty.style.add('.layer', 'position', 'absolute');
 			Crafty.style.add('.camera', {position: 'absolute', width: '100%', height: '100%'});
 			
 			var three_d_wrapper = {};
-			three_d_wrapper['-webkit-perspective'] = '1000';
-			three_d_wrapper['-moz-perspective'] = '1000';
-			three_d_wrapper['-o-perspective'] = '1000';
-			three_d_wrapper['-ms-perspective'] = '1000';
-			three_d_wrapper['perspective'] = '1000';
+			three_d_wrapper['-webkit-perspective'] = '1000px';
+			three_d_wrapper['-moz-perspective'] = '1000px';
+			three_d_wrapper['-o-perspective'] = '1000px';
+			three_d_wrapper['-ms-perspective'] = '1000px';
+			three_d_wrapper['perspective'] = '1000px';
 			Crafty.style.add('.camera.ThreeDSquare', three_d_wrapper);
 			Crafty.style.add('.camera.IsometricFaces', three_d_wrapper);
 			
