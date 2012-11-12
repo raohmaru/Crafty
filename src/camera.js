@@ -52,7 +52,7 @@
 			}
 
 			return Crafty.camera.cameras[label] = new Crafty.camera.fn.init(type, label, options);
-		}
+		},
 	});
 
 	Crafty.camera.cameras = {};
@@ -96,6 +96,17 @@
 				z: 0
 			};
 			this.layers = {};
+			
+			if (label in Crafty.camera.modes && 'render' in Crafty.camera.modes[label]) {
+				for (var i in Crafty.camera.modes[label]) {
+					this[i] = Crafty.camera.modes[label][i];
+				}
+			}
+			else {
+				throw 'Invalid camera mode given';
+				return false;
+			}
+			
 			if ("canvas" in options && options.canvas) {
 				this.canvas = document.createElement('canvas');
 				this.canvas.id = 'camera_'+label;
@@ -258,28 +269,7 @@
 				}
 			}
 			
-			// javascript! 
-			// call the private functions as instance methods
-			switch (this.type) {
-				case "Top":
-					topdown.call(this, this.data);
-					break;
-				case "Side":
-					sideview.call(this, this.data);
-					break;
-				case "Isometric":
-					isometric.call(this, this.data);
-					break;
-				case "IsometricFaces":
-					isofaces.call(this, this.data);
-					break;
-				case "ThreeDSquare":
-					dom3D.call(this, this.data);
-					break;
-				case "ThreeDFull":
-					full3D.call(this, this.data);
-					break;
-			}
+			this.render(data);
 
 			Crafty.dirty = [];
 			this.changed = false;
@@ -349,8 +339,14 @@
 			data.old.rotation = entity.rotation;
 		}
 	}
-
+	
 	/**
+	 * Camera modes
+	 * Defines a rendering method and any helper functions for that camera mode
+	 * Every camera mode must have a render method.
+	 * Additional methods, specific to that camera mode, can be added.
+	 * For instance, Full3D could have an orbit method that would be useless to TopDown
+	 *
 	 * All render implementations should work in the same general way
 	 * For each entity that needs drawing,
 	 * 	it should loop through the entities list of faces
@@ -360,144 +356,158 @@
 	 * If an implementation only needs to make use of one face,
 	 * the implementation should handle this accordingly.
 	 */
+	 
+	Crafty.camera.modes = {};
 
 	/**
 	 * Only renders the top face of each box
 	 */
-	function topdown(data) {
-		if (this.changed) {
-			for (var i in this.layers) {
-				var l = this.layers[i],
-					dom = this.dom.querySelector('#camera-'+this.label+'-'+i);
-				l.x += this.diff.x*l.ratio;
-				l.y += this.diff.y*l.ratio;
+	Crafty.camera.modes.topdown = {
+		render: function (data) {
+			if (this.changed) {
+				for (var i in this.layers) {
+					var l = this.layers[i],
+						dom = this.dom.querySelector('#camera-'+this.label+'-'+i);
+					l.x += this.diff.x*l.ratio;
+					l.y += this.diff.y*l.ratio;
 
-				dom.style.transform = dom.style[Crafty.support.prefix+'Transform'] = 'translate('+(-1*l.x)+'px, '+(-1*l.y)+'px)';
+					dom.style.transform = dom.style[Crafty.support.prefix+'Transform'] = 'translate('+(-1*l.x)+'px, '+(-1*l.y)+'px)';
+				}
+				this.move(0, 0, 0, true);
+				this.changed = false;
 			}
-			this.move(0, 0, 0, true);
-			this.changed = false;
+			for (var e in data) {
+				entity_render.call(this, e, data[e], {x: 'x', y: 'y'});
+				
+				var top = data[e].faces.top;
+				top.render();
+			}
+			return this;
 		}
-		for (var e in data) {
-			entity_render.call(this, e, data[e], {x: 'x', y: 'y'});
-			
-			var top = data[e].faces.top;
-			top.render();
-		}
-		
-	}
+	};
 
 	/**
 	 * Only renders the right face
 	 */
-	function sideview(data) {
-		if (this.changed) {
-			for (var i in this.layers) {
-				var l = this.layers[i],
-					dom = this.dom.querySelector('#camera-'+this.label+'-'+i);
-				l.x += this.diff.y*l.ratio;
-				l.y += this.diff.z*l.ratio;
+	Crafty.camera.modes.sideview = {
+		render: function (data) {
+			if (this.changed) {
+				for (var i in this.layers) {
+					var l = this.layers[i],
+						dom = this.dom.querySelector('#camera-'+this.label+'-'+i);
+					l.x += this.diff.y*l.ratio;
+					l.y += this.diff.z*l.ratio;
 
-				dom.style.transform = dom.style[Crafty.support.prefix+'Transform'] = 'translate('+(-1*l.x)+'px, '+(-1*l.y)+'px)';
+					dom.style.transform = dom.style[Crafty.support.prefix+'Transform'] = 'translate('+(-1*l.x)+'px, '+(-1*l.y)+'px)';
+				}
+				this.move(0, 0, 0, true);
+				this.changed = false;
 			}
-			this.move(0, 0, 0, true);
-			this.changed = false;
-		}
-		
-		for (var e in data) {
-			entity_render.call(this, e, data[e], {x: 'y', y: 'z'});
 			
-			var face = data[e].faces.right;
-			face.render();
+			for (var e in data) {
+				entity_render.call(this, e, data[e], {x: 'y', y: 'z'});
+				
+				var face = data[e].faces.right;
+				face.render();
+			}
+			return this;
 		}
 	}
 
 	/**
 	 * Only renders the front face. The front face should already have the isometric transforms applied to it in the sprite itself
 	 */
-	function isometric(data) {
+	Crafty.camera.modes.isometric = {
+		render: function (data) {
+			return this;
+		}
 	}
 
 	/**
 	 * Renders all 6 faces. The camera is at a fixed angle, with no perspective applied
 	 */
-	function isofaces(data) {
+	Crafty.camera.modes.isocubes = {
+		render: function (data) {
+		}
 	}
 
 	/**
 	 * Renders all 6 faces. Camera can be anywhere. Has perspective.
 	 */
-	function dom3D(data) {
-		// reposition the camera
-		// this will happen on the layer element
-		
-		if (this.changed) {
-			// figure out the 3d transformations needed
-			var vector = {
-				x: this.target.x - (this.x += this.diff.x), 
-				y: this.target.y - (this.y += this.diff.y), 
-				z: this.target.z - (this.z += this.diff.z)
-			},
-			trans = {}, hyp;
+	Crafty.camera.modes.dom3d = {
+		render: function (data) {
+			// reposition the camera
+			// this will happen on the layer element
 			
-			trans.origin = {};
-			trans.origin.x = this.target.x;
-			trans.origin.y = this.target.y;
-			trans.origin.z = this.target.z;
-			trans.form = [];
-			trans.form.push({op: 'translateZ', val: [1000]});	// move the browser's viewpoint to 0,0,0
-			trans.form.push({op: 'translate3d', val:[(-1*this.target.x), (-1*this.target.y), (-1*this.target.z)]});
-			
-			// figure out the x rotation based on the vector
-			hyp = Math.sqrt(vector.x*vector.x + vector.y*vector.y + vector.z*vector.z);
-			trans.form.push({op: 'rotateX', val:[90 + Crafty.math.radToDeg(Math.asin(vector.z/hyp))]});
-			
-			// figure out the z rotation based on the vector
-			// this was tricky.
-			// things to remember: 
-			// the angle we want to measure has the camera at 0,0. so the vector needs to be reversed.
-			// the coord grid is 90 degrees from what i expected, so x and y needed to be switched.
-			trans.form.push({op: 'rotateZ', val:[(Crafty.math.radToDeg(Math.atan2(-vector.x, -vector.y)))]});
-			
-			// figure out the translation needed based on the vector
-			trans.form.push({op: 'translate3d', val: [vector.x, vector.y, vector.z]});
-			
-			// add transformations to 3D space layers
-			for (var i in this.layers) {
-				var l = this.layers[i],
-					dom = this.dom.querySelector('#camera-'+this.label+'-'+i),
-					pref = Crafty.support.prefix, 
-					i, style = [], unit, j, rot = /rotate/i, mov = /translate/i, scl = /scale/i, str;
-				if (!l.flat) {
-					dom.style.transformOrigin = dom.style[pref+"TransformOrigin"] = trans.origin.x+"px "+trans.origin.y+"px "+trans.origin.z+"px";
-					for (i in trans.form) {
-						j = trans.form[i];
-						if (j.op.search(mov) != -1) {
-							unit = 'px';
+			if (this.changed) {
+				// figure out the 3d transformations needed
+				var vector = {
+					x: this.target.x - (this.x += this.diff.x), 
+					y: this.target.y - (this.y += this.diff.y), 
+					z: this.target.z - (this.z += this.diff.z)
+				},
+				trans = {}, hyp;
+				
+				trans.origin = {};
+				trans.origin.x = this.target.x;
+				trans.origin.y = this.target.y;
+				trans.origin.z = this.target.z;
+				trans.form = [];
+				trans.form.push({op: 'translateZ', val: [1000]});	// move the browser's viewpoint to 0,0,0
+				trans.form.push({op: 'translate3d', val:[(-1*this.target.x), (-1*this.target.y), (-1*this.target.z)]});
+				
+				// figure out the x rotation based on the vector
+				hyp = Math.sqrt(vector.x*vector.x + vector.y*vector.y + vector.z*vector.z);
+				trans.form.push({op: 'rotateX', val:[90 + Crafty.math.radToDeg(Math.asin(vector.z/hyp))]});
+				
+				// figure out the z rotation based on the vector
+				// this was tricky.
+				// things to remember: 
+				// the angle we want to measure has the camera at 0,0. so the vector needs to be reversed.
+				// the coord grid is 90 degrees from what i expected, so x and y needed to be switched.
+				trans.form.push({op: 'rotateZ', val:[(Crafty.math.radToDeg(Math.atan2(-vector.x, -vector.y)))]});
+				
+				// figure out the translation needed based on the vector
+				trans.form.push({op: 'translate3d', val: [vector.x, vector.y, vector.z]});
+				
+				// add transformations to 3D space layers
+				for (var i in this.layers) {
+					var l = this.layers[i],
+						dom = this.dom.querySelector('#camera-'+this.label+'-'+i),
+						pref = Crafty.support.prefix, 
+						i, style = [], unit, j, rot = /rotate/i, mov = /translate/i, scl = /scale/i, str;
+					if (!l.flat) {
+						dom.style.transformOrigin = dom.style[pref+"TransformOrigin"] = trans.origin.x+"px "+trans.origin.y+"px "+trans.origin.z+"px";
+						for (i in trans.form) {
+							j = trans.form[i];
+							if (j.op.search(mov) != -1) {
+								unit = 'px';
+							}
+							else if (j.op.search(rot) != -1) {
+								unit = 'deg';
+							}
+							else if (j.op.search(scl) != -1) {
+								unit = '';
+							}
+							
+							for (var m in j.val) {
+								j.val[m] = j.val[m]+unit;
+							}
+							style.push(j.op+'('+(j.val.join(', '))+')');
 						}
-						else if (j.op.search(rot) != -1) {
-							unit = 'deg';
-						}
-						else if (j.op.search(scl) != -1) {
-							unit = '';
-						}
-						
-						for (var m in j.val) {
-							j.val[m] = j.val[m]+unit;
-						}
-						style.push(j.op+'('+(j.val.join(', '))+')');
+						dom.style.transform = dom.style[pref+"Transform"] = style.join(' ');
 					}
-					dom.style.transform = dom.style[pref+"Transform"] = style.join(' ');
 				}
+				this.changed = false;
 			}
-			this.changed = false;
-		}
-		
-		// redraw entities
-		for (var e in data) {
-			entity_render.call(this, e, data[e], {x: 'x', y: 'y', z: 'z'});
 			
-			for (var i in data[e].faces) {
-				data[e].faces[i].render();
+			// redraw entities
+			for (var e in data) {
+				entity_render.call(this, e, data[e], {x: 'x', y: 'y', z: 'z'});
+				
+				for (var i in data[e].faces) {
+					data[e].faces[i].render();
+				}
 			}
 		}
 	}
@@ -506,7 +516,9 @@
 	 * Renders all 6 faces with WebGL. Camera can be anywhere. Has perspective.
 	 * Good luck with this one. I ain't touching it.
 	 */
-	function full3D(data) {
+	Crafty.camera.modes.full3d = {
+		render: function (data) {
+		}
 	}
 
 	/**
