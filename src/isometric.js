@@ -7,6 +7,7 @@ Crafty.extend({
 	isometric: {
 		_tile: {
 			width: 0,
+			length: 0,
 			height: 0
 		},
 		/**@
@@ -22,8 +23,9 @@ Crafty.extend({
          * ~~~
          * @see Crafty.isometric.place
          */
-		size: function (width, height) {
+		size: function (width, length, height) {
 			this._tile.width = width;
+			this._tile.length = length;
 			this._tile.height = height > 0 ? height : width / 2; //Setup width/2 if height doesnt set
 			return this;
 		},
