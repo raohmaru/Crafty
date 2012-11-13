@@ -427,6 +427,16 @@
 	 * Renders all 6 faces. The camera is at a fixed angle, with no perspective applied
 	 */
 	Crafty.camera.modes.isocubes = {
+		lookAt: function (x, y, z) {
+			if (typeof x == 'object' && x) {
+				// this is an entity or other object with x,y,z coords
+				y = x.y;
+				z = x.z;
+				x = x.x;
+			}
+			
+			
+		},
 		render: function (data) {
 		}
 	}
@@ -435,40 +445,43 @@
 	 * Renders all 6 faces. Camera can be anywhere. Has perspective.
 	 */
 	Crafty.camera.modes.dom3d = {
+		getTransforms: function() {
+			var vector = {
+				x: this.target.x - (this.x += this.diff.x), 
+				y: this.target.y - (this.y += this.diff.y), 
+				z: this.target.z - (this.z += this.diff.z)
+			},
+			trans = {}, hyp;
+			
+			trans.origin = {};
+			trans.origin.x = this.target.x;
+			trans.origin.y = this.target.y;
+			trans.origin.z = this.target.z;
+			trans.form = [];
+			trans.form.push({op: 'translateZ', val: [1000]});	// move the browser's viewpoint to 0,0,0
+			trans.form.push({op: 'translate3d', val:[(-1*this.target.x), (-1*this.target.y), (-1*this.target.z)]});
+			
+			// figure out the x rotation based on the vector
+			hyp = Math.sqrt(vector.x*vector.x + vector.y*vector.y + vector.z*vector.z);
+			trans.form.push({op: 'rotateX', val:[90 + Crafty.math.radToDeg(Math.asin(vector.z/hyp))]});
+			
+			// figure out the z rotation based on the vector
+			// this was tricky.
+			// things to remember: 
+			// the angle we want to measure has the camera at 0,0. so the vector needs to be reversed.
+			// the coord grid is 90 degrees from what i expected, so x and y needed to be switched.
+			trans.form.push({op: 'rotateZ', val:[(Crafty.math.radToDeg(Math.atan2(-vector.x, -vector.y)))]});
+			
+			// figure out the translation needed based on the vector
+			trans.form.push({op: 'translate3d', val: [vector.x, vector.y, vector.z]});
+		},
 		render: function (data) {
 			// reposition the camera
 			// this will happen on the layer element
 			
 			if (this.changed) {
 				// figure out the 3d transformations needed
-				var vector = {
-					x: this.target.x - (this.x += this.diff.x), 
-					y: this.target.y - (this.y += this.diff.y), 
-					z: this.target.z - (this.z += this.diff.z)
-				},
-				trans = {}, hyp;
-				
-				trans.origin = {};
-				trans.origin.x = this.target.x;
-				trans.origin.y = this.target.y;
-				trans.origin.z = this.target.z;
-				trans.form = [];
-				trans.form.push({op: 'translateZ', val: [1000]});	// move the browser's viewpoint to 0,0,0
-				trans.form.push({op: 'translate3d', val:[(-1*this.target.x), (-1*this.target.y), (-1*this.target.z)]});
-				
-				// figure out the x rotation based on the vector
-				hyp = Math.sqrt(vector.x*vector.x + vector.y*vector.y + vector.z*vector.z);
-				trans.form.push({op: 'rotateX', val:[90 + Crafty.math.radToDeg(Math.asin(vector.z/hyp))]});
-				
-				// figure out the z rotation based on the vector
-				// this was tricky.
-				// things to remember: 
-				// the angle we want to measure has the camera at 0,0. so the vector needs to be reversed.
-				// the coord grid is 90 degrees from what i expected, so x and y needed to be switched.
-				trans.form.push({op: 'rotateZ', val:[(Crafty.math.radToDeg(Math.atan2(-vector.x, -vector.y)))]});
-				
-				// figure out the translation needed based on the vector
-				trans.form.push({op: 'translate3d', val: [vector.x, vector.y, vector.z]});
+				var trans = this.getTransforms();
 				
 				// add transformations to 3D space layers
 				for (var i in this.layers) {
