@@ -418,6 +418,45 @@
 	 * Only renders the front face. The front face should already have the isometric transforms applied to it in the sprite itself
 	 */
 	Crafty.camera.modes.isometric = {
+		lookAt: function (x, y, z) {
+			if (typeof x == 'object' && x) {
+				// this is an entity or other object with x,y,z coords
+				// we already know where in world space we want the camera to go
+				// so just go there directly
+				this.moveTo(x.x, x.y, x.z);
+				y = x.y;
+				z = x.z;
+				x = x.x;
+			}
+			else {
+				// we assume these are iso coordinates
+				// adjust them to world coordinates
+				var iso = Crafty.isometric._tile;
+				Crafty.moveTo(iso.x * (x + 0.5), iso.y * (y + 0.5), izo.z + (z + 0.5);
+			}
+			
+			return this;
+		},
+		rotation: 0,
+		rotate: function (dir) {
+			if (typeof dir == "number") {
+				dir = dir/Math.abs(dir);
+			}
+			switch (dir) {
+				case 'left':
+				case 1:
+					this.rotation += 90;
+				break;
+				case 'right':
+				case -1:
+					this.rotation -= 90;
+				break;
+				case 'reset':
+					this.rotation = 0;
+				break;
+			}
+			return this;
+		}
 		render: function (data) {
 			return this;
 		}
@@ -427,24 +466,9 @@
 	 * Renders all 6 faces. The camera is at a fixed angle, with no perspective applied
 	 */
 	Crafty.camera.modes.isocubes = {
-		lookAt: function (x, y, z) {
-			if (typeof x == 'object' && x) {
-				// this is an entity or other object with x,y,z coords
-				y = x.y;
-				z = x.z;
-				x = x.x;
-			}
-			
-			
-		},
-		render: function (data) {
-		}
-	}
-
-	/**
-	 * Renders all 6 faces. Camera can be anywhere. Has perspective.
-	 */
-	Crafty.camera.modes.dom3d = {
+		lookAt: Crafty.camera.modes.isometric.lookAt,
+		rotation: 0,
+		rotate: Crafty.camera.modes.isometric.rotate,
 		getTransforms: function() {
 			var vector = {
 				x: this.target.x - (this.x += this.diff.x), 
@@ -475,42 +499,83 @@
 			// figure out the translation needed based on the vector
 			trans.form.push({op: 'translate3d', val: [vector.x, vector.y, vector.z]});
 		},
+		applyTransforms: function () {
+			var trans = this.getTransforms();
+				
+			// add transformations to 3D space layers
+			for (var i in this.layers) {
+				var l = this.layers[i],
+					dom = this.dom.querySelector('#camera-'+this.label+'-'+i),
+					pref = Crafty.support.prefix, 
+					i, style = [], unit, j, rot = /rotate/i, mov = /translate/i, scl = /scale/i, str;
+				if (!l.flat) {
+					dom.style.transformOrigin = dom.style[pref+"TransformOrigin"] = trans.origin.x+"px "+trans.origin.y+"px "+trans.origin.z+"px";
+					for (i in trans.form) {
+						j = trans.form[i];
+						if (j.op.search(mov) != -1) {
+							unit = 'px';
+						}
+						else if (j.op.search(rot) != -1) {
+							unit = 'deg';
+						}
+						else if (j.op.search(scl) != -1) {
+							unit = '';
+						}
+						
+						for (var m in j.val) {
+							j.val[m] = j.val[m]+unit;
+						}
+						style.push(j.op+'('+(j.val.join(', '))+')');
+					}
+					dom.style.transform = dom.style[pref+"Transform"] = style.join(' ');
+				}
+			}
+		},
 		render: function (data) {
+		
 			// reposition the camera
-			// this will happen on the layer element
-			
+			// this will happen on the layer element			
 			if (this.changed) {
 				// figure out the 3d transformations needed
-				var trans = this.getTransforms();
+				this.applyTransforms();
+				this.changed = false;
+			}
+			
+			// redraw entities
+			for (var e in data) {
+				entity_render.call(this, e, data[e], {x: 'x', y: 'y', z: 'z'});
 				
-				// add transformations to 3D space layers
-				for (var i in this.layers) {
-					var l = this.layers[i],
-						dom = this.dom.querySelector('#camera-'+this.label+'-'+i),
-						pref = Crafty.support.prefix, 
-						i, style = [], unit, j, rot = /rotate/i, mov = /translate/i, scl = /scale/i, str;
-					if (!l.flat) {
-						dom.style.transformOrigin = dom.style[pref+"TransformOrigin"] = trans.origin.x+"px "+trans.origin.y+"px "+trans.origin.z+"px";
-						for (i in trans.form) {
-							j = trans.form[i];
-							if (j.op.search(mov) != -1) {
-								unit = 'px';
-							}
-							else if (j.op.search(rot) != -1) {
-								unit = 'deg';
-							}
-							else if (j.op.search(scl) != -1) {
-								unit = '';
-							}
-							
-							for (var m in j.val) {
-								j.val[m] = j.val[m]+unit;
-							}
-							style.push(j.op+'('+(j.val.join(', '))+')');
-						}
-						dom.style.transform = dom.style[pref+"Transform"] = style.join(' ');
-					}
+				for (var i in data[e].faces) {
+					data[e].faces[i].render();
 				}
+			}
+		}
+	}
+
+	/**
+	 * Renders all 6 faces. Camera can be anywhere. Has perspective.
+	 */
+	Crafty.camera.modes.dom3d = {
+		lookAt: function (x, y, z) {
+			if (typeof x == 'object' && x) {
+				y = x.y;
+				z = x.z;
+				x = x.x;
+			}
+			this.target.x = x;
+			this.target.y = y;
+			this.target.z = z;
+			return this;
+		},
+		getTransforms: Crafty.camera.modes.isocubes.getTransforms, 
+		applyTransforms: Crafty.camera.modes.isocubes.applyTransforms,
+		render: function (data) {
+		
+			// reposition the camera
+			// this will happen on the layer element			
+			if (this.changed) {
+				// figure out the 3d transformations needed
+				this.applyTransforms();
 				this.changed = false;
 			}
 			
