@@ -82,7 +82,7 @@
 		 * Constructor. Should never be invoked directly.
 		 */
 		init: function (type, label, options) {
-			this.type = type;
+			this.type = type.toLowerCase();
 			this.label = label;
 			this.data = {};
 			this.diff = {
@@ -97,9 +97,9 @@
 			};
 			this.layers = {};
 			
-			if (label in Crafty.camera.modes && 'render' in Crafty.camera.modes[label]) {
-				for (var i in Crafty.camera.modes[label]) {
-					this[i] = Crafty.camera.modes[label][i];
+			if (type in Crafty.camera.modes && '_render' in Crafty.camera.modes[type]) {
+				for (var i in Crafty.camera.modes[type]) {
+					this[i] = Crafty.camera.modes[type][i];
 				}
 			}
 			else {
@@ -161,7 +161,6 @@
 			three_d_wrapper['-ms-perspective'] = '1000px';
 			three_d_wrapper['perspective'] = '1000px';
 			Crafty.style.add('.camera.ThreeDSquare', three_d_wrapper);
-			Crafty.style.add('.camera.IsometricFaces', three_d_wrapper);
 			
 			var three_d_container = {};
 			three_d_container['-webkit-transform-style'] = 'preserve-3d';
@@ -172,7 +171,7 @@
 			three_d_container['top'] = '50%';
 			three_d_container['left'] = '50%';
 			Crafty.style.add('.camera.ThreeDSquare .layer.threeD', three_d_container);
-			Crafty.style.add('.camera.IsometricFaces', three_d_container);
+			Crafty.style.add('.camera.isocubes .layer.threeD', three_d_container);
 		},
 
 		/**
@@ -269,7 +268,7 @@
 				}
 			}
 			
-			this.render(data);
+			this._render(this.data);
 
 			Crafty.dirty = [];
 			this.changed = false;
@@ -363,7 +362,21 @@
 	 * Only renders the top face of each box
 	 */
 	Crafty.camera.modes.topdown = {
-		render: function (data) {
+		_zoom: 1.0,
+		zoom: function(amt) {
+			if (typeof amt == 'number') {
+				if (amt == 0) {
+					amt = 1.0;
+				}
+				else {
+				  this._zoom *= this.amt;
+				}
+			}
+			this.changed = true;
+			
+			return this._zoom;
+		},
+		_render: function (data) {
 			if (this.changed) {
 				for (var i in this.layers) {
 					var l = this.layers[i],
@@ -371,7 +384,7 @@
 					l.x += this.diff.x*l.ratio;
 					l.y += this.diff.y*l.ratio;
 
-					dom.style.transform = dom.style[Crafty.support.prefix+'Transform'] = 'translate('+(-1*l.x)+'px, '+(-1*l.y)+'px)';
+					dom.style.transform = dom.style[Crafty.support.prefix+'Transform'] = 'translate('+(-1*l.x)+'px, '+(-1*l.y)+'px) scale('+(this._zoom*l.ratio)+', '+(this._zoom*l.ratio)+')';
 				}
 				this.move(0, 0, 0, true);
 				this.changed = false;
@@ -390,7 +403,9 @@
 	 * Only renders the right face
 	 */
 	Crafty.camera.modes.sideview = {
-		render: function (data) {
+		_zoom: 1.0,
+		zoom: Crafty.camera.modes.topdown.zoom,
+		_render: function (data) {
 			if (this.changed) {
 				for (var i in this.layers) {
 					var l = this.layers[i],
@@ -398,7 +413,7 @@
 					l.x += this.diff.y*l.ratio;
 					l.y += this.diff.z*l.ratio;
 
-					dom.style.transform = dom.style[Crafty.support.prefix+'Transform'] = 'translate('+(-1*l.x)+'px, '+(-1*l.y)+'px)';
+					dom.style.transform = dom.style[Crafty.support.prefix+'Transform'] = 'translate('+(-1*l.x)+'px, '+(-1*l.y)+'px) scale('+(this._zoom*l.ratio)+', '+(this._zoom*l.ratio)+')';
 				}
 				this.move(0, 0, 0, true);
 				this.changed = false;
@@ -418,22 +433,30 @@
 	 * Only renders the front face. The front face should already have the isometric transforms applied to it in the sprite itself
 	 */
 	Crafty.camera.modes.isometric = {
+		_zoom: 1.0,
+		zoom: Crafty.camera.modes.topdown.zoom,
 		lookAt: function (x, y, z) {
 			if (typeof x == 'object' && x) {
 				// this is an entity or other object with x,y,z coords
 				// we already know where in world space we want the camera to go
 				// so just go there directly
-				this.moveTo(x.x, x.y, x.z);
-				y = x.y;
-				z = x.z;
-				x = x.x;
+				this.target = {
+					x: x.x,
+					y: x.y,
+					z: x.z
+				}
 			}
 			else {
 				// we assume these are iso coordinates
 				// adjust them to world coordinates
 				var iso = Crafty.isometric._tile;
-				Crafty.moveTo(iso.x * (x + 0.5), iso.y * (y + 0.5), izo.z + (z + 0.5);
+				this.target = {
+					x: iso.width, 
+					y: iso.length, 
+					z: iso.height
+				};
 			}
+			this.changed = true;
 			
 			return this;
 		},
@@ -455,9 +478,11 @@
 					this.rotation = 0;
 				break;
 			}
+			this.changed = true;
+			
 			return this;
-		}
-		render: function (data) {
+		},
+		_render: function (data) {
 			return this;
 		}
 	}
@@ -466,38 +491,52 @@
 	 * Renders all 6 faces. The camera is at a fixed angle, with no perspective applied
 	 */
 	Crafty.camera.modes.isocubes = {
+		target: null,
+		_zoom: 1.0,
+		zoom: Crafty.camera.modes.topdown.zoom,
 		lookAt: Crafty.camera.modes.isometric.lookAt,
 		rotation: 0,
 		rotate: Crafty.camera.modes.isometric.rotate,
 		getTransforms: function() {
 			var vector = {
-				x: this.target.x - (this.x += this.diff.x), 
-				y: this.target.y - (this.y += this.diff.y), 
-				z: this.target.z - (this.z += this.diff.z)
+				// common thought is that 'down' is the bottom right of an isometric system
+				// this puts the camera in the 2rd quadrant by default, relative to the world coords. x and y need to be negated as a result
+				// remember that our coord system is the mirror of the x-axis.
+				// y ascends downwards. we reverse that
+				x: (-10 * Crafty.isometric._tile.width) / this._zoom,
+				y: (10 * Crafty.isometric._tile.length) / this._zoom,
+				z: (10 * (2/3) * Crafty.isometric._tile.height) / this._zoom,	// 30 degrees
 			},
 			trans = {}, hyp;
+			
+			switch (this.rotation) {
+				case 90:
+					vector.x *= -1;
+				break;
+				case 180: 
+					vector.x *= -1;
+					vector.y *= -1;
+				break;
+				case 270:
+					vector.y *= -1;
+			}
 			
 			trans.origin = {};
 			trans.origin.x = this.target.x;
 			trans.origin.y = this.target.y;
 			trans.origin.z = this.target.z;
 			trans.form = [];
-			trans.form.push({op: 'translateZ', val: [1000]});	// move the browser's viewpoint to 0,0,0
 			trans.form.push({op: 'translate3d', val:[(-1*this.target.x), (-1*this.target.y), (-1*this.target.z)]});
 			
-			// figure out the x rotation based on the vector
-			hyp = Math.sqrt(vector.x*vector.x + vector.y*vector.y + vector.z*vector.z);
-			trans.form.push({op: 'rotateX', val:[90 + Crafty.math.radToDeg(Math.asin(vector.z/hyp))]});
+			// figure out the x rotation based on the rotation
+			// its always 30 degrees
+			// but we're looking at it from 90, so subtract from that
+			trans.form.push({op: 'rotateX', val:[60]});
 			
-			// figure out the z rotation based on the vector
-			// this was tricky.
-			// things to remember: 
-			// the angle we want to measure has the camera at 0,0. so the vector needs to be reversed.
-			// the coord grid is 90 degrees from what i expected, so x and y needed to be switched.
-			trans.form.push({op: 'rotateZ', val:[(Crafty.math.radToDeg(Math.atan2(-vector.x, -vector.y)))]});
+			// figure out the z rotation
+			trans.form.push({op: 'rotateZ', val:[135 + this.rotation]});
 			
-			// figure out the translation needed based on the vector
-			trans.form.push({op: 'translate3d', val: [vector.x, vector.y, vector.z]});
+			return trans;
 		},
 		applyTransforms: function () {
 			var trans = this.getTransforms();
@@ -531,7 +570,7 @@
 				}
 			}
 		},
-		render: function (data) {
+		_render: function (data) {
 		
 			// reposition the camera
 			// this will happen on the layer element			
@@ -567,9 +606,40 @@
 			this.target.z = z;
 			return this;
 		},
-		getTransforms: Crafty.camera.modes.isocubes.getTransforms, 
+		getTransforms: function() {
+			var vector = {
+				x: this.target.x - (this.x += this.diff.x), 
+				y: this.target.y - (this.y += this.diff.y), 
+				z: this.target.z - (this.z += this.diff.z)
+			},
+			trans = {}, hyp;
+			
+			trans.origin = {};
+			trans.origin.x = this.target.x;
+			trans.origin.y = this.target.y;
+			trans.origin.z = this.target.z;
+			trans.form = [];
+			trans.form.push({op: 'translateZ', val: [1000]});	// move the browser's viewpoint to 0,0,0
+			trans.form.push({op: 'translate3d', val:[(-1*this.target.x), (-1*this.target.y), (-1*this.target.z)]});
+			
+			// figure out the x rotation based on the vector
+			hyp = Math.sqrt(vector.x*vector.x + vector.y*vector.y + vector.z*vector.z);
+			trans.form.push({op: 'rotateX', val:[90 + Crafty.math.radToDeg(Math.asin(vector.z/hyp))]});
+			
+			// figure out the z rotation based on the vector
+			// this was tricky.
+			// things to remember: 
+			// the angle we want to measure has the camera at 0,0. so the vector needs to be reversed.
+			// the coord grid is 90 degrees from what i expected, so x and y needed to be switched.
+			trans.form.push({op: 'rotateZ', val:[(Crafty.math.radToDeg(Math.atan2(-vector.x, -vector.y)))]});
+			
+			// figure out the translation needed based on the vector
+			trans.form.push({op: 'translate3d', val: [vector.x, vector.y, vector.z]});
+			
+			return trans;
+		}, 
 		applyTransforms: Crafty.camera.modes.isocubes.applyTransforms,
-		render: function (data) {
+		_render: function (data) {
 		
 			// reposition the camera
 			// this will happen on the layer element			
