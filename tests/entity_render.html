@@ -8,7 +8,7 @@
 		Crafty.init();
 		var entity = Crafty.e('Spatial, Render, Color').attr({w: 100, l: 100, h: 100, x: 100, y: 100, z: 100}).color('red');
 		Crafty.e('Spatial, Render, Color').attr({w: 10000, l: 10000, h: 1}).color('green');
-		var cam = Crafty.camera('threed', 'ThreeDSquare', {
+		var cam = Crafty.camera('threed', 'isocubes', {
 				layers: {
 					stage: {
 						ratio: 1,
@@ -23,12 +23,12 @@
 						flat: true,
 					}
 				}});
-		cam.move(500, 500, 500);
-		cam.target = {x: 100, y: 100, z: 100};
+		Crafty.isometric.size(100, 100, 100);
 		Crafty.camera('default').active = false;
 		Crafty.e('Spatial, Render, Color, Tween, Mouse').attr({w: 100, l: 100, h: 100, x: 100, y: 0, z: 200}).color('blue').tween({y: 200}, 2000).bind('Click', function (e) {
 			cam.move(0, 5, 0);
 		});
+		Crafty.camera('threed').lookAt(entity);
 	};
 	</script>
 </head>
