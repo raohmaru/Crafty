@@ -712,7 +712,7 @@
 			Crafty.layer('ui');
 			Crafty.layer['default'] = 'stage';
 
-			Crafty.camera("default", "Side", { 
+			Crafty.camera("default", "sideview", { 
 				canvas: false, 
 				layers: {
 					background: {
