@@ -160,7 +160,7 @@
 			three_d_wrapper['-o-perspective'] = '1000px';
 			three_d_wrapper['-ms-perspective'] = '1000px';
 			three_d_wrapper['perspective'] = '1000px';
-			Crafty.style.add('.camera.ThreeDSquare', three_d_wrapper);
+			Crafty.style.add('.camera.dom3d', three_d_wrapper);
 			
 			var three_d_container = {};
 			three_d_container['-webkit-transform-style'] = 'preserve-3d';
@@ -170,7 +170,7 @@
 			three_d_container['transform-style'] = 'preserve-3d';
 			three_d_container['top'] = '50%';
 			three_d_container['left'] = '50%';
-			Crafty.style.add('.camera.ThreeDSquare .layer.threeD', three_d_container);
+			Crafty.style.add('.camera.dom3d .layer.threeD', three_d_container);
 			Crafty.style.add('.camera.isocubes .layer.threeD', three_d_container);
 		},
 
@@ -604,13 +604,15 @@
 			this.target.x = x;
 			this.target.y = y;
 			this.target.z = z;
+			this.changed = true;
+			
 			return this;
 		},
 		getTransforms: function() {
 			var vector = {
-				x: this.target.x - (this.x += this.diff.x), 
-				y: this.target.y - (this.y += this.diff.y), 
-				z: this.target.z - (this.z += this.diff.z)
+				x: this.target.x + (this.x += this.diff.x), 
+				y: this.target.y + (this.y += this.diff.y), 
+				z: this.target.z + (this.z += this.diff.z)
 			},
 			trans = {}, hyp;
 			
