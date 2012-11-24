@@ -6,6 +6,18 @@
  * WARNING!!!
  * This file is to be used for local development of Crafty ONLY. It does a number of Bad Things to achieve its goals, 
  * and should not be used in a production environment for any reason.
+ *
+ * There are issues when running this from a file:// URL. The default behavior is to disallow file access from other files.
+ * Good browsers have workarounds for people who Know What They're Doing(tm). 
+ *
+ * Firefox:
+ * Go to about:config. Click past the Warranty notice.
+ * Find security.fileuri.scrict_origin_policy and set it to false
+ *
+ * Chrome:
+ * Launch Chrome with the following flag:
+ * --allow-file-access-from-file
+ * 
  */
 
 (function (window) {
