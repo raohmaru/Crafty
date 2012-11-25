@@ -13,12 +13,12 @@
  * Camera types:
  * 	Cameras have several types they can be, which affects how they render the game world.
  *	Types:
- *		Top - Renders the world in a top-down, birds-eye view. Orthographic
- *		Side - Renders the world from the side, like Mario. Orthographic
- *		Isometric - Renders the world from a 45 degree angle. Tiles exist as single sprites. (FF Tactics) Orthographic
- *		IsometricFaces - Renders the world from a 45 degree angle. Tiles exist as boxes with different sprites for the sides (Minecraft) Orthographic
- *		3DSquare - Renders the world in full 3D, using DOM or SVG elements to create the world itself. All objects exist as faces. (ex. A cube would be 6 DOM elements.) Perspective
- *		3DCanvas - Renders the world using WebGL. Support for this is lacking in browsers, so it isn't recommended. Perspective.
+ *		topdown - Renders the world in a top-down, birds-eye view. Orthographic
+ *		sideview - Renders the world from the side, like Mario. Orthographic
+ *		isometric - Renders the world from a 45 degree angle. Tiles exist as single sprites. (FF Tactics) Orthographic
+ *		isocubes - Renders the world from a 45 degree angle. Tiles exist as boxes with different sprites for the sides (Minecraft) Orthographic
+ *		dom3d - Renders the world in full 3D, using DOM or SVG elements to create the world itself. All objects exist as faces. (ex. A cube would be 6 DOM elements.) Perspective
+ *		full3d - Renders the world using WebGL. Support for this is lacking in browsers, so it isn't recommended. Perspective.
  *
  * Camera Options:
  *	Cameras accept an optional object containing options to change from defaults.
