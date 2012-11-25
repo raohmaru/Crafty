@@ -16,7 +16,7 @@
  *
  * Chrome:
  * Launch Chrome with the following flag:
- * --allow-file-access-from-file
+ * --allow-file-access-from-files
  * 
  */
 
