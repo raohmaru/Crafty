@@ -286,14 +286,34 @@
 	 * @param map	A map of camera to entity properties
 	 */
 	function entity_render(e_id, data, map) {
+		function isComponentListChanged(oldComponents, newComponents) {
+			var changes = false;
+			for (var oldComponent in oldComponents) {
+				if (!(oldComponent in newComponents)) {
+					changes = true;
+					break;
+				}
+			}
+			if (!changes) {
+				for (var newComponent in newComponents) {
+					if (!(newComponent in oldComponents)) {
+						changes = true;
+						break;
+					}
+				}
+			}
+			return changes;
+		}
+		
 		var entity = Crafty(e_id >> 0),
 			elem = this.dom.querySelector('#entity-'+e_id),
 			dirty = data.old.x != entity.x 
 				|| data.old.y != entity.y 
 				|| data.old.z != entity.z
 				|| data.old.rotation != entity.rotation
-				|| data.old.components != entity.__c,
+				|| isComponentListChanged(data.old.components, entity.__c),
 			transform = '';
+		
 		
 		if (typeof map.z != 'undefined') {
 			if (!Crafty.support.css3dtransform) {
