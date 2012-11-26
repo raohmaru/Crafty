@@ -89,7 +89,7 @@
 				x: 0,
 				y: 0,
 				z: 0
-			}
+			};
 			this.target = {
 				x: 0,
 				y: 0,
@@ -150,9 +150,11 @@
 			Crafty.style.add('.obj', 'transform-style', 'preserve-3d');
 			
 			Crafty.style.add('.Face', 'position', 'absolute');
-			Crafty.style.add('.Face', 'border', '3px solid black');
+			if (Crafty.support.enableFaceBoundariesRendering) {
+				Crafty.style.add('.Face', 'border', '3px solid black');
+			}
 			Crafty.style.add('.layer', 'position', 'absolute');
-			Crafty.style.add('.camera', {position: 'absolute', width: '100%', height: '100%'});
+			Crafty.style.add('.camera', { position: 'absolute', width: '100%', height: '100%' });
 			
 			var three_d_wrapper = {};
 			three_d_wrapper['-webkit-perspective'] = '1000px';
