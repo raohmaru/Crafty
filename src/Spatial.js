@@ -142,6 +142,7 @@ Crafty.c("Spatial", {
 	_children: null,
 	_parent: null,
 	_changed: false,
+	_classString: '',
 
 	_defineGetterSetter_setter: function () {
 		//create getters and setters using __defineSetter__ and __defineGetter__
@@ -317,6 +318,10 @@ Crafty.c("Spatial", {
 
 		//insert self into the HashMap
 		this._entry = Crafty.map.insert(this);
+		
+		// when object's components change, update a string suitable for use in as a class
+		this.bind('NewComponent', this._updateClassString);
+		this.bind('RemoveComponent', this._updateClassString);
 
 		//when object changes, update HashMap
 		this.bind("Move", function (e) {
@@ -349,6 +354,14 @@ Crafty.c("Spatial", {
 		this.layer = Crafty.layer['default'];
 
 		this.bind('PreRender', this._spatialPrerender);
+	},
+	
+	_updateClassString: function () {
+		this._classString = '';
+		for (var i in this.__c) {
+			this._classString += i + ' ';
+		}
+		this._classString = this._classString.slice(0,-1);
 	},
 
 	/**

@@ -242,7 +242,8 @@
 							back: (new Face(elem)).setFacing('back', e.w, e.l, e.h),
 							below: (new Face(elem)).setFacing('below', e.w, e.l, e.h),
 						},
-						old: {}
+						old: {},
+						entity: e
 					};
 
 				// some things to run the first time the data is built
@@ -271,11 +272,14 @@
 			}
 			
 			if (window.debugCrafty) {
-				var timer = Date.now();
+				//var timer = Date.now();
+				console.profile();
 			}
 			this._render(this.data);
 			if (window.debugCrafty) {
-				console.log(Date.now() - timer);
+				//console.log(Date.now() - timer);
+				console.profileEnd();
+				window.debugCrafty = false;
 			}
 
 			Crafty.dirty = [];
@@ -312,13 +316,13 @@
 	 */
 	function entity_render(e_id, data, map) {
 		
-		var entity = Crafty(e_id >> 0),
+		var entity = data.entity,
 			elem = this.dom.querySelector('#entity-'+e_id),
 			dirty = data.old.x != entity.x 
 				|| data.old.y != entity.y 
 				|| data.old.z != entity.z
 				|| data.old.rotation != entity.rotation
-				|| isComponentListChanged(data.old.components, entity.__c),
+				|| data.old.classes != entity._classString,
 			transform = '';
 		
 		
@@ -335,27 +339,9 @@
 		}
 			
 		if (dirty) {
-			var classes_changed = false,
-				classes = [], i;
-			if (!Crafty.support.classList) {
-				if (typeof data.old.components == 'undefined') {
-					data.old.components = {};
-				}
-				for (i in entity.__c) {
-					if (typeof data.old.components[i] == 'undefined') {
-						classes[classes.length] = i;
-						data.old.components[i] = true;
-						classes_changed = true;
-					}
-				}
-				if (classes_changed) {
-					elem.className = classes.join(' ');
-				}
-			}
-			else {
-				for (i in entity.__c) {
-					elem.classList.add(i);
-				}
+			// double check, since changing classes is most expensive operation here
+			if (elem.className != entity._classString) {
+				elem.className = entity._classString;
 			}
 			elem.style.zIndex = entity.z;
 			elem.style.top = (-0.5*entity.l)+'px';
@@ -365,6 +351,7 @@
 			data.old.y = entity.y;
 			data.old.z = entity.z;
 			data.old.rotation = entity.rotation;
+			data.old.classes = entity._classString;
 		}
 	}
 	
