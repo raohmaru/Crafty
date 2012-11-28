@@ -270,7 +270,13 @@
 				}
 			}
 			
+			if (window.debugCrafty) {
+				var timer = Date.now();
+			}
 			this._render(this.data);
+			if (window.debugCrafty) {
+				console.log(Date.now() - timer);
+			}
 
 			Crafty.dirty = [];
 			this.changed = false;
@@ -280,30 +286,31 @@
 	};
 	Crafty.camera.fn.init.prototype = Crafty.camera.fn;
 	
+	function isComponentListChanged(oldComponents, newComponents) {
+		var changes = false;
+		for (var oldComponent in oldComponents) {
+			if (!(oldComponent in newComponents)) {
+				changes = true;
+				break;
+			}
+		}
+		if (!changes) {
+			for (var newComponent in newComponents) {
+				if (!(newComponent in oldComponents)) {
+					changes = true;
+					break;
+				}
+			}
+		}
+		return changes;
+	}
+	
 	/**
 	 * @param e_id  Unique entity id (should be integer as string)
 	 * @param data  The rendering data for the entity only
 	 * @param map	A map of camera to entity properties
 	 */
 	function entity_render(e_id, data, map) {
-		function isComponentListChanged(oldComponents, newComponents) {
-			var changes = false;
-			for (var oldComponent in oldComponents) {
-				if (!(oldComponent in newComponents)) {
-					changes = true;
-					break;
-				}
-			}
-			if (!changes) {
-				for (var newComponent in newComponents) {
-					if (!(newComponent in oldComponents)) {
-						changes = true;
-						break;
-					}
-				}
-			}
-			return changes;
-		}
 		
 		var entity = Crafty(e_id >> 0),
 			elem = this.dom.querySelector('#entity-'+e_id),
