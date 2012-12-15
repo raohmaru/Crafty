@@ -869,6 +869,10 @@ Crafty.extend({
             Crafty.settings.register("autoPause", function (){ });
             Crafty.settings.modify("autoPause", false);
 
+            //disables default actions for some keys (see controls.js)
+            Crafty.settings.register("preventKeyDefaults", function (){ });
+            Crafty.settings.modify("preventKeyDefaults", true);
+
             //add to the body and give it an ID if not exists
             if (!crstage) {
                 document.body.appendChild(Crafty.stage.elem);
